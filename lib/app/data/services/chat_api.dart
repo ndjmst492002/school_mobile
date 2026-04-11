@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../providers/api_provider.dart';
 import '../models/chat_models.dart';
@@ -9,14 +9,24 @@ class ChatApi {
   Future<List<Contact>> getContacts() async {
     final response = await _api.get('/users/chat/contacts/');
     debugPrint('API Response for contacts: ${response.data}');
-    final List<dynamic> data = response.data;
-    return data.map((json) => Contact.fromJson(json)).toList();
+    final List<dynamic> data = response.data as List<dynamic>;
+    return data
+        .map((json) => Contact.fromJson(Map<String, dynamic>.from(json as Map)))
+        .toList();
   }
 
   Future<List<ChatMessage>> getMessages(int contactId) async {
     final response = await _api.get('/users/chat/messages/$contactId/');
-    final List<dynamic> data = response.data;
-    return data.map((json) => ChatMessage.fromJson(json)).toList();
+    if (response.data is List) {
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map(
+            (json) =>
+                ChatMessage.fromJson(Map<String, dynamic>.from(json as Map)),
+          )
+          .toList();
+    }
+    return [];
   }
 
   Future<ChatMessage> sendMessage(int contactId, String content) async {
@@ -24,16 +34,17 @@ class ChatApi {
       '/users/chat/messages/$contactId/',
       data: {'content': content},
     );
-    return ChatMessage.fromJson(response.data);
+    return ChatMessage.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<String> getWsTicket() async {
     final response = await _api.post('/users/ws-ticket/');
-    return response.data['ticket'];
+    return response.data['ticket'] as String;
   }
 
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    return response.data['count'] ?? 0;
+    final data = response.data as Map<String, dynamic>;
+    return data['total_unread'] ?? 0;
   }
 }

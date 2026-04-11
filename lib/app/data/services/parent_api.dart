@@ -41,6 +41,7 @@ class ParentApi {
 
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    return response.data['count'] ?? 0;
+    final data = response.data as Map<String, dynamic>;
+    return data['total_unread'] ?? 0;
   }
 }

@@ -122,8 +122,14 @@ class TeacherApi {
     return data.map((json) => AttendanceRecord.fromJson(json)).toList();
   }
 
+  Future<Map<String, dynamic>> getUnreadCounts() async {
+    final response = await _api.get('/users/chat/unread-count/');
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    return response.data['count'] ?? 0;
+    final data = response.data as Map<String, dynamic>;
+    return data['total_unread'] ?? 0;
   }
 }

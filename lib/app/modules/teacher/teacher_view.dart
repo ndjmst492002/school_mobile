@@ -27,11 +27,11 @@ class TeacherView extends GetView<TeacherController> {
         ),
         body: controller.showChat.value
             ? ChatView(
-          onClose: () {
-            Get.delete<ChatController>();
-            controller.toggleChat();
-          },
-        )
+                onClose: () {
+                  Get.delete<ChatController>();
+                  controller.toggleChat();
+                },
+              )
             : _buildContent(),
       );
     });
@@ -39,7 +39,7 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildChatIcon() {
     return Obx(() {
-      final hasUnread = controller.unreadMessageCount.value > 0;
+      final unreadCount = controller.unreadMessageCount.value;
       return Stack(
         children: [
           IconButton(
@@ -50,16 +50,25 @@ class TeacherView extends GetView<TeacherController> {
               controller.updateUnreadMessageCount(0);
             },
           ),
-          if (hasUnread)
+          if (unreadCount > 0)
             Positioned(
-              right: 8,
-              top: 8,
+              right: 2,
+              top: 2,
               child: Container(
-                width: 10,
-                height: 10,
+                padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                child: Text(
+                  unreadCount > 9 ? '9+' : '$unreadCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -78,7 +87,7 @@ class TeacherView extends GetView<TeacherController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Obx(
-                  () => Text(
+              () => Text(
                 'Welcome, ${controller.userName}',
                 style: const TextStyle(fontSize: 18),
               ),
@@ -93,10 +102,7 @@ class TeacherView extends GetView<TeacherController> {
               children: [
                 const Text(
                   'Announcements',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 _buildAnnouncementButton(),
               ],
@@ -117,10 +123,7 @@ class TeacherView extends GetView<TeacherController> {
               children: [
                 const Text(
                   'My Classes',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 _buildAttendanceButton(),
               ],
@@ -141,10 +144,7 @@ class TeacherView extends GetView<TeacherController> {
               children: [
                 const Text(
                   'Exercises',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 _buildUploadButton(),
               ],
@@ -169,11 +169,13 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildAnnouncementButton() {
     return Obx(
-          () => ElevatedButton.icon(
+      () => ElevatedButton.icon(
         onPressed: controller.toggleAnnouncementForm,
         icon: const Icon(Icons.campaign, size: 18),
         label: Text(
-          controller.showAnnouncementForm.value ? 'Cancel' : 'Create Announcement',
+          controller.showAnnouncementForm.value
+              ? 'Cancel'
+              : 'Create Announcement',
           style: const TextStyle(fontSize: 12),
         ),
         style: ElevatedButton.styleFrom(
@@ -186,7 +188,7 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildAttendanceButton() {
     return Obx(
-          () => ElevatedButton.icon(
+      () => ElevatedButton.icon(
         onPressed: controller.toggleAttendanceForm,
         icon: const Icon(Icons.people, size: 18),
         label: Text(
@@ -203,7 +205,7 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildUploadButton() {
     return Obx(
-          () => ElevatedButton.icon(
+      () => ElevatedButton.icon(
         onPressed: controller.toggleUploadForm,
         icon: const Icon(Icons.upload, size: 18),
         label: Text(
@@ -220,7 +222,7 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildStatsCards() {
     return Obx(
-          () => SingleChildScrollView(
+      () => SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
@@ -289,7 +291,7 @@ class TeacherView extends GetView<TeacherController> {
                   );
                   if (date != null) {
                     controller.uploadDueDateController.text =
-                    '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+                        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
                   }
                 },
                 child: AbsorbPointer(
@@ -310,7 +312,7 @@ class TeacherView extends GetView<TeacherController> {
                           );
                           if (date != null) {
                             controller.uploadDueDateController.text =
-                            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+                                '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
                           }
                         },
                       ),
@@ -321,7 +323,7 @@ class TeacherView extends GetView<TeacherController> {
             ),
             const SizedBox(height: 8),
             Obx(
-                  () => DropdownButtonFormField<String>(
+              () => DropdownButtonFormField<String>(
                 value: controller.uploadClassId.value.isEmpty
                     ? null
                     : controller.uploadClassId.value,
@@ -329,10 +331,10 @@ class TeacherView extends GetView<TeacherController> {
                 items: controller.classes
                     .map(
                       (cls) => DropdownMenuItem(
-                    value: cls.id.toString(),
-                    child: Text('${cls.name} (${cls.studentCount})'),
-                  ),
-                )
+                        value: cls.id.toString(),
+                        child: Text('${cls.name} (${cls.studentCount})'),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => controller.updateUploadClassId(v ?? ''),
               ),
@@ -406,7 +408,7 @@ class TeacherView extends GetView<TeacherController> {
                       ),
                       const SizedBox(height: 8),
                       Obx(
-                            () => SizedBox(
+                        () => SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: controller.isUploading.value
@@ -443,7 +445,7 @@ class TeacherView extends GetView<TeacherController> {
                       SizedBox(
                         width: 140,
                         child: Obx(
-                              () => ElevatedButton(
+                          () => ElevatedButton(
                             onPressed: controller.isUploading.value
                                 ? null
                                 : controller.uploadExercise,
@@ -495,7 +497,7 @@ class TeacherView extends GetView<TeacherController> {
             ),
             const SizedBox(height: 8),
             Obx(
-                  () => DropdownButtonFormField<String>(
+              () => DropdownButtonFormField<String>(
                 value: controller.announcementClassId.value.isEmpty
                     ? null
                     : controller.announcementClassId.value,
@@ -505,7 +507,7 @@ class TeacherView extends GetView<TeacherController> {
                 items: [
                   const DropdownMenuItem(value: '', child: Text('All Classes')),
                   ...controller.classes.map(
-                        (cls) => DropdownMenuItem(
+                    (cls) => DropdownMenuItem(
                       value: cls.id.toString(),
                       child: Text(cls.name),
                     ),
@@ -516,7 +518,7 @@ class TeacherView extends GetView<TeacherController> {
             ),
             const SizedBox(height: 12),
             Obx(
-                  () => ElevatedButton(
+              () => ElevatedButton(
                 onPressed: controller.isPosting.value
                     ? null
                     : controller.createAnnouncement,
@@ -543,7 +545,7 @@ class TeacherView extends GetView<TeacherController> {
             ),
             const SizedBox(height: 12),
             Obx(
-                  () => DropdownButtonFormField<String>(
+              () => DropdownButtonFormField<String>(
                 value: controller.attendanceClassId.value.isEmpty
                     ? null
                     : controller.attendanceClassId.value,
@@ -551,10 +553,10 @@ class TeacherView extends GetView<TeacherController> {
                 items: controller.classes
                     .map(
                       (cls) => DropdownMenuItem(
-                    value: cls.id.toString(),
-                    child: Text('${cls.name} (${cls.studentCount})'),
-                  ),
-                )
+                        value: cls.id.toString(),
+                        child: Text('${cls.name} (${cls.studentCount})'),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) {
                   controller.updateAttendanceClassId(v ?? '');
@@ -577,7 +579,7 @@ class TeacherView extends GetView<TeacherController> {
                   );
                   if (date != null) {
                     controller.attendanceDateController.text =
-                    '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+                        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
                   }
                 },
                 child: AbsorbPointer(
@@ -601,10 +603,10 @@ class TeacherView extends GetView<TeacherController> {
                       : () => controller.loadAttendance(),
                   icon: controller.isLoadingAttendance.value
                       ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.people),
                   label: Text(
                     controller.isLoadingAttendance.value
@@ -618,7 +620,7 @@ class TeacherView extends GetView<TeacherController> {
             const SizedBox(height: 16),
             Obx(() {
               final selectedClass = controller.classes.firstWhereOrNull(
-                    (c) => c.id.toString() == controller.attendanceClassId.value,
+                (c) => c.id.toString() == controller.attendanceClassId.value,
               );
               if (selectedClass == null ||
                   selectedClass.students == null ||
@@ -686,7 +688,7 @@ class TeacherView extends GetView<TeacherController> {
                   }).toList(),
                   const SizedBox(height: 12),
                   Obx(
-                        () => ElevatedButton(
+                    () => ElevatedButton(
                       onPressed: controller.isSavingAttendance.value
                           ? null
                           : controller.saveAttendance,
@@ -1295,7 +1297,7 @@ class TeacherView extends GetView<TeacherController> {
                     children: [
                       Expanded(
                         child: Obx(
-                              () => ElevatedButton(
+                          () => ElevatedButton(
                             onPressed: controller.isGrading.value
                                 ? null
                                 : controller.gradeSubmission,

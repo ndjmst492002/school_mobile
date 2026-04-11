@@ -29,11 +29,11 @@ class ParentView extends GetView<ParentController> {
         ),
         body: controller.showChat.value
             ? ChatView(
-          onClose: () {
-            Get.delete<ChatController>();
-            controller.toggleChat();
-          },
-        )
+                onClose: () {
+                  Get.delete<ChatController>();
+                  controller.toggleChat();
+                },
+              )
             : _buildBody(),
       );
     });
@@ -49,7 +49,7 @@ class ParentView extends GetView<ParentController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Obx(
-                  () => Text(
+              () => Text(
                 'Welcome, ${controller.userName}',
                 style: const TextStyle(fontSize: 18),
               ),
@@ -77,14 +77,12 @@ class ParentView extends GetView<ParentController> {
 
   Widget _buildStatsCards() {
     return Obx(
-          () => Wrap(
+      () => Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
           SizedBox(
-            width:
-            (MediaQuery.of(Get.context!).size.width - 40) /
-                2,
+            width: (MediaQuery.of(Get.context!).size.width - 40) / 2,
             child: _buildStatCard(
               'My Children',
               '${controller.children.length}',
@@ -129,12 +127,12 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildStatCard(
-      String title,
-      String value,
-      String subtitle,
-      Color color,
-      IconData icon,
-      ) {
+    String title,
+    String value,
+    String subtitle,
+    Color color,
+    IconData icon,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -626,36 +624,45 @@ class ParentView extends GetView<ParentController> {
 
   Widget _buildChatIcon() {
     return Obx(() {
-      final hasUnread = controller.unreadMessageCount.value > 0;
+      final unreadCount = controller.unreadMessageCount.value;
       return Stack(
         children: [
           controller.showChat.value
               ? IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              Get.delete<ChatController>();
-              controller.toggleChat();
-              controller.updateUnreadMessageCount(0);
-            },
-          )
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    Get.delete<ChatController>();
+                    controller.toggleChat();
+                    controller.updateUnreadMessageCount(0);
+                  },
+                )
               : IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () {
-              Get.put(ChatController());
-              controller.toggleChat();
-              controller.updateUnreadMessageCount(0);
-            },
-          ),
-          if (hasUnread)
+                  icon: const Icon(Icons.chat),
+                  onPressed: () {
+                    Get.put(ChatController());
+                    controller.toggleChat();
+                    controller.updateUnreadMessageCount(0);
+                  },
+                ),
+          if (unreadCount > 0)
             Positioned(
-              right: 8,
-              top: 8,
+              right: 2,
+              top: 2,
               child: Container(
-                width: 10,
-                height: 10,
+                padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                child: Text(
+                  unreadCount > 9 ? '9+' : '$unreadCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -828,10 +835,7 @@ class ParentView extends GetView<ParentController> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey[200]!,
-                      width: 1,
-                    ),
+                    bottom: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
                 ),
                 child: Row(
