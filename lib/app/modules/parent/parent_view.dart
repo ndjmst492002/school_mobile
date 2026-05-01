@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/models/parent_models.dart';
+import '../../data/providers/api_provider.dart';
 import 'parent_controller.dart';
 import '../chat/chat_view.dart';
 import '../chat/chat_controller.dart';
@@ -17,14 +18,26 @@ class ParentView extends GetView<ParentController> {
 
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Parent Dashboard'),
-          actions: [
-            _buildChatIcon(),
-            _buildNotificationBell(),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: controller.logout,
+          title: Obx(
+            () => Row(
+              children: [
+                Text('Parent Dashboard'),
+                const SizedBox(width: 8),
+                Text(
+                  ', ${controller.userName}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
             ),
+          ),
+          actions: [
+            _buildNotificationBell(),
+            _buildChatButton(),
+            _buildLanguageToggle(),
+            _buildProfileMenu(),
           ],
         ),
         body: controller.showChat.value
@@ -44,30 +57,166 @@ class ParentView extends GetView<ParentController> {
       onRefresh: controller.loadData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx(
-              () => Text(
-                'Welcome, ${controller.userName}',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _buildStatsCards(),
-            const SizedBox(height: 24),
-            _buildAnnouncementsCard(),
-            const SizedBox(height: 24),
-            _buildAttendanceCard(),
-            const SizedBox(height: 24),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _buildChildrenCard()),
-                const SizedBox(width: 16),
-                Expanded(child: _buildImportantInfoCard()),
-              ],
+            const SizedBox(height: 16),
+            _buildTabs(),
+            const SizedBox(height: 8),
+            _buildTabContent(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabs() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _buildTabButton('my-children', 'My Children'),
+          _buildTabButton('announcements', 'Announcements'),
+          _buildTabButton('attendance-records', 'Attendance'),
+          _buildTabButton('predictions', 'Predictions'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String tabId, String label) {
+    return Obx(() {
+      final isActive = controller.activeTab.value == tabId;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: ChoiceChip(
+          label: Text(label),
+          selected: isActive,
+          onSelected: (selected) {
+            if (selected) controller.setActiveTab(tabId);
+          },
+          selectedColor: Colors.blue,
+          labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black),
+        ),
+      );
+    });
+  }
+
+  Widget _buildTabContent() {
+    return Obx(() {
+      switch (controller.activeTab.value) {
+        case 'my-children':
+          return _buildMyChildrenTab();
+        case 'announcements':
+          return _buildAnnouncementsTab();
+        case 'attendance-records':
+          return _buildAttendanceTab();
+        case 'predictions':
+          return _buildPredictionsTab();
+        default:
+          return _buildMyChildrenTab();
+      }
+    });
+  }
+
+  Widget _buildMyChildrenTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: _buildChildrenCard()),
+          const SizedBox(width: 16),
+          Expanded(child: _buildImportantInfoCard()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnnouncementsTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildChildFilter(
+            controller.selectedChildForAnnouncements.value,
+            (v) => controller.setSelectedChildForAnnouncements(v),
+          ),
+          const SizedBox(height: 16),
+          _buildAnnouncementsCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttendanceTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildChildFilter(
+            controller.selectedChildForAttendance.value,
+            (v) => controller.setSelectedChildForAttendance(v),
+          ),
+          const SizedBox(height: 16),
+          _buildAttendanceCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPredictionsTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'AI Predictions',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Predict student dropout/graduation outcomes',
+            style: TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          _buildPredictionsCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChildFilter(String selectedValue, Function(String) onChanged) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Obx(
+        () => Row(
+          children: [
+            ChoiceChip(
+              label: const Text('All'),
+              selected: selectedValue.isEmpty,
+              onSelected: (s) {
+                if (s) onChanged('');
+              },
+            ),
+            const SizedBox(width: 8),
+            ...controller.children.map(
+              (c) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(c.fullName),
+                  selected: selectedValue == c.fullName,
+                  onSelected: (s) {
+                    if (s) onChanged(c.fullName);
+                  },
+                ),
+              ),
             ),
           ],
         ),
@@ -77,51 +226,57 @@ class ParentView extends GetView<ParentController> {
 
   Widget _buildStatsCards() {
     return Obx(
-      () => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          SizedBox(
-            width: (MediaQuery.of(Get.context!).size.width - 40) / 2,
-            child: _buildStatCard(
-              'My Children',
-              '${controller.children.length}',
-              'Enrolled students',
-              Colors.blue,
-              Icons.group,
+      () => SizedBox(
+        height: 100,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          children: [
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'My Children',
+                '${controller.children.length}',
+                'Enrolled students',
+                Colors.blue,
+                Icons.group,
+              ),
             ),
-          ),
-          SizedBox(
-            width: (MediaQuery.of(Get.context!).size.width - 40) / 2,
-            child: _buildStatCard(
-              'Average Progress',
-              controller.children.isNotEmpty ? 'Good' : 'N/A',
-              'Overall status',
-              Colors.green,
-              Icons.trending_up,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Average Progress',
+                controller.children.isNotEmpty ? 'Good' : 'N/A',
+                'Overall status',
+                Colors.green,
+                Icons.trending_up,
+              ),
             ),
-          ),
-          SizedBox(
-            width: (MediaQuery.of(Get.context!).size.width - 40) / 2,
-            child: _buildStatCard(
-              'Enrolled Classes',
-              controller.children.isNotEmpty ? 'Active' : 'N/A',
-              'Class status',
-              Colors.purple,
-              Icons.menu_book,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Enrolled Classes',
+                controller.children.isNotEmpty ? 'Active' : 'N/A',
+                'Class status',
+                Colors.purple,
+                Icons.menu_book,
+              ),
             ),
-          ),
-          SizedBox(
-            width: (MediaQuery.of(Get.context!).size.width - 40) / 2,
-            child: _buildStatCard(
-              'Notifications',
-              '${controller.children.isNotEmpty ? controller.children.length : 0}',
-              'Children linked',
-              Colors.orange,
-              Icons.notifications,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Notifications',
+                '${controller.children.isNotEmpty ? controller.children.length : 0}',
+                'Children linked',
+                Colors.orange,
+                Icons.notifications,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -622,22 +777,24 @@ class ParentView extends GetView<ParentController> {
     }
   }
 
-  Widget _buildChatIcon() {
+  Widget _buildChatButton() {
     return Obx(() {
       final unreadCount = controller.unreadMessageCount.value;
       return Stack(
         children: [
           controller.showChat.value
-              ? IconButton(
-                  icon: const Icon(Icons.close),
+              ? TextButton.icon(
+                  icon: const Icon(Icons.close, size: 18),
+                  label: const Text('Chat', style: TextStyle(fontSize: 12)),
                   onPressed: () {
                     Get.delete<ChatController>();
                     controller.toggleChat();
                     controller.updateUnreadMessageCount(0);
                   },
                 )
-              : IconButton(
-                  icon: const Icon(Icons.chat),
+              : TextButton.icon(
+                  icon: const Icon(Icons.chat, size: 18),
+                  label: const Text('Chat', style: TextStyle(fontSize: 12)),
                   onPressed: () {
                     Get.put(ChatController());
                     controller.toggleChat();
@@ -646,7 +803,7 @@ class ParentView extends GetView<ParentController> {
                 ),
           if (unreadCount > 0)
             Positioned(
-              right: 2,
+              right: 50,
               top: 2,
               child: Container(
                 padding: const EdgeInsets.all(4),
@@ -654,12 +811,12 @@ class ParentView extends GetView<ParentController> {
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
-                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                 child: Text(
                   unreadCount > 9 ? '9+' : '$unreadCount',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -667,6 +824,18 @@ class ParentView extends GetView<ParentController> {
               ),
             ),
         ],
+      );
+    });
+  }
+
+  Widget _buildLanguageToggle() {
+    return Obx(() {
+      return TextButton(
+        onPressed: controller.toggleLanguage,
+        child: Text(
+          controller.currentLanguage == 'en' ? 'ع' : 'EN',
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
       );
     });
   }
@@ -930,6 +1099,274 @@ class ParentView extends GetView<ParentController> {
         ),
       ),
       barrierDismissible: true,
+    );
+  }
+
+  Widget _buildPredictionsCard() {
+    return Obx(() {
+      if (controller.children.isEmpty)
+        return const Text('No children linked to your account yet');
+
+      final predictionsMap = controller.predictions;
+      final predictingId = controller.predicting.value;
+
+      return ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 400),
+        child: GridView.builder(
+          shrinkWrap: true,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: controller.children.length,
+          itemBuilder: (ctx, i) {
+            final child = controller.children[i];
+            final prediction = predictionsMap.containsKey(child.id)
+                ? predictionsMap[child.id]
+                : null;
+            final isPredicting = predictingId == child.id;
+
+            return Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    child.fullName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (prediction == null)
+                    Expanded(
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: isPredicting
+                              ? null
+                              : () => controller.predictStudent(child.id),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          child: Text(
+                            isPredicting ? '...' : 'Predict',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (isPredicting)
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else ...[
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: prediction.prediction == 'Dropout'
+                            ? Colors.red[50]
+                            : Colors.green[50],
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            prediction.prediction,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: prediction.prediction == 'Dropout'
+                                  ? Colors.red[700]
+                                  : Colors.green[700],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${(prediction.confidence * 100).toStringAsFixed(0)}%',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildFeatureRow(
+                              'Absences',
+                              '${prediction.featuresUsed['total_absences'] ?? 0}',
+                            ),
+                            _buildFeatureRow(
+                              'Absence Rate',
+                              '${((prediction.featuresUsed['absence_rate'] ?? 0.0) * 100).toStringAsFixed(0)}%',
+                            ),
+                            _buildFeatureRow(
+                              'Exercises',
+                              '${prediction.featuresUsed['exercises_completed'] ?? 0}',
+                            ),
+                            _buildFeatureRow(
+                              'Completion',
+                              '${((prediction.featuresUsed['exercise_completion_rate'] ?? 0.0) * 100).toStringAsFixed(0)}%',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildFeatureRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileMenu() {
+    final auth = Get.find<AuthService>();
+    return Obx(
+      () => PopupMenuButton<String>(
+        icon: CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.blue,
+          child: Text(
+            controller.userName.isNotEmpty
+                ? controller.userName[0].toUpperCase()
+                : 'U',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        onSelected: (v) {
+          if (v == 'logout')
+            controller.logout();
+          else if (v == 'teacher')
+            controller.switchToRole('TEACHER');
+          else if (v == 'student')
+            controller.switchToRole('STUDENT');
+          else if (v == 'admin')
+            controller.switchToRole('ADMIN');
+          else if (v == 'dark_mode')
+            controller.toggleDarkMode();
+          else if (v == 'language')
+            controller.toggleLanguage();
+        },
+        itemBuilder: (ctx) => [
+          PopupMenuItem(
+            enabled: false,
+            child: Text(
+              controller.userName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: 'dark_mode',
+            child: Row(
+              children: [
+                Icon(
+                  controller.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 'language',
+            child: Row(
+              children: [
+                const Icon(Icons.language, size: 20),
+                const SizedBox(width: 8),
+                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+              ],
+            ),
+          ),
+          if (auth.hasMultipleRoles) ...[
+            const PopupMenuDivider(),
+            if (auth.roles.contains('TEACHER'))
+              const PopupMenuItem(
+                value: 'teacher',
+                child: Row(
+                  children: [
+                    Icon(Icons.school, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Teacher'),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('STUDENT'))
+              const PopupMenuItem(
+                value: 'student',
+                child: Row(
+                  children: [
+                    Icon(Icons.person, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Student'),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('ADMIN'))
+              const PopupMenuItem(
+                value: 'admin',
+                child: Row(
+                  children: [
+                    Icon(Icons.admin_panel_settings, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Admin'),
+                  ],
+                ),
+              ),
+          ],
+          const PopupMenuDivider(),
+          const PopupMenuItem(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(Icons.logout, size: 20, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Logout', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

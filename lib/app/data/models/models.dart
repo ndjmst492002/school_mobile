@@ -231,3 +231,52 @@ class AppNotification {
     );
   }
 }
+
+class Skill {
+  final int id;
+  final String name;
+
+  Skill({required this.id, required this.name});
+
+  factory Skill.fromJson(Map<String, dynamic> json) {
+    return Skill(id: json['id'] ?? 0, name: json['name'] ?? '');
+  }
+}
+
+class EnrollmentRequest {
+  final int id;
+  final int student;
+  final String studentName;
+  final int classObj;
+  final String className;
+  final String teacherName;
+  final String status;
+  final String requestedAt;
+  final String? respondedAt;
+
+  EnrollmentRequest({
+    required this.id,
+    required this.student,
+    required this.studentName,
+    required this.classObj,
+    required this.className,
+    required this.teacherName,
+    required this.status,
+    required this.requestedAt,
+    this.respondedAt,
+  });
+
+  factory EnrollmentRequest.fromJson(Map<String, dynamic> json) {
+    return EnrollmentRequest(
+      id: json['id'] ?? 0,
+      student: json['student'] ?? 0,
+      studentName: json['student_name'] ?? '',
+      classObj: json['class_obj'] ?? 0,
+      className: json['class_name'] ?? '',
+      teacherName: json['teacher_name'] ?? '',
+      status: json['status'] ?? 'PENDING',
+      requestedAt: json['requested_at'] ?? '',
+      respondedAt: json['responded_at'],
+    );
+  }
+}

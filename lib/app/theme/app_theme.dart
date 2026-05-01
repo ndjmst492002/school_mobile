@@ -94,4 +94,86 @@ class AppTheme {
       dividerTheme: const DividerThemeData(color: border, thickness: 1),
     );
   }
+
+  static const Color darkPrimary = Color(0xFF4B4B4B);
+  static const Color darkBackground = Color(0xFF1A1A1A);
+  static const Color darkSurface = Color(0xFF2D2D2D);
+  static const Color darkForeground = Color(0xFFF5F5F5);
+  static const Color darkCard = Color(0xFF2D2D2D);
+  static const Color darkBorder = Color(0xFF404040);
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.dark(
+        primary: Colors.blue,
+        onPrimary: Colors.white,
+        secondary: Colors.blueGrey,
+        onSecondary: Colors.white,
+        surface: darkSurface,
+        onSurface: darkForeground,
+        error: destructive,
+        outline: darkBorder,
+      ),
+      scaffoldBackgroundColor: darkBackground,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF2D2D2D),
+        foregroundColor: darkForeground,
+        elevation: 1,
+        titleTextStyle: TextStyle(
+          color: darkForeground,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: darkCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: darkBorder),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkCard,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: darkBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: darkBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.blue, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: darkForeground,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          side: const BorderSide(color: darkBorder),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: Colors.blue),
+      ),
+      dividerTheme: const DividerThemeData(color: darkBorder, thickness: 1),
+    );
+  }
 }

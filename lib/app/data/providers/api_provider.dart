@@ -104,6 +104,7 @@ class AuthService extends GetxService {
   final _isAuthenticated = false.obs;
   final _user = Rxn<Map<String, dynamic>>();
   final _role = 'STUDENT'.obs;
+  final _roles = <String>[].obs;
   final _isLoading = false.obs;
   final _error = Rxn<String>();
 
@@ -112,16 +113,25 @@ class AuthService extends GetxService {
   bool get isLoading => _isLoading.value;
   String? get error => _error.value;
   String get role => _role.value;
+  List<String> get roles => _roles.toList();
+  bool get hasMultipleRoles => _roles.length > 1;
   int get userId => _user.value?['id'] ?? 0;
   String get userEmail => _user.value?['email'] ?? '';
   String get userFullName =>
       _user.value?['full_name'] ?? _user.value?['email'] ?? '';
 
-  void setUser(Map<String, dynamic>? userData, {String? role}) {
+  void setUser(
+    Map<String, dynamic>? userData, {
+    String? role,
+    List<String>? roles,
+  }) {
     _user.value = userData;
     _isAuthenticated.value = userData != null;
     if (role != null) {
       _role.value = role;
+    }
+    if (roles != null && roles.isNotEmpty) {
+      _roles.value = roles;
     }
   }
 
@@ -135,6 +145,12 @@ class AuthService extends GetxService {
 
   void clearError() {
     _error.value = null;
+  }
+
+  void switchRole(String newRole) {
+    if (_roles.contains(newRole)) {
+      _role.value = newRole;
+    }
   }
 
   void logout() {

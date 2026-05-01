@@ -67,6 +67,10 @@ class TeacherApi {
     return '${ApiProvider.baseUrl}/users/submissions/$submissionId/download/';
   }
 
+  String downloadExerciseUrl(int exerciseId) {
+    return '${ApiProvider.baseUrl}/users/exercises/$exerciseId/download/';
+  }
+
   Future<Submission> gradeSubmission(
     int submissionId,
     double grade,
@@ -122,14 +126,42 @@ class TeacherApi {
     return data.map((json) => AttendanceRecord.fromJson(json)).toList();
   }
 
-  Future<Map<String, dynamic>> getUnreadCounts() async {
-    final response = await _api.get('/users/chat/unread-count/');
-    return response.data as Map<String, dynamic>;
-  }
-
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    final data = response.data as Map<String, dynamic>;
-    return data['total_unread'] ?? 0;
+    return response.data['count'] ?? 0;
+  }
+
+  Future<List<AppNotification>> getNotifications() async {
+    final response = await _api.get('/users/notifications/');
+    final List<dynamic> data = response.data;
+    return data.map((json) => AppNotification.fromJson(json)).toList();
+  }
+
+  Future<int> getUnreadNotificationCount() async {
+    final response = await _api.get('/users/notifications/unread-count/');
+    return response.data['count'] ?? 0;
+  }
+
+  Future<void> markNotificationAsRead(int notificationId) async {
+    await _api.post('/users/notifications/$notificationId/read/');
+  }
+
+  Future<List<EnrollmentRequest>> getEnrollments() async {
+    final response = await _api.get('/users/teacher/enrollments/');
+    final List<dynamic> data = response.data;
+    return data.map((json) => EnrollmentRequest.fromJson(json)).toList();
+  }
+
+  Future<void> respondToEnrollment(int enrollmentId, String action) async {
+    await _api.post(
+      '/users/teacher/enrollments/$enrollmentId/respond/',
+      data: {'action': action},
+    );
+  }
+
+  Future<List<Skill>> getSkills() async {
+    final response = await _api.get('/users/skills/');
+    final List<dynamic> data = response.data;
+    return data.map((json) => Skill.fromJson(json)).toList();
   }
 }

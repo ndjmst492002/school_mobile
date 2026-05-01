@@ -8,6 +8,7 @@ import '../../data/services/auth_api.dart';
 import '../../data/services/teacher_api.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
+import '../../../main.dart';
 
 class TeacherController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -18,6 +19,9 @@ class TeacherController extends GetxController {
   final submissions = <Submission>[].obs;
   final announcements = <Announcement>[].obs;
   final attendance = <AttendanceRecord>[].obs;
+  final notifications = <AppNotification>[].obs;
+  final enrollments = <EnrollmentRequest>[].obs;
+  final skills = <Skill>[].obs;
   final isLoading = true.obs;
   final showUploadForm = false.obs;
   final showAnnouncementForm = false.obs;
@@ -30,7 +34,10 @@ class TeacherController extends GetxController {
   final isSavingAttendance = false.obs;
   final selectedFile = Rxn<PlatformFile>();
   final unreadMessageCount = 0.obs;
+  final unreadNotificationCount = 0.obs;
+  final respondingEnrollment = Rxn<int>();
 
+  final activeTab = 'my-classes'.obs;
   final uploadClassId = ''.obs;
   final announcementClassId = ''.obs;
   final attendanceClassId = ''.obs;
@@ -38,6 +45,7 @@ class TeacherController extends GetxController {
   final attendanceRecords = <int, String>{}.obs;
   final isLoadingAttendance = false.obs;
   final showLoadStudentsButton = true.obs;
+  final selectedSkills = <int>[].obs;
 
   final uploadTitleController = TextEditingController();
   final uploadDescController = TextEditingController();
@@ -48,7 +56,11 @@ class TeacherController extends GetxController {
   final feedbackController = TextEditingController();
 
   AuthService get _auth => Get.find<AuthService>();
+  ThemeService get _theme => Get.find<ThemeService>();
   String get userName => _auth.userFullName;
+
+  bool get isDarkMode => _theme.isDarkMode;
+  String get currentLanguage => _theme.locale.languageCode;
 
   int get totalStudents =>
       classes.fold(0, (sum, cls) => sum + cls.studentCount);
@@ -60,6 +72,37 @@ class TeacherController extends GetxController {
     attendanceDateController.text = DateTime.now().toString().split(' ')[0];
     loadData();
     loadUnreadMessageCount();
+    loadNotifications();
+  }
+
+  void setActiveTab(String tab) {
+    activeTab.value = tab;
+  }
+
+  void toggleLanguage() {
+    _theme.toggleLanguage();
+  }
+
+  void toggleDarkMode() {
+    _theme.toggleTheme();
+  }
+
+  void toggleSkill(int skillId) {
+    if (selectedSkills.contains(skillId)) {
+      selectedSkills.remove(skillId);
+    } else {
+      selectedSkills.add(skillId);
+    }
+  }
+
+  void addSkill(int skillId) {
+    if (!selectedSkills.contains(skillId)) {
+      selectedSkills.add(skillId);
+    }
+  }
+
+  void removeSkill(int skillId) {
+    selectedSkills.remove(skillId);
   }
 
   @override
@@ -84,13 +127,17 @@ class TeacherController extends GetxController {
         _teacherApi.getExercises(),
         _teacherApi.getSubmissions(),
         _teacherApi.getAnnouncements(),
+        _teacherApi.getEnrollments(),
+        _teacherApi.getSkills(),
       ]);
       classes.value = results[0] as List<ClassModel>;
       exercises.value = results[1] as List<Exercise>;
       submissions.value = results[2] as List<Submission>;
       announcements.value = results[3] as List<Announcement>;
+      enrollments.value = results[4] as List<EnrollmentRequest>;
+      skills.value = results[5] as List<Skill>;
       debugPrint(
-        'Loaded ${classes.length} classes, ${exercises.length} exercises',
+        'Loaded ${classes.length} classes, ${exercises.length} exercises, ${enrollments.length} enrollments',
       );
     } catch (e) {
       debugPrint('Error loading data: $e');
@@ -101,6 +148,20 @@ class TeacherController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> respondToEnrollment(int enrollmentId, String action) async {
+    respondingEnrollment.value = enrollmentId;
+    try {
+      await _teacherApi.respondToEnrollment(enrollmentId, action);
+      loadData();
+      Get.snackbar('Success', 'Enrollment ${action}ed successfully');
+    } catch (e) {
+      debugPrint('Error responding to enrollment: $e');
+      Get.snackbar('Error', 'Failed to respond to enrollment');
+    } finally {
+      respondingEnrollment.value = null;
     }
   }
 
@@ -142,6 +203,43 @@ class TeacherController extends GetxController {
     debugPrint('updateUnreadMessageCount called with: $count');
     unreadMessageCount.value = count.clamp(0, 999);
     debugPrint('unreadMessageCount.value is now: ${unreadMessageCount.value}');
+  }
+
+  Future<void> loadNotifications() async {
+    try {
+      final results = await Future.wait([
+        _teacherApi.getNotifications(),
+        _teacherApi.getUnreadNotificationCount(),
+      ]);
+      notifications.value = results[0] as List<AppNotification>;
+      unreadNotificationCount.value = results[1] as int;
+    } catch (e) {
+      debugPrint('Error loading notifications: $e');
+    }
+  }
+
+  void markAllNotificationsAsRead() {
+    for (var notification in notifications) {
+      if (!notification.isRead) {
+        _teacherApi.markNotificationAsRead(notification.id).catchError((e) {
+          debugPrint('Error marking notification as read: $e');
+        });
+      }
+    }
+    unreadNotificationCount.value = 0;
+    notifications.value = notifications
+        .map(
+          (n) => AppNotification(
+            id: n.id,
+            recipient: n.recipient,
+            type: n.type,
+            title: n.title,
+            message: n.message,
+            createdAt: n.createdAt,
+            isRead: true,
+          ),
+        )
+        .toList();
   }
 
   void toggleAttendanceForm() {
@@ -374,6 +472,33 @@ class TeacherController extends GetxController {
     }
   }
 
+  String downloadExerciseUrl(int exerciseId) {
+    return _teacherApi.downloadExerciseUrl(exerciseId);
+  }
+
+  Future<void> downloadExercise(int exerciseId) async {
+    final url = downloadExerciseUrl(exerciseId);
+    debugPrint('Download Exercise URL: $url');
+
+    final exercise = exercises.firstWhereOrNull((e) => e.id == exerciseId);
+    if (exercise == null) {
+      Get.snackbar('Error', 'Exercise not found');
+      return;
+    }
+
+    if (exercise.fileUrl == null) {
+      Get.snackbar('Error', 'No file attached to this exercise');
+      return;
+    }
+
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar('Error', 'Cannot open download link');
+    }
+  }
+
   Future<void> logout() async {
     try {
       await _authApi.logout();
@@ -382,5 +507,22 @@ class TeacherController extends GetxController {
     }
     _auth.logout();
     Get.offAllNamed(AppRoutes.login);
+  }
+
+  void switchToRole(String role) {
+    _auth.switchRole(role);
+    switch (role.toUpperCase()) {
+      case 'PARENT':
+        Get.offAllNamed(AppRoutes.parent);
+        break;
+      case 'STUDENT':
+        Get.offAllNamed(AppRoutes.student);
+        break;
+      case 'ADMIN':
+        Get.offAllNamed(AppRoutes.admin);
+        break;
+      default:
+        break;
+    }
   }
 }

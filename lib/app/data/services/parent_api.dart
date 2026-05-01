@@ -41,7 +41,11 @@ class ParentApi {
 
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    final data = response.data as Map<String, dynamic>;
-    return data['total_unread'] ?? 0;
+    return response.data['count'] ?? 0;
+  }
+
+  Future<PredictionResult> predictStudent(int studentId) async {
+    final response = await _api.get('/users/predict/student/$studentId/');
+    return PredictionResult.fromJson(response.data);
   }
 }

@@ -5,6 +5,39 @@ import 'app/theme/app_theme.dart';
 import 'app/routes/app_routes.dart';
 import 'app/initial_binding.dart';
 
+class ThemeService extends GetxService {
+  final _isDarkMode = false.obs;
+  final _locale = const Locale('en').obs;
+
+  bool get isDarkMode => _isDarkMode.value;
+  Locale get locale => _locale.value;
+
+  void toggleTheme() {
+    _isDarkMode.value = !_isDarkMode.value;
+    Get.changeThemeMode(_isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  void toggleLanguage() {
+    final currentCode = _locale.value.languageCode;
+    if (currentCode == 'en') {
+      _locale.value = const Locale('ar');
+    } else {
+      _locale.value = const Locale('en');
+    }
+    Get.updateLocale(_locale.value);
+  }
+
+  void setDarkMode(bool value) {
+    _isDarkMode.value = value;
+    Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  void setLocale(Locale locale) {
+    _locale.value = locale;
+    Get.updateLocale(locale);
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -14,6 +47,7 @@ void main() async {
 }
 
 Future<void> initServices() async {
+  Get.put(ThemeService());
   Get.put(AuthService());
   await Get.putAsync(() => ApiProvider().init());
   InitialBinding().dependencies();
@@ -24,13 +58,20 @@ class SchoolMobileApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Smart School',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      initialRoute: '/',
-      getPages: AppRoutes.pages,
-      home: const HomePage(),
+    final themeService = Get.find<ThemeService>();
+    return Obx(
+      () => GetMaterialApp(
+        title: 'Smart School',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeService.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+        locale: themeService.locale,
+        fallbackLocale: const Locale('en'),
+        initialRoute: '/',
+        getPages: AppRoutes.pages,
+        home: const HomePage(),
+      ),
     );
   }
 }

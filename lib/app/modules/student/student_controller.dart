@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart'; // ADD THIS
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/student_api.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
+import '../../../main.dart';
 
 class StudentController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -24,10 +25,15 @@ class StudentController extends GetxController {
   final selectedExercise = Rxn<Exercise>();
   final selectedSubmitFile = Rxn<PlatformFile>();
   final isSubmitting = false.obs;
+  final activeTab = 'class-enrollment'.obs;
 
   AuthService get _auth => Get.find<AuthService>();
+  ThemeService get _theme => Get.find<ThemeService>();
   String get userName => _auth.userFullName;
   int get userId => _auth.userId;
+
+  bool get isDarkMode => _theme.isDarkMode;
+  String get currentLanguage => _theme.locale.languageCode;
 
   int get unreadNotificationCount =>
       notifications.where((n) => !n.isRead).length;
@@ -38,6 +44,35 @@ class StudentController extends GetxController {
 
   int get presentCount => attendance.where((a) => a.status == 'PRESENT').length;
   int get absentCount => attendance.where((a) => a.status == 'ABSENT').length;
+
+  void toggleLanguage() {
+    _theme.toggleLanguage();
+  }
+
+  void setActiveTab(String tab) {
+    activeTab.value = tab;
+  }
+
+  void toggleDarkMode() {
+    _theme.toggleTheme();
+  }
+
+  void switchToRole(String role) {
+    _auth.switchRole(role);
+    switch (role.toUpperCase()) {
+      case 'TEACHER':
+        Get.offAllNamed(AppRoutes.teacher);
+        break;
+      case 'PARENT':
+        Get.offAllNamed(AppRoutes.parent);
+        break;
+      case 'ADMIN':
+        Get.offAllNamed(AppRoutes.admin);
+        break;
+      default:
+        break;
+    }
+  }
 
   @override
   void onInit() {

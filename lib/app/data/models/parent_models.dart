@@ -95,3 +95,29 @@ class ChildAttendance {
     );
   }
 }
+
+class PredictionResult {
+  final int studentId;
+  final String studentName;
+  final String prediction;
+  final double confidence;
+  final Map<String, dynamic> featuresUsed;
+
+  PredictionResult({
+    required this.studentId,
+    required this.studentName,
+    required this.prediction,
+    required this.confidence,
+    required this.featuresUsed,
+  });
+
+  factory PredictionResult.fromJson(Map<String, dynamic> json) {
+    return PredictionResult(
+      studentId: json['student_id'] ?? 0,
+      studentName: json['student_name'] ?? '',
+      prediction: json['prediction'] ?? '',
+      confidence: (json['confidence'] ?? 0.0).toDouble(),
+      featuresUsed: json['features_used'] ?? {},
+    );
+  }
+}

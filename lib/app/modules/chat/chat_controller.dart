@@ -171,9 +171,7 @@ class ChatController extends GetxController {
 
       if (type == 'message_sent' || type == 'new_message') {
         final msgData = decoded['message'];
-        final msg = ChatMessage.fromJson(
-          Map<String, dynamic>.from(msgData as Map),
-        );
+        final msg = ChatMessage.fromJson(msgData);
 
         final contactUserId = selectedContact.value?.userId;
 
@@ -192,9 +190,8 @@ class ChatController extends GetxController {
           }
         }
       }
-    } catch (e, stack) {
+    } catch (e) {
       debugPrint('Error handling WebSocket message: $e');
-      debugPrint('Stack: $stack');
     }
   }
 
@@ -224,10 +221,7 @@ class ChatController extends GetxController {
       );
       _notifyParentController();
     } else {
-      debugPrint(
-        'Contact not found in contacts list! Adding unread count anyway',
-      );
-      _notifyParentController();
+      debugPrint('Contact not found in contacts list!');
     }
   }
 
@@ -236,42 +230,25 @@ class ChatController extends GetxController {
       0,
       (sum, c) => sum + (c.unreadCount ?? 0),
     );
-    debugPrint('=== _notifyParentController ===');
     debugPrint('Total unread count: $totalUnread');
-    debugPrint(
-      'All contacts with unread: ${contacts.map((c) => '${c.fullName}(${c.userId}):${c.unreadCount}').toList()}',
-    );
-    debugPrint(
-      'TeacherController registered: ${Get.isRegistered<TeacherController>()}',
-    );
-    debugPrint(
-      'ParentController registered: ${Get.isRegistered<ParentController>()}',
-    );
 
     if (Get.isRegistered<TeacherController>()) {
       try {
         final teacherController = Get.find<TeacherController>();
         teacherController.updateUnreadMessageCount(totalUnread);
-        debugPrint('Updated TeacherController unread count to: $totalUnread');
-        debugPrint(
-          'TeacherController unreadMessageCount after update: ${teacherController.unreadMessageCount.value}',
-        );
+        debugPrint('Updated TeacherController unread count');
       } catch (e) {
         debugPrint('TeacherController error: $e');
       }
-    } else {
-      debugPrint('TeacherController is NOT registered!');
     }
     if (Get.isRegistered<ParentController>()) {
       try {
         final parentController = Get.find<ParentController>();
         parentController.updateUnreadMessageCount(totalUnread);
-        debugPrint('Updated ParentController unread count to: $totalUnread');
+        debugPrint('Updated ParentController unread count');
       } catch (e) {
         debugPrint('ParentController error: $e');
       }
-    } else {
-      debugPrint('ParentController is NOT registered!');
     }
   }
 

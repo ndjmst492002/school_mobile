@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/models/models.dart';
+import '../../data/providers/api_provider.dart';
 import 'student_controller.dart';
 
 class StudentView extends GetView<StudentController> {
@@ -16,31 +17,29 @@ class StudentView extends GetView<StudentController> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Student Dashboard'),
-          actions: [
-            _buildNotificationBell(),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: controller.logout,
-            ),
-          ],
+          actions: [_buildNotificationBell(), _buildProfileMenu()],
         ),
         body: RefreshIndicator(
           onRefresh: controller.loadData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Obx(
+                  () => Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Welcome, ${controller.userName}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
                 _buildStatsCards(),
-                const SizedBox(height: 24),
-                _buildAnnouncementsCard(),
-                const SizedBox(height: 24),
-                _buildAttendanceCard(),
-                const SizedBox(height: 24),
-                _buildClassesCard(),
-                const SizedBox(height: 24),
-                _buildExercisesCard(),
+                const SizedBox(height: 16),
+                _buildTabs(),
+                const SizedBox(height: 8),
+                _buildTabContent(),
                 _buildSubmitDialog(),
               ],
             ),
@@ -52,7 +51,7 @@ class StudentView extends GetView<StudentController> {
 
   Widget _buildStatsCards() {
     return Obx(
-          () => Row(
+      () => Row(
         children: [
           Expanded(
             child: _buildStatCard(
@@ -210,7 +209,7 @@ class StudentView extends GetView<StudentController> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  _formatDateTime(ann.createdAt), // Changed from _formatDate to _formatDateTime
+                                  _formatDate(ann.createdAt),
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: Colors.grey[600],
@@ -482,9 +481,9 @@ class StudentView extends GetView<StudentController> {
                             SizedBox(
                               height: 36,
                               child: Obx(
-                                    () => ElevatedButton(
+                                () => ElevatedButton(
                                   onPressed:
-                                  controller.enrolling.value == cls.id
+                                      controller.enrolling.value == cls.id
                                       ? null
                                       : () => controller.enrollInClass(cls.id),
                                   style: ElevatedButton.styleFrom(
@@ -814,10 +813,10 @@ class StudentView extends GetView<StudentController> {
                     children: [
                       Expanded(
                         child: Obx(
-                              () => ElevatedButton(
+                          () => ElevatedButton(
                             onPressed:
-                            controller.selectedSubmitFile.value == null ||
-                                controller.isSubmitting.value
+                                controller.selectedSubmitFile.value == null ||
+                                    controller.isSubmitting.value
                                 ? null
                                 : controller.submitExercise,
                             style: ElevatedButton.styleFrom(
@@ -931,6 +930,7 @@ class StudentView extends GetView<StudentController> {
       );
     });
   }
+
   void _showNotificationsDialog() {
     controller.markAllNotificationsAsRead();
     Get.dialog(
@@ -949,10 +949,7 @@ class StudentView extends GetView<StudentController> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey[200]!,
-                      width: 1,
-                    ),
+                    bottom: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
                 ),
                 child: Row(
@@ -1048,5 +1045,170 @@ class StudentView extends GetView<StudentController> {
       ),
       barrierDismissible: true,
     );
+  }
+
+  Widget _buildProfileMenu() {
+    final auth = Get.find<AuthService>();
+    return Obx(
+      () => PopupMenuButton<String>(
+        icon: CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.blue,
+          child: Text(
+            controller.userName.isNotEmpty
+                ? controller.userName[0].toUpperCase()
+                : 'U',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        onSelected: (v) {
+          if (v == 'logout')
+            controller.logout();
+          else if (v == 'parent')
+            controller.switchToRole('PARENT');
+          else if (v == 'teacher')
+            controller.switchToRole('TEACHER');
+          else if (v == 'admin')
+            controller.switchToRole('ADMIN');
+          else if (v == 'dark_mode')
+            controller.toggleDarkMode();
+          else if (v == 'language')
+            controller.toggleLanguage();
+        },
+        itemBuilder: (ctx) => [
+          PopupMenuItem(
+            enabled: false,
+            child: Text(
+              controller.userName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: 'dark_mode',
+            child: Row(
+              children: [
+                Icon(
+                  controller.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 'language',
+            child: Row(
+              children: [
+                const Icon(Icons.language, size: 20),
+                const SizedBox(width: 8),
+                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+              ],
+            ),
+          ),
+          if (auth.hasMultipleRoles) ...[
+            const PopupMenuDivider(),
+            if (auth.roles.contains('PARENT'))
+              const PopupMenuItem(
+                value: 'parent',
+                child: Row(
+                  children: [
+                    Icon(Icons.people, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Parent'),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('TEACHER'))
+              const PopupMenuItem(
+                value: 'teacher',
+                child: Row(
+                  children: [
+                    Icon(Icons.school, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Teacher'),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('ADMIN'))
+              const PopupMenuItem(
+                value: 'admin',
+                child: Row(
+                  children: [
+                    Icon(Icons.admin_panel_settings, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Admin'),
+                  ],
+                ),
+              ),
+          ],
+          const PopupMenuDivider(),
+          const PopupMenuItem(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(Icons.logout, size: 20, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Logout', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabs() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _buildTabButton('class-enrollment', 'Classes'),
+          _buildTabButton('announcements', 'Announcements'),
+          _buildTabButton('available-exercises', 'Exercises'),
+          _buildTabButton('my-attendance', 'Attendance'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String tabId, String label) {
+    return Obx(() {
+      final isActive = controller.activeTab.value == tabId;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: ChoiceChip(
+          label: Text(label),
+          selected: isActive,
+          onSelected: (selected) {
+            if (selected) controller.setActiveTab(tabId);
+          },
+          selectedColor: Colors.blue,
+          labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black),
+        ),
+      );
+    });
+  }
+
+  Widget _buildTabContent() {
+    return Obx(() {
+      switch (controller.activeTab.value) {
+        case 'class-enrollment':
+          return _buildClassesCard();
+        case 'announcements':
+          return _buildAnnouncementsCard();
+        case 'available-exercises':
+          return _buildExercisesCard();
+        case 'my-attendance':
+          return _buildAttendanceCard();
+        default:
+          return _buildClassesCard();
+      }
+    });
   }
 }

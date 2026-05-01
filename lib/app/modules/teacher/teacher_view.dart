@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'teacher_controller.dart';
 import '../chat/chat_view.dart';
 import '../chat/chat_controller.dart';
+import '../../data/providers/api_provider.dart';
 
 class TeacherView extends GetView<TeacherController> {
   const TeacherView({super.key});
@@ -18,11 +19,9 @@ class TeacherView extends GetView<TeacherController> {
         appBar: AppBar(
           title: const Text('Teacher Dashboard'),
           actions: [
-            _buildChatIcon(),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: controller.logout,
-            ),
+            _buildNotificationBell(),
+            _buildChatButton(),
+            _buildProfileMenu(),
           ],
         ),
         body: controller.showChat.value
@@ -37,20 +36,31 @@ class TeacherView extends GetView<TeacherController> {
     });
   }
 
-  Widget _buildChatIcon() {
+  Widget _buildChatButton() {
     return Obx(() {
-      final unreadCount = controller.unreadMessageCount.value;
+      final count = controller.unreadMessageCount.value;
       return Stack(
         children: [
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () {
-              Get.put(ChatController());
-              controller.toggleChat();
-              controller.updateUnreadMessageCount(0);
-            },
-          ),
-          if (unreadCount > 0)
+          controller.showChat.value
+              ? TextButton.icon(
+                  icon: const Icon(Icons.close),
+                  label: const Text('Chat'),
+                  onPressed: () {
+                    Get.delete<ChatController>();
+                    controller.toggleChat();
+                    controller.updateUnreadMessageCount(0);
+                  },
+                )
+              : TextButton.icon(
+                  icon: const Icon(Icons.chat),
+                  label: const Text('Chat'),
+                  onPressed: () {
+                    Get.put(ChatController());
+                    controller.toggleChat();
+                    controller.updateUnreadMessageCount(0);
+                  },
+                ),
+          if (count > 0)
             Positioned(
               right: 2,
               top: 2,
@@ -62,7 +72,7 @@ class TeacherView extends GetView<TeacherController> {
                 ),
                 constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                 child: Text(
-                  unreadCount > 9 ? '9+' : '$unreadCount',
+                  count > 9 ? '9+' : '$count',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -77,92 +87,616 @@ class TeacherView extends GetView<TeacherController> {
     });
   }
 
+  Widget _buildNotificationBell() {
+    return Obx(() {
+      final hasUnread = controller.unreadNotificationCount > 0;
+      return Stack(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () => _showNotificationsDialog(),
+          ),
+          if (hasUnread)
+            Positioned(
+              right: 6,
+              top: 6,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                child: Text(
+                  '${controller.unreadNotificationCount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildProfileMenu() {
+    final auth = Get.find<AuthService>();
+    return Obx(
+      () => PopupMenuButton<String>(
+        icon: CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.blue,
+          child: Text(
+            controller.userName.isNotEmpty
+                ? controller.userName[0].toUpperCase()
+                : 'U',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        onSelected: (v) {
+          if (v == 'logout')
+            controller.logout();
+          else if (v == 'parent')
+            controller.switchToRole('PARENT');
+          else if (v == 'student')
+            controller.switchToRole('STUDENT');
+          else if (v == 'admin')
+            controller.switchToRole('ADMIN');
+          else if (v == 'dark_mode')
+            controller.toggleDarkMode();
+          else if (v == 'language')
+            controller.toggleLanguage();
+        },
+        itemBuilder: (ctx) => [
+          PopupMenuItem(
+            enabled: false,
+            child: Text(
+              controller.userName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: 'dark_mode',
+            child: Row(
+              children: [
+                Icon(
+                  controller.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 'language',
+            child: Row(
+              children: [
+                const Icon(Icons.language, size: 20),
+                const SizedBox(width: 8),
+                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+              ],
+            ),
+          ),
+          if (auth.hasMultipleRoles) ...[
+            const PopupMenuDivider(),
+            if (auth.roles.contains('PARENT'))
+              const PopupMenuItem(
+                value: 'parent',
+                child: Row(
+                  children: [
+                    Icon(Icons.people, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Parent'),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('STUDENT'))
+              const PopupMenuItem(
+                value: 'student',
+                child: Row(
+                  children: [
+                    Icon(Icons.person, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Student'),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('ADMIN'))
+              const PopupMenuItem(
+                value: 'admin',
+                child: Row(
+                  children: [
+                    Icon(Icons.admin_panel_settings, size: 20),
+                    SizedBox(width: 8),
+                    Text('Switch to Admin'),
+                  ],
+                ),
+              ),
+          ],
+          const PopupMenuDivider(),
+          const PopupMenuItem(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(Icons.logout, size: 20, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Logout', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNotificationsDialog() {
+    controller.markAllNotificationsAsRead();
+    Get.dialog(
+      Dialog(
+        alignment: Alignment.centerRight,
+        insetPadding: EdgeInsets.zero,
+        child: Container(
+          width: 350,
+          height: double.infinity,
+          color: Colors.white,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Notifications',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Get.back(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Obx(() {
+                  if (controller.notifications.isEmpty)
+                    return const Center(
+                      child: Text(
+                        'No notifications',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: controller.notifications.length,
+                    itemBuilder: (ctx, i) {
+                      final n = controller.notifications[i];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        color: n.isRead ? null : Colors.blue[50],
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      n.title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    _getTimeAgo(n.createdAt),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(n.message),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  String _getTimeAgo(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final diff = DateTime.now().difference(date);
+      if (diff.inSeconds < 60) return '${diff.inSeconds}s ago';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      if (diff.inHours < 24) return '${diff.inHours}h ago';
+      if (diff.inDays < 7) return '${diff.inDays}d ago';
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
   Widget _buildContent() {
     return RefreshIndicator(
       onRefresh: controller.loadData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Obx(
-              () => Text(
-                'Welcome, ${controller.userName}',
-                style: const TextStyle(fontSize: 18),
+              () => Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Welcome, ${controller.userName}',
+                  style: const TextStyle(fontSize: 18),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
             _buildStatsCards(),
-            const SizedBox(height: 24),
-
-            // Announcement section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Announcements',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            const SizedBox(height: 16),
+            // Tabs
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Obx(
+                () => Row(
+                  children: [
+                    _buildTabChip('my-classes', 'My Classes'),
+                    _buildTabChip('enrollments', 'Enrollments'),
+                    _buildTabChip('mark-attendance', 'Attendance'),
+                    _buildTabChip('create-announcement', 'Announcements'),
+                    _buildTabChip('upload-exercise', 'Exercises'),
+                    _buildTabChip('student-submissions', 'Submissions'),
+                  ],
                 ),
-                _buildAnnouncementButton(),
-              ],
+              ),
             ),
-            const SizedBox(height: 12),
-            // Form appears immediately after the button (below the button)
-            if (controller.showAnnouncementForm.value) ...[
-              _buildAnnouncementForm(),
-              const SizedBox(height: 12),
-            ],
-            _buildAnnouncementsCard(),
-
-            const SizedBox(height: 24),
-
-            // Classes section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'My Classes',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                _buildAttendanceButton(),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Form appears immediately after the button (below the button)
-            if (controller.showAttendanceForm.value) ...[
-              _buildAttendanceForm(),
-              const SizedBox(height: 12),
-            ],
-            _buildClassesCard(),
-
-            const SizedBox(height: 24),
-
-            // Exercises section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Exercises',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                _buildUploadButton(),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Form appears immediately after the button (below the button)
-            if (controller.showUploadForm.value) ...[
-              _buildUploadForm(),
-              const SizedBox(height: 12),
-            ],
-            _buildExercisesOnlyCard(),
-
-            const SizedBox(height: 24),
-            _buildSubmissionsCard(),
-            const SizedBox(height: 24),
-            _buildGradingDialog(),
+            const SizedBox(height: 8),
+            // Tab content
+            Obx(() {
+              switch (controller.activeTab.value) {
+                case 'my-classes':
+                  return _buildMyClassesContent();
+                case 'enrollments':
+                  return _buildEnrollmentsContent();
+                case 'mark-attendance':
+                  return _buildAttendanceContent();
+                case 'create-announcement':
+                  return _buildAnnouncementContent();
+                case 'upload-exercise':
+                  return _buildExerciseContent();
+                case 'student-submissions':
+                  return _buildSubmissionContent();
+                default:
+                  return _buildMyClassesContent();
+              }
+            }),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTabChip(String tabId, String label) {
+    final isActive = controller.activeTab.value == tabId;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label, style: const TextStyle(fontSize: 11)),
+        selected: isActive,
+        onSelected: (selected) {
+          if (selected) controller.setActiveTab(tabId);
+        },
+        selectedColor: Colors.blue,
+        labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black),
+      ),
+    );
+  }
+
+  Widget _buildMyClassesContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'My Classes',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 16),
+          _buildClassesCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnrollmentsContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Enrollment Requests',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Students requesting to join your classes',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          Obx(() {
+            if (controller.enrollments.isEmpty) {
+              return const Text('No pending enrollment requests');
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.enrollments.length,
+              itemBuilder: (ctx, i) {
+                final enrollment = controller.enrollments[i];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    enrollment.studentName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Wants to join: ${enrollment.className}',
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Requested: ${_formatDateTime(enrollment.requestedAt)}',
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Obx(
+                                () => ElevatedButton(
+                                  onPressed:
+                                      controller.respondingEnrollment.value ==
+                                          enrollment.id
+                                      ? null
+                                      : () => controller.respondToEnrollment(
+                                          enrollment.id,
+                                          'approve',
+                                        ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                  ),
+                                  child:
+                                      controller.respondingEnrollment.value ==
+                                          enrollment.id
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Text('Approve'),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Obx(
+                                () => ElevatedButton(
+                                  onPressed:
+                                      controller.respondingEnrollment.value ==
+                                          enrollment.id
+                                      ? null
+                                      : () => controller.respondToEnrollment(
+                                          enrollment.id,
+                                          'reject',
+                                        ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                  ),
+                                  child:
+                                      controller.respondingEnrollment.value ==
+                                          enrollment.id
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Text('Reject'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateTime(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  Widget _buildAttendanceContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Mark Attendance',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              _buildAttendanceButton(),
+            ],
+          ),
+          if (controller.showAttendanceForm.value) ...[
+            const SizedBox(height: 12),
+            _buildAttendanceForm(),
+          ],
+          const SizedBox(height: 16),
+          _buildClassesCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnnouncementContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Announcements',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              _buildAnnouncementButton(),
+            ],
+          ),
+          if (controller.showAnnouncementForm.value) ...[
+            const SizedBox(height: 12),
+            _buildAnnouncementForm(),
+          ],
+          const SizedBox(height: 16),
+          _buildAnnouncementsCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExerciseContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Exercises',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              _buildUploadButton(),
+            ],
+          ),
+          if (controller.showUploadForm.value) ...[
+            const SizedBox(height: 12),
+            _buildUploadForm(),
+          ],
+          const SizedBox(height: 16),
+          _buildExercisesOnlyCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmissionContent() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Submissions',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 16),
+          _buildSubmissionsCard(),
+          _buildGradingDialog(),
+        ],
       ),
     );
   }
@@ -222,38 +756,106 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildStatsCards() {
     return Obx(
-      () => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
+      () => SizedBox(
+        height: 100,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
-            _buildStatChip(
+            _buildStatCard(
               'Announcements',
               '${controller.announcements.length}',
+              'Posted',
+              Colors.blue,
+              Icons.campaign,
             ),
-            const SizedBox(width: 8),
-            _buildStatChip('Students', '${controller.totalStudents}'),
-            const SizedBox(width: 8),
-            _buildStatChip('Exercises', '${controller.exercises.length}'),
-            const SizedBox(width: 8),
-            _buildStatChip('Submissions', '${controller.submissions.length}'),
-            const SizedBox(width: 8),
-            _buildStatChip('Pending', '${controller.pendingCount}'),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              'Total Students',
+              '${controller.totalStudents}',
+              'Across all classes',
+              Colors.green,
+              Icons.people,
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              'Exercises',
+              '${controller.exercises.length}',
+              'Total uploaded',
+              Colors.purple,
+              Icons.assignment,
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              'Submissions',
+              '${controller.submissions.length}',
+              'Total received',
+              Colors.orange,
+              Icons.check_circle,
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              'Pending',
+              '${controller.pendingCount}',
+              'Need grading',
+              Colors.red,
+              Icons.pending_actions,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatChip(String label, String value) {
-    return Chip(
-      avatar: CircleAvatar(
-        backgroundColor: Colors.blue,
-        child: Text(
-          value,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+  Widget _buildStatCard(
+    String title,
+    String value,
+    String subtitle,
+    Color color,
+    IconData icon,
+  ) {
+    return SizedBox(
+      width: 140,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ),
+                  Icon(icon, size: 16, color: Colors.grey),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
-      label: Text(label),
     );
   }
 
@@ -339,6 +941,51 @@ class TeacherView extends GetView<TeacherController> {
                 onChanged: (v) => controller.updateUploadClassId(v ?? ''),
               ),
             ),
+            const SizedBox(height: 12),
+            const Text(
+              'Skills (Optional)',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            Obx(() {
+              if (controller.skills.isEmpty) {
+                return const Text(
+                  'No skills available',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                );
+              }
+              return Container(
+                constraints: const BoxConstraints(maxHeight: 120),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: controller.skills.map((skill) {
+                      return Obx(
+                        () => CheckboxListTile(
+                          title: Text(
+                            skill.name,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          value: controller.selectedSkills.contains(skill.id),
+                          onChanged: (checked) {
+                            if (checked == true) {
+                              controller.addSkill(skill.id);
+                            } else {
+                              controller.removeSkill(skill.id);
+                            }
+                          },
+                          dense: true,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            }),
             const SizedBox(height: 12),
             Obx(() {
               final selectedFile = controller.selectedFile.value;
@@ -805,114 +1452,89 @@ class TeacherView extends GetView<TeacherController> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Announcements',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.announcements.isEmpty) {
-                return const Text('No announcements');
-              }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.announcements.length > 5
-                    ? 5
-                    : controller.announcements.length,
-                itemBuilder: (context, index) {
-                  final ann = controller.announcements[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (ann.teacherName != null)
-                            Text(
-                              'From: ${ann.teacherName}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+        child: Obx(() {
+          if (controller.announcements.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Text('No announcements yet'),
+              ),
+            );
+          }
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: controller.announcements.length,
+            itemBuilder: (context, index) {
+              final ann = controller.announcements[index];
+              return ListTile(
+                title: Text(
+                  ann.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ann.content,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        if (ann.className != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[50],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Class: ${ann.className}',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: Colors.blue,
                               ),
                             ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ann.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            _formatDateTime(ann.createdAt),
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 11,
+                              color: Colors.grey,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ann.content,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            children: [
-                              if (ann.className != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue[50],
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    'Class: ${ann.className}',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.blue[700],
-                                    ),
-                                  ),
-                                ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  _formatDateTime(ann.createdAt),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ],
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 0,
+                  vertical: 8,
+                ),
               );
-            }),
-          ],
-        ),
+            },
+          );
+        }),
       ),
     );
   }
@@ -1053,8 +1675,7 @@ class TeacherView extends GetView<TeacherController> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: OutlinedButton.icon(
-                          onPressed: () =>
-                              Get.snackbar('View', 'Opening file...'),
+                          onPressed: () => controller.downloadExercise(ex.id),
                           icon: const Icon(Icons.download, size: 16),
                           label: const Text(
                             'Download',
@@ -1323,14 +1944,5 @@ class TeacherView extends GetView<TeacherController> {
         ),
       );
     });
-  }
-
-  String _formatDateTime(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } catch (e) {
-      return dateStr;
-    }
   }
 }
