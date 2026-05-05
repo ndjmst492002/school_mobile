@@ -93,28 +93,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _checkAuth() {
-    final auth = Get.find<AuthService>();
+    try {
+      final auth = Get.find<AuthService>();
 
-    if (!auth.isAuthenticated) {
-      Get.offAllNamed(AppRoutes.login);
-      return;
-    }
-
-    switch (auth.role) {
-      case 'ADMIN':
-        Get.offAllNamed(AppRoutes.admin);
-        break;
-      case 'TEACHER':
-        Get.offAllNamed(AppRoutes.teacher);
-        break;
-      case 'STUDENT':
-        Get.offAllNamed(AppRoutes.student);
-        break;
-      case 'PARENT':
-        Get.offAllNamed(AppRoutes.parent);
-        break;
-      default:
+      if (!auth.isAuthenticated) {
         Get.offAllNamed(AppRoutes.login);
+        return;
+      }
+
+      switch (auth.role) {
+        case 'ADMIN':
+          Get.offAllNamed(AppRoutes.admin);
+          break;
+        case 'TEACHER':
+          Get.offAllNamed(AppRoutes.teacher);
+          break;
+        case 'STUDENT':
+          Get.offAllNamed(AppRoutes.student);
+          break;
+        case 'PARENT':
+          Get.offAllNamed(AppRoutes.parent);
+          break;
+        default:
+          Get.offAllNamed(AppRoutes.login);
+      }
+    } catch (e) {
+      Get.offAllNamed(AppRoutes.login);
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../theme/app_theme.dart';
-import '../../data/providers/api_provider.dart';
+import '../../routes/app_routes.dart';
 import 'login_controller.dart';
 import '../../../main.dart';
 
@@ -224,6 +224,19 @@ class LoginView extends GetView<LoginController> {
                                       ),
                                     ),
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        GestureDetector(
+                          onTap: () => Get.toNamed(AppRoutes.signup),
+                          child: Text(
+                            'Don\'t have an account? Sign Up',
+                            style: TextStyle(
+                              color: AppTheme.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],
