@@ -122,12 +122,6 @@ class LoginView extends GetView<LoginController> {
                             fillColor: isDark
                                 ? const Color(0xFF18181B)
                                 : Colors.grey[100],
-                            prefixIcon: Icon(
-                              Icons.email_outlined,
-                              color: isDark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide.none,
@@ -159,11 +153,9 @@ class LoginView extends GetView<LoginController> {
                               fillColor: isDark
                                   ? const Color(0xFF18181B)
                                   : Colors.grey[100],
-                              prefixIcon: Icon(
-                                Icons.lock_outline,
-                                color: isDark
-                                    ? Colors.grey[400]
-                                    : Colors.grey[600],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -175,10 +167,6 @@ class LoginView extends GetView<LoginController> {
                                       : Colors.grey[600],
                                 ),
                                 onPressed: controller.toggleShowPassword,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
                               ),
                             ),
                             obscureText: !controller.showPassword.value,
@@ -223,6 +211,55 @@ class LoginView extends GetView<LoginController> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Separator
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: isDark
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                'or',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: isDark
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Google Sign In button
+                        SizedBox(
+                          height: 48,
+                          child: OutlinedButton(
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : controller.signInWithGoogle,
+                            child: const Text('Sign in with Google'),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
                         ),

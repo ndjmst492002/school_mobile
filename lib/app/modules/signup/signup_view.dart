@@ -12,7 +12,9 @@ class SignupView extends GetView<SignupController> {
   Widget build(BuildContext context) {
     final isDark = Get.isDarkMode;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF18181B) : const Color(0xFFF9FAFB),
+      backgroundColor: isDark
+          ? const Color(0xFF18181B)
+          : const Color(0xFFF9FAFB),
       body: Stack(
         children: [
           const _AnimatedBackground(),
@@ -96,8 +98,6 @@ class SignupView extends GetView<SignupController> {
     switch (controller.currentStep.value) {
       case SignupStep.details:
         return _buildDetailsStep(isDark);
-      case SignupStep.phone:
-        return _buildPhoneStep(isDark);
       case SignupStep.role:
         return _buildRoleStep(isDark);
       case SignupStep.teacher:
@@ -178,14 +178,6 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 16),
             _buildTextField(
-              controller: controller.emailController,
-              label: 'Email Address *',
-              hint: 'email@example.com',
-              isDark: isDark,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
               controller: controller.addressController,
               label: 'Address',
               hint: 'Address',
@@ -201,7 +193,9 @@ class SignupView extends GetView<SignupController> {
               onTap: () async {
                 final picked = await showDatePicker(
                   context: Get.context!,
-                  initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                  initialDate: DateTime.now().subtract(
+                    const Duration(days: 365 * 18),
+                  ),
                   firstDate: DateTime(1950),
                   lastDate: DateTime.now(),
                 );
@@ -211,33 +205,18 @@ class SignupView extends GetView<SignupController> {
                 }
               },
             ),
-const SizedBox(height: 20),
-            SizedBox(
-              height: 48,
-              child: OutlinedButton.icon(
-                onPressed: controller.isLoading.value ? null : controller.signInWithGoogle,
-                icon: const Icon(Icons.login, size: 20),
-                label: const Text('Sign up with Google'),
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
             SizedBox(
               height: 48,
-              child: ElevatedButton(
-                onPressed: controller.isLoading.value ? null : controller.goToPhoneStep,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
+              child: OutlinedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.signInWithGoogle,
+                child: const Text('Sign Up with Google'),
+                style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-                child: const Text(
-                  'Continue to Phone Verification',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -278,7 +257,11 @@ const SizedBox(height: 20),
                   color: AppTheme.primary,
                   borderRadius: BorderRadius.circular(50),
                 ),
-                child: const Icon(Icons.phone_android, size: 32, color: Colors.white),
+                child: const Icon(
+                  Icons.phone_android,
+                  size: 32,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -292,16 +275,18 @@ const SizedBox(height: 20),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
-            Obx(() => Text(
-              controller.otpSent.value
-                  ? 'Enter the code sent to your phone'
-                  : 'Enter your phone number',
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontSize: 14,
+            Obx(
+              () => Text(
+                controller.otpSent.value
+                    ? 'Enter the code sent to your phone'
+                    : 'Enter your phone number',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            )),
+            ),
             const SizedBox(height: 24),
             Obx(() {
               if (controller.error.value != null) {
@@ -309,64 +294,78 @@ const SizedBox(height: 20),
               }
               return const SizedBox.shrink();
             }),
-            Obx(() => _buildTextField(
-              controller: controller.otpSent.value
-                  ? controller.otpCodeController
-                  : controller.phoneNumberController,
-              label: controller.otpSent.value ? 'Verification Code' : 'Phone Number',
-              hint: controller.otpSent.value ? '123456' : '+213551234567',
-              isDark: isDark,
-              keyboardType: controller.otpSent.value
-                  ? TextInputType.number
-                  : TextInputType.phone,
-              maxLength: controller.otpSent.value ? 6 : null,
-            )),
-            const SizedBox(height: 24),
-            Obx(() => SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: controller.isLoading.value
-                    ? null
-                    : (controller.otpSent.value
-                        ? controller.verifyOTP
-                        : controller.sendOTP),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: controller.isLoading.value
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(controller.otpSent.value ? 'Verifying...' : 'Sending...'),
-                        ],
-                      )
-                    : Text(
-                        controller.otpSent.value ? 'Verify & Continue' : 'Send Code',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            Obx(
+              () => _buildTextField(
+                controller: controller.otpSent.value
+                    ? controller.otpCodeController
+                    : controller.phoneNumberController,
+                label: controller.otpSent.value
+                    ? 'Verification Code'
+                    : 'Phone Number',
+                hint: controller.otpSent.value ? '123456' : '+213551234567',
+                isDark: isDark,
+                keyboardType: controller.otpSent.value
+                    ? TextInputType.number
+                    : TextInputType.phone,
+                maxLength: controller.otpSent.value ? 6 : null,
               ),
-            )),
+            ),
+            const SizedBox(height: 24),
+            Obx(
+              () => SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : (controller.otpSent.value
+                            ? controller.verifyOTP
+                            : controller.sendOTP),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: controller.isLoading.value
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              controller.otpSent.value
+                                  ? 'Verifying...'
+                                  : 'Sending...',
+                            ),
+                          ],
+                        )
+                      : Text(
+                          controller.otpSent.value
+                              ? 'Verify & Continue'
+                              : 'Send Code',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+            ),
             const SizedBox(height: 12),
             SizedBox(
               height: 48,
               child: TextButton(
-                onPressed: controller.isLoading.value ? null : controller.goBackToDetails,
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.goBackToDetails,
                 child: const Text('Go Back'),
               ),
             ),
@@ -412,29 +411,31 @@ const SizedBox(height: 20),
               }
               return const SizedBox.shrink();
             }),
-            Obx(() => Row(
-              children: [
-                Expanded(
-                  child: _buildRoleButton(
-                    label: 'Teacher',
-                    icon: Icons.person,
-                    isSelected: controller.isTeacherSelected,
-                    isDark: isDark,
-                    onTap: () => controller.toggleRole('teacher'),
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: _buildRoleButton(
+                      label: 'Teacher',
+                      icon: Icons.person,
+                      isSelected: controller.isTeacherSelected,
+                      isDark: isDark,
+                      onTap: () => controller.toggleRole('teacher'),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildRoleButton(
-                    label: 'Parent',
-                    icon: Icons.family_restroom,
-                    isSelected: controller.isParentSelected,
-                    isDark: isDark,
-                    onTap: () => controller.toggleRole('parent'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildRoleButton(
+                      label: 'Parent',
+                      icon: Icons.family_restroom,
+                      isSelected: controller.isParentSelected,
+                      isDark: isDark,
+                      onTap: () => controller.toggleRole('parent'),
+                    ),
                   ),
-                ),
-              ],
-            )),
+                ],
+              ),
+            ),
             Obx(() {
               if (controller.isTeacherSelected && controller.isParentSelected) {
                 return Padding(
@@ -452,25 +453,29 @@ const SizedBox(height: 20),
               return const SizedBox.shrink();
             }),
             const SizedBox(height: 24),
-            Obx(() => SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: (controller.isLoading.value || controller.selectedRoles.isEmpty)
-                    ? null
-                    : controller.continueFromRole,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Obx(
+              () => SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed:
+                      (controller.isLoading.value ||
+                          controller.selectedRoles.isEmpty)
+                      ? null
+                      : controller.continueFromRole,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -567,46 +572,48 @@ const SizedBox(height: 20),
               isDark: isDark,
             ),
             const SizedBox(height: 24),
-            Obx(() => SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: controller.isLoading.value
-                    ? null
-                    : controller.submitTeacherProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Obx(
+              () => SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : controller.submitTeacherProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                ),
-                child: controller.isLoading.value
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                  child: controller.isLoading.value
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             ),
+                            const SizedBox(width: 12),
+                            const Text('Saving...'),
+                          ],
+                        )
+                      : Text(
+                          controller.isParentSelected
+                              ? 'Save & Continue to Parent Info'
+                              : 'Complete Registration',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 12),
-                          const Text('Saving...'),
-                        ],
-                      )
-                    : Text(
-                        controller.isParentSelected
-                            ? 'Save & Continue to Parent Info'
-                            : 'Complete Registration',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
                         ),
-                      ),
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -682,12 +689,14 @@ const SizedBox(height: 20),
               ],
             ),
             const SizedBox(height: 12),
-            Obx(() => Column(
-              children: List.generate(controller.students.length, (index) {
-                final student = controller.students[index];
-                return _buildStudentCard(student, index, isDark);
-              }),
-            )),
+            Obx(
+              () => Column(
+                children: List.generate(controller.students.length, (index) {
+                  final student = controller.students[index];
+                  return _buildStudentCard(student, index, isDark);
+                }),
+              ),
+            ),
             const SizedBox(height: 12),
             SizedBox(
               height: 40,
@@ -696,49 +705,53 @@ const SizedBox(height: 20),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add Another Student'),
                 style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Obx(() => SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: controller.isLoading.value
-                    ? null
-                    : controller.submitParentProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: controller.isLoading.value
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text('Creating...'),
-                        ],
-                      )
-                    : const Text(
-                        'Complete Registration',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
               ),
-            )),
+            ),
+            const SizedBox(height: 20),
+            Obx(
+              () => SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : controller.submitParentProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: controller.isLoading.value
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Creating...'),
+                          ],
+                        )
+                      : const Text(
+                          'Complete Registration',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -799,12 +812,19 @@ const SizedBox(height: 20),
                           fontSize: 13,
                         ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF27272A) : Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        fillColor: isDark
+                            ? const Color(0xFF27272A)
+                            : Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+                            color: isDark
+                                ? const Color(0xFF3F3F46)
+                                : Colors.grey[300]!,
                           ),
                         ),
                       ),
@@ -825,12 +845,19 @@ const SizedBox(height: 20),
                           fontSize: 13,
                         ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF27272A) : Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        fillColor: isDark
+                            ? const Color(0xFF27272A)
+                            : Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+                            color: isDark
+                                ? const Color(0xFF3F3F46)
+                                : Colors.grey[300]!,
                           ),
                         ),
                       ),
@@ -869,12 +896,19 @@ const SizedBox(height: 20),
                           fontSize: 13,
                         ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF27272A) : Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        fillColor: isDark
+                            ? const Color(0xFF27272A)
+                            : Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+                            color: isDark
+                                ? const Color(0xFF3F3F46)
+                                : Colors.grey[300]!,
                           ),
                         ),
                       ),
@@ -888,7 +922,9 @@ const SizedBox(height: 20),
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: Get.context!,
-                          initialDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
+                          initialDate: DateTime.now().subtract(
+                            const Duration(days: 365 * 10),
+                          ),
                           firstDate: DateTime(2000),
                           lastDate: DateTime.now(),
                         );
@@ -909,12 +945,19 @@ const SizedBox(height: 20),
                           fontSize: 13,
                         ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF27272A) : Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        fillColor: isDark
+                            ? const Color(0xFF27272A)
+                            : Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+                            color: isDark
+                                ? const Color(0xFF3F3F46)
+                                : Colors.grey[300]!,
                           ),
                         ),
                       ),
@@ -935,7 +978,10 @@ const SizedBox(height: 20),
                   child: DropdownButton<bool>(
                     value: student.gender,
                     isExpanded: true,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                     items: const [
                       DropdownMenuItem(value: true, child: Text('Male')),
@@ -978,9 +1024,13 @@ const SizedBox(height: 20),
       style: TextStyle(color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700]),
+        labelStyle: TextStyle(
+          color: isDark ? Colors.grey[300] : Colors.grey[700],
+        ),
         hintText: hint,
-        hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500]),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.grey[500] : Colors.grey[500],
+        ),
         filled: true,
         fillColor: isDark ? const Color(0xFF18181B) : Colors.grey[100],
         border: OutlineInputBorder(
@@ -1057,14 +1107,18 @@ const SizedBox(height: 20),
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
               size: 28,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.grey[300] : Colors.grey[700]),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),

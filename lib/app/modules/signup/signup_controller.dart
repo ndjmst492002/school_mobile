@@ -4,7 +4,7 @@ import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../routes/app_routes.dart';
 
-enum SignupStep { details, phone, role, teacher, parent }
+enum SignupStep { details, role, teacher, parent }
 
 class StudentData {
   String firstName;
@@ -12,7 +12,7 @@ class StudentData {
   String enrollmentDate;
   String dateOfBirth;
   bool gender;
-  
+
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final enrollmentDateController = TextEditingController();
@@ -25,7 +25,7 @@ class StudentData {
     this.dateOfBirth = '',
     this.gender = true,
   });
-  
+
   void dispose() {
     firstNameController.dispose();
     lastNameController.dispose();
@@ -71,7 +71,7 @@ class SignupController extends GetxController {
     error.value = null;
   }
 
-  void goToPhoneStep() {
+  void goToRoleStep() {
     if (firstNameController.text.isEmpty) {
       error.value = 'First name is required';
       return;
@@ -80,23 +80,17 @@ class SignupController extends GetxController {
       error.value = 'Last name is required';
       return;
     }
-    if (emailController.text.isEmpty) {
-      error.value = 'Email is required';
-      return;
-    }
-    if (!emailController.text.contains('@') || !emailController.text.contains('.')) {
-      error.value = 'Please enter a valid email address';
-      return;
-    }
     error.value = null;
-    currentStep.value = SignupStep.phone;
+    currentStep.value = SignupStep.role;
   }
 
   void goBackToDetails() {
     currentStep.value = SignupStep.details;
-    otpSent.value = false;
-    otpCodeController.clear();
-    error.value = null;
+  }
+
+  void goToPhoneStep() {
+    // No longer used - direct to role
+    currentStep.value = SignupStep.role;
   }
 
   Future<void> sendOTP() async {
@@ -223,46 +217,57 @@ class SignupController extends GetxController {
       error.value = 'Please enter your occupation';
       return;
     }
-    
+
     // Check each child - if any required field is filled, all must be filled
     for (var s in students) {
       final firstName = s.firstNameController.text;
       final lastName = s.lastNameController.text;
       final enrollmentDate = s.enrollmentDateController.text;
-      
-      final hasAnyField = firstName.isNotEmpty || lastName.isNotEmpty || enrollmentDate.isNotEmpty;
+
+      final hasAnyField =
+          firstName.isNotEmpty ||
+          lastName.isNotEmpty ||
+          enrollmentDate.isNotEmpty;
       if (hasAnyField) {
         if (firstName.isEmpty || lastName.isEmpty || enrollmentDate.isEmpty) {
-          error.value = 'Please fill all required fields (First Name, Last Name, Enrollment Date) for each child, or leave empty';
+          error.value =
+              'Please fill all required fields (First Name, Last Name, Enrollment Date) for each child, or leave empty';
           return;
         }
       }
     }
-    
+
     // Count valid students using controller text
     final validStudents = students
-        .where((s) =>
-            s.firstNameController.text.isNotEmpty &&
-            s.lastNameController.text.isNotEmpty &&
-            s.enrollmentDateController.text.isNotEmpty)
+        .where(
+          (s) =>
+              s.firstNameController.text.isNotEmpty &&
+              s.lastNameController.text.isNotEmpty &&
+              s.enrollmentDateController.text.isNotEmpty,
+        )
         .toList();
-    
+
     if (validStudents.isEmpty) {
-      error.value = 'Please add at least one child with first name, last name, and enrollment date';
+      error.value =
+          'Please add at least one child with first name, last name, and enrollment date';
       return;
     }
-    
+
     isLoading.value = true;
     error.value = null;
     try {
       final studentsData = validStudents
-          .map((s) => {
-                'first_name': s.firstNameController.text,
-                'last_name': s.lastNameController.text,
-                'enrollment_date': s.enrollmentDateController.text,
-                'date_of_birth': s.dateOfBirthController.text.isNotEmpty ? s.dateOfBirthController.text : null,
-                'gender': s.gender,
-              })
+          .map(
+            (s) => {
+              'first_name': s.firstNameController.text,
+              'last_name': s.lastNameController.text,
+              'enrollment_date': s.enrollmentDateController.text,
+              'date_of_birth': s.dateOfBirthController.text.isNotEmpty
+                  ? s.dateOfBirthController.text
+                  : null,
+              'gender': s.gender,
+            },
+          )
           .toList();
 
       await _authApi.createParentProfile(
@@ -281,11 +286,8 @@ class SignupController extends GetxController {
   Future<void> signInWithGoogle() async {
     isLoading.value = true;
     error.value = null;
-    
     await Future.delayed(const Duration(milliseconds: 500));
-    
-    error.value = 'Google Sign-Up is coming soon! Use Phone Verification for now.';
-    
+    error.value = 'Google Sign-Up coming soon!';
     isLoading.value = false;
   }
 
@@ -293,7 +295,7 @@ class SignupController extends GetxController {
     emailController.text = email;
   }
 
-Future<void> _autoLoginAfterSignup() async {
+  Future<void> _autoLoginAfterSignup() async {
     try {
       final currentUserData = await _authApi.getCurrentUser();
       String? role;
@@ -330,9 +332,9 @@ Future<void> _autoLoginAfterSignup() async {
       } else {
         Get.offAllNamed(AppRoutes.login);
       }
-      
     } catch (e) {
-      error.value = 'Registration successful but auto-login failed. Please login manually.';
+      error.value =
+          'Registration successful but auto-login failed. Please login manually.';
       Get.offAllNamed(AppRoutes.login);
     }
   }

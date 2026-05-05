@@ -156,6 +156,19 @@ class LoginController extends GetxController {
     }
   }
 
+  Future<void> signInWithGoogle() async {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      // TODO: Implement Google sign in for login
+      error.value = 'Google Sign-In coming soon!';
+    } catch (e) {
+      error.value = 'Google sign in failed';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   @override
   void onClose() {
     // Don't dispose since controller is permanent
