@@ -100,122 +100,93 @@ class LoginView extends GetView<LoginController> {
                           }
                           return const SizedBox.shrink();
                         }),
-                        TextField(
-                          controller: controller.emailController,
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Email'.tr,
-                            labelStyle: TextStyle(
-                              color: isDark
-                                  ? Colors.grey[300]
-                                  : Colors.grey[700],
-                            ),
-                            hintText: 'Enter your email'.tr,
-                            hintStyle: TextStyle(
-                              color: isDark
-                                  ? Colors.grey[500]
-                                  : Colors.grey[500],
-                            ),
-                            filled: true,
-                            fillColor: isDark
-                                ? const Color(0xFF18181B)
-                                : Colors.grey[100],
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 20),
                         Obx(
-                          () => TextField(
-                            controller: controller.passwordController,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: 'Password'.tr,
-                              labelStyle: TextStyle(
-                                color: isDark
-                                    ? Colors.grey[300]
-                                    : Colors.grey[700],
-                              ),
-                              hintText: 'Enter your password'.tr,
-                              hintStyle: TextStyle(
-                                color: isDark
-                                    ? Colors.grey[500]
-                                    : Colors.grey[500],
-                              ),
-                              filled: true,
-                              fillColor: isDark
+                          () => Container(
+                            decoration: BoxDecoration(
+                              color: isDark
                                   ? const Color(0xFF18181B)
                                   : Colors.grey[100],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  controller.showPassword.value
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600],
-                                ),
-                                onPressed: controller.toggleShowPassword,
-                              ),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            obscureText: !controller.showPassword.value,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        Obx(
-                          () => SizedBox(
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: controller.isLoading.value
-                                  ? null
-                                  : controller.login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primary,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: controller.isLoading.value
-                                  ? Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
-                                          ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => controller.switchTab('email'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            controller.selectedTab.value ==
+                                                'email'
+                                            ? AppTheme.primary
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Email'.tr,
+                                        style: TextStyle(
+                                          color:
+                                              controller.selectedTab.value ==
+                                                  'email'
+                                              ? Colors.white
+                                              : (isDark
+                                                    ? Colors.grey[300]
+                                                    : Colors.grey[700]),
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        const SizedBox(width: 12),
-                                        Text('Logging in...'.tr),
-                                      ],
-                                    )
-                                  : Text(
-                                      'Login'.tr,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => controller.switchTab('phone'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            controller.selectedTab.value ==
+                                                'phone'
+                                            ? AppTheme.primary
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Phone'.tr,
+                                        style: TextStyle(
+                                          color:
+                                              controller.selectedTab.value ==
+                                                  'phone'
+                                              ? Colors.white
+                                              : (isDark
+                                                    ? Colors.grey[300]
+                                                    : Colors.grey[700]),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                        const SizedBox(height: 24),
+                        Obx(() {
+                          if (controller.selectedTab.value == 'email') {
+                            return _EmailForm(isDark: isDark);
+                          } else {
+                            return _PhoneForm(isDark: isDark);
+                          }
+                        }),
                         const SizedBox(height: 16),
-                        // Separator
                         Row(
                           children: [
                             Expanded(
@@ -432,4 +403,278 @@ class _MatrixPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _MatrixPainter oldDelegate) =>
       oldDelegate.animation != animation || oldDelegate.isDark != isDark;
+}
+
+class _EmailForm extends StatelessWidget {
+  final bool isDark;
+  const _EmailForm({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<LoginController>();
+    return Column(
+      children: [
+        TextField(
+          controller: controller.emailController,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          decoration: InputDecoration(
+            labelText: 'Email'.tr,
+            labelStyle: TextStyle(
+              color: isDark ? Colors.grey[300] : Colors.grey[700],
+            ),
+            hintText: 'Enter your email'.tr,
+            hintStyle: TextStyle(
+              color: isDark ? Colors.grey[500] : Colors.grey[500],
+            ),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF18181B) : Colors.grey[100],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: 20),
+        Obx(
+          () => TextField(
+            controller: controller.passwordController,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+            decoration: InputDecoration(
+              labelText: 'Password'.tr,
+              labelStyle: TextStyle(
+                color: isDark ? Colors.grey[300] : Colors.grey[700],
+              ),
+              hintText: 'Enter your password'.tr,
+              hintStyle: TextStyle(
+                color: isDark ? Colors.grey[500] : Colors.grey[500],
+              ),
+              filled: true,
+              fillColor: isDark ? const Color(0xFF18181B) : Colors.grey[100],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.showPassword.value
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+                onPressed: controller.toggleShowPassword,
+              ),
+            ),
+            obscureText: !controller.showPassword.value,
+          ),
+        ),
+        const SizedBox(height: 32),
+        Obx(
+          () => SizedBox(
+            height: 50,
+            child: ElevatedButton(
+              onPressed: controller.isLoading.value ? null : controller.login,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: controller.isLoading.value
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text('Logging in...'.tr),
+                      ],
+                    )
+                  : Text(
+                      'Login'.tr,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PhoneForm extends StatelessWidget {
+  final bool isDark;
+  const _PhoneForm({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<LoginController>();
+    return Column(
+      children: [
+        Obx(() {
+          if (!controller.otpSent.value) {
+            return Column(
+              children: [
+                TextField(
+                  controller: controller.phoneController,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number'.tr,
+                    labelStyle: TextStyle(
+                      color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    ),
+                    hintText: 'Enter your phone number'.tr,
+                    hintStyle: TextStyle(
+                      color: isDark ? Colors.grey[500] : Colors.grey[500],
+                    ),
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF18181B)
+                        : Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 32),
+                Obx(
+                  () => SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : controller.sendOTP,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: controller.isLoading.value
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text('Sending...'.tr),
+                              ],
+                            )
+                          : Text(
+                              'Send Code'.tr,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return Column(
+              children: [
+                TextField(
+                  controller: controller.otpController,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Verification Code'.tr,
+                    labelStyle: TextStyle(
+                      color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    ),
+                    hintText: 'Enter verification code'.tr,
+                    hintStyle: TextStyle(
+                      color: isDark ? Colors.grey[500] : Colors.grey[500],
+                    ),
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF18181B)
+                        : Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 32),
+                Obx(
+                  () => SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : controller.verifyOTPAndLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: controller.isLoading.value
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text('Verifying...'.tr),
+                              ],
+                            )
+                          : Text(
+                              'Verify & Login'.tr,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    controller.otpSent.value = false;
+                    controller.otpController.clear();
+                  },
+                  child: Text('Change Phone Number'.tr),
+                ),
+              ],
+            );
+          }
+        }),
+      ],
+    );
+  }
 }

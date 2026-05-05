@@ -10,15 +10,101 @@ class LoginController extends GetxController {
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final phoneController = TextEditingController();
+  final otpController = TextEditingController();
 
   final showPassword = false.obs;
   final isLoading = false.obs;
   final error = Rxn<String>();
+  final selectedTab = 'email'.obs; // 'email' or 'phone'
+  final otpSent = false.obs;
 
   AuthService get _auth => Get.find<AuthService>();
 
   void toggleShowPassword() {
     showPassword.value = !showPassword.value;
+  }
+
+  void switchTab(String tab) {
+    selectedTab.value = tab;
+    error.value = null;
+    if (tab == 'email') {
+      otpSent.value = false;
+    }
+  }
+
+  Future<void> sendOTP() async {
+    if (phoneController.text.isEmpty) {
+      error.value = 'Please enter phone number';
+      return;
+    }
+    isLoading.value = true;
+    error.value = null;
+    try {
+      await _authApi.phoneLoginSend(phoneController.text);
+      otpSent.value = true;
+    } catch (e) {
+      error.value = 'Failed to send OTP';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> verifyOTPAndLogin() async {
+    if (otpController.text.isEmpty) {
+      error.value = 'Please enter verification code';
+      return;
+    }
+    isLoading.value = true;
+    error.value = null;
+    try {
+      final response = await _authApi.phoneLoginVerify(
+        phoneController.text,
+        otpController.text,
+      );
+
+      // Handle login response
+      Map<String, dynamic>? userData;
+      String? role;
+      List<String> roles = [];
+
+      if (response.containsKey('user') && response.containsKey('roles')) {
+        userData = response['user'] as Map<String, dynamic>?;
+        roles =
+            (response['roles'] as List?)?.map((e) => e.toString()).toList() ??
+            [];
+        if (roles.contains('PARENT')) {
+          role = 'PARENT';
+        } else if (roles.isNotEmpty) {
+          role = roles.first;
+        }
+      }
+
+      if (userData != null && role != null) {
+        _auth.setUser(userData, role: role, roles: roles);
+
+        switch (role.toUpperCase()) {
+          case 'TEACHER':
+            Get.offAllNamed(AppRoutes.teacher);
+            break;
+          case 'PARENT':
+            Get.offAllNamed(AppRoutes.parent);
+            break;
+          case 'STUDENT':
+            Get.offAllNamed(AppRoutes.student);
+            break;
+          case 'ADMIN':
+            Get.offAllNamed(AppRoutes.admin);
+            break;
+          default:
+            Get.offAllNamed(AppRoutes.login);
+        }
+      }
+    } catch (e) {
+      error.value = 'Invalid code or expired';
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> login() async {

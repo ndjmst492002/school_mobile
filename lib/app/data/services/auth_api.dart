@@ -62,6 +62,25 @@ class AuthApi {
     return response.data;
   }
 
+  Future<Map<String, dynamic>> phoneLoginSend(String phoneNumber) async {
+    final response = await _api.post(
+      '/users/login/phone/send/',
+      data: {'phone_number': phoneNumber},
+    );
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> phoneLoginVerify(
+    String phoneNumber,
+    String code,
+  ) async {
+    final response = await _api.post(
+      '/users/login/phone/verify/',
+      data: {'phone_number': phoneNumber, 'code': code},
+    );
+    return response.data;
+  }
+
   Future<Map<String, dynamic>> googleAuth(String accessToken) async {
     final response = await _api.post(
       '/users/auth/google/',
@@ -94,10 +113,7 @@ class AuthApi {
   }) async {
     final response = await _api.post(
       '/users/profile/parent/',
-      data: {
-        'occupation': occupation,
-        'students': students,
-      },
+      data: {'occupation': occupation, 'students': students},
     );
     return response.data;
   }
