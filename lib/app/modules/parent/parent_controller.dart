@@ -8,6 +8,7 @@ import '../../data/models/parent_models.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
+import '../../data/exceptions.dart';
 
 class ParentController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -20,12 +21,48 @@ class ParentController extends GetxController {
   final isLoading = true.obs;
   final showChat = false.obs;
   final unreadMessageCount = 0.obs;
+  final profileNotFound = false.obs;
 
   final activeTab = 'my-children'.obs;
   final selectedChildForAnnouncements = ''.obs;
   final selectedChildForAttendance = ''.obs;
+  final selectedChildForProfile = ''.obs;
   final predictions = <int, PredictionResult>{}.obs;
   final predicting = Rxn<int>();
+
+  List<ChildAnnouncement> get filteredAnnouncements {
+    if (selectedChildForAnnouncements.value.isEmpty) {
+      return announcements;
+    }
+    return announcements
+        .where((a) => a.childName == selectedChildForAnnouncements.value)
+        .toList();
+  }
+
+  List<ChildAttendance> get filteredAttendance {
+    if (selectedChildForAttendance.value.isEmpty) {
+      return attendance;
+    }
+    return attendance
+        .where((a) => a.childName == selectedChildForAttendance.value)
+        .toList();
+  }
+
+  void selectChildForAnnouncements(String childName) {
+    selectedChildForAnnouncements.value = childName;
+  }
+
+  void selectChildForAttendance(String childName) {
+    selectedChildForAttendance.value = childName;
+  }
+
+  void selectChildForProfile(String childName) {
+    selectedChildForProfile.value = childName;
+  }
+
+  void clearChildSelection() {
+    selectedChildForProfile.value = '';
+  }
 
   bool hasPrediction(int studentId) => predictions.containsKey(studentId);
   PredictionResult? getPrediction(int studentId) => predictions[studentId];
@@ -71,17 +108,62 @@ class ParentController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
+    profileNotFound.value = false;
     try {
-      final results = await Future.wait([
-        _parentApi.getChildren(),
-        _parentApi.getAnnouncements(),
-        _parentApi.getAttendance(),
-        _parentApi.getNotifications(),
-      ]);
-      children.value = results[0] as List<StudentChild>;
-      announcements.value = results[1] as List<ChildAnnouncement>;
-      attendance.value = results[2] as List<ChildAttendance>;
-      notifications.value = results[3] as List<AppNotification>;
+      // Load children first to debug
+      final childrenData = await _parentApi.getChildren().catchError((e) {
+        if (e is ProfileNotFoundException) {
+          profileNotFound.value = true;
+          Get.snackbar(
+            'Profile Required',
+            e.message,
+            duration: const Duration(seconds: 5),
+          );
+          return <StudentChild>[];
+        }
+        debugPrint('Error loading children: $e');
+        return <StudentChild>[];
+      });
+      children.value = childrenData;
+      debugPrint('=== DEBUG ===');
+      debugPrint('Children count: ${children.length}');
+      debugPrint('User roles: ${_auth.roles}');
+      debugPrint('Has STUDENT role: ${_auth.roles.contains('STUDENT')}');
+      for (var child in children) {
+        debugPrint('Child: ${child.id} - ${child.fullName}');
+      }
+      debugPrint('=== END DEBUG ===');
+
+      // Load other data
+      final announcementsData = await _parentApi.getAnnouncements().catchError((
+        e,
+      ) {
+        if (e is ProfileNotFoundException) {
+          profileNotFound.value = true;
+          return <ChildAnnouncement>[];
+        }
+        debugPrint('Error loading announcements: $e');
+        return <ChildAnnouncement>[];
+      });
+      announcements.value = announcementsData;
+
+      final attendanceData = await _parentApi.getAttendance().catchError((e) {
+        if (e is ProfileNotFoundException) {
+          profileNotFound.value = true;
+          return <ChildAttendance>[];
+        }
+        debugPrint('Error loading attendance: $e');
+        return <ChildAttendance>[];
+      });
+      attendance.value = attendanceData;
+
+      final notificationsData = await _parentApi.getNotifications().catchError((
+        e,
+      ) {
+        debugPrint('Error loading notifications: $e');
+        return <AppNotification>[];
+      });
+      notifications.value = notificationsData;
     } catch (e) {
       debugPrint('Error loading data: $e');
     } finally {
@@ -149,11 +231,15 @@ class ParentController extends GetxController {
   }
 
   void toggleLanguage() {
+    debugPrint('toggleLanguage called, current: $_theme.locale');
     _theme.toggleLanguage();
+    debugPrint('After toggle, new locale: $_theme.locale');
   }
 
   void toggleDarkMode() {
+    debugPrint('toggleDarkMode called, current: $_theme.isDarkMode');
     _theme.toggleTheme();
+    debugPrint('After toggle, new: $_theme.isDarkMode');
   }
 
   Future<void> predictStudent(int studentId) async {
@@ -188,6 +274,19 @@ class ParentController extends GetxController {
   }
 
   void switchToRole(String role) {
+    debugPrint('=== switchToRole called with: $role ===');
+    // Handle switching to a specific child (format: student_123)
+    if (role.startsWith('student_')) {
+      final childId = role.replaceFirst('student_', '');
+      debugPrint('Switching to child with ID: $childId');
+      // For now, just switch to student role - the student dashboard will handle showing the specific child
+      _auth.switchRole('STUDENT');
+      debugPrint('About to navigate to student dashboard...');
+      Get.offAllNamed(AppRoutes.student);
+      debugPrint('Navigation called');
+      return;
+    }
+
     _auth.switchRole(role);
     switch (role.toUpperCase()) {
       case 'TEACHER':

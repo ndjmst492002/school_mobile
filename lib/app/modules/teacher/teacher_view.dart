@@ -4,6 +4,7 @@ import 'teacher_controller.dart';
 import '../chat/chat_view.dart';
 import '../chat/chat_controller.dart';
 import '../../data/providers/api_provider.dart';
+import '../../routes/app_routes.dart';
 
 class TeacherView extends GetView<TeacherController> {
   const TeacherView({super.key});
@@ -15,20 +16,114 @@ class TeacherView extends GetView<TeacherController> {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
 
+      if (controller.profileNotFound.value) {
+        return Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.person_outline,
+                    size: 80,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Profile Not Found',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'You need to complete your teacher profile before accessing the dashboard.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () => Get.toNamed(
+                      AppRoutes.profileCompletion,
+                      arguments: {'role': 'TEACHER'},
+                    ),
+                    child: Text('Complete Profile'.tr),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () {
+                      Get.offAllNamed('/login');
+                    },
+                    child: Text('Logout'.tr),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Teacher Dashboard'),
+          automaticallyImplyLeading: false,
+          title: null,
+          toolbarHeight: controller.showChat.value ? 60 : 80,
           actions: [
-            _buildNotificationBell(),
-            _buildChatButton(),
-            _buildProfileMenu(),
+            if (!controller.showChat.value) ...[
+              _buildNotificationBell(),
+              _buildChatButton(),
+              _buildProfileMenu(),
+            ] else ...[
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  Get.delete<ChatController>();
+                  controller.toggleChat();
+                  controller.updateUnreadMessageCount(0);
+                },
+              ),
+            ],
           ],
+          bottom: controller.showChat.value
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(50),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Teacher Dashboard',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Welcome, ${controller.userName}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.blueGrey,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
         ),
         body: controller.showChat.value
             ? ChatView(
                 onClose: () {
                   Get.delete<ChatController>();
                   controller.toggleChat();
+                  controller.updateUnreadMessageCount(0);
                 },
               )
             : _buildContent(),
@@ -41,25 +136,15 @@ class TeacherView extends GetView<TeacherController> {
       final count = controller.unreadMessageCount.value;
       return Stack(
         children: [
-          controller.showChat.value
-              ? TextButton.icon(
-                  icon: const Icon(Icons.close),
-                  label: const Text('Chat'),
-                  onPressed: () {
-                    Get.delete<ChatController>();
-                    controller.toggleChat();
-                    controller.updateUnreadMessageCount(0);
-                  },
-                )
-              : TextButton.icon(
-                  icon: const Icon(Icons.chat),
-                  label: const Text('Chat'),
-                  onPressed: () {
-                    Get.put(ChatController());
-                    controller.toggleChat();
-                    controller.updateUnreadMessageCount(0);
-                  },
-                ),
+          TextButton.icon(
+            icon: const Icon(Icons.chat, size: 18),
+            label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
+            onPressed: () {
+              Get.put(ChatController());
+              controller.toggleChat();
+              controller.updateUnreadMessageCount(0);
+            },
+          ),
           if (count > 0)
             Positioned(
               right: 2,
@@ -70,12 +155,12 @@ class TeacherView extends GetView<TeacherController> {
                   color: Colors.red,
                   shape: BoxShape.circle,
                 ),
-                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                 child: Text(
                   count > 9 ? '9+' : '$count',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -189,47 +274,107 @@ class TeacherView extends GetView<TeacherController> {
           if (auth.hasMultipleRoles) ...[
             const PopupMenuDivider(),
             if (auth.roles.contains('PARENT'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'parent',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.people, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Parent'),
+                    Row(
+                      children: [
+                        const Icon(Icons.people, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Switch to Parent'.tr),
+                      ],
+                    ),
+                    if (auth.role == 'PARENT')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
             if (auth.roles.contains('STUDENT'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'student',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.person, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Student'),
+                    Row(
+                      children: [
+                        const Icon(Icons.person, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Switch to Student'.tr),
+                      ],
+                    ),
+                    if (auth.role == 'STUDENT')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
             if (auth.roles.contains('ADMIN'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'admin',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.admin_panel_settings, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Admin'),
+                    Row(
+                      children: [
+                        const Icon(Icons.admin_panel_settings, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Switch to Admin'.tr),
+                      ],
+                    ),
+                    if (auth.role == 'ADMIN')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
           ],
           const PopupMenuDivider(),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'logout',
             child: Row(
               children: [
-                Icon(Icons.logout, size: 20, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Logout', style: TextStyle(color: Colors.red)),
+                const Icon(Icons.logout, size: 20, color: Colors.red),
+                const SizedBox(width: 8),
+                Text('Logout'.tr, style: const TextStyle(color: Colors.red)),
               ],
             ),
           ),
@@ -358,15 +503,7 @@ class TeacherView extends GetView<TeacherController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx(
-              () => Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Welcome, ${controller.userName}',
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-            ),
+            const SizedBox(height: 8),
             _buildStatsCards(),
             const SizedBox(height: 16),
             // Tabs
@@ -386,7 +523,7 @@ class TeacherView extends GetView<TeacherController> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             // Tab content
             Obx(() {
               switch (controller.activeTab.value) {
@@ -406,6 +543,7 @@ class TeacherView extends GetView<TeacherController> {
                   return _buildMyClassesContent();
               }
             }),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -417,7 +555,7 @@ class TeacherView extends GetView<TeacherController> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(label, style: const TextStyle(fontSize: 11)),
+        label: Text(label, style: const TextStyle(fontSize: 13)),
         selected: isActive,
         onSelected: (selected) {
           if (selected) controller.setActiveTab(tabId);
@@ -463,7 +601,7 @@ class TeacherView extends GetView<TeacherController> {
           const SizedBox(height: 16),
           Obx(() {
             if (controller.enrollments.isEmpty) {
-              return const Text('No pending enrollment requests');
+              return Text('No pending enrollment requests'.tr);
             }
             return ListView.builder(
               shrinkWrap: true,
@@ -543,7 +681,7 @@ class TeacherView extends GetView<TeacherController> {
                                             strokeWidth: 2,
                                           ),
                                         )
-                                      : const Text('Approve'),
+                                      : Text('Approve'.tr),
                                 ),
                               ),
                             ),
@@ -575,7 +713,7 @@ class TeacherView extends GetView<TeacherController> {
                                             strokeWidth: 2,
                                           ),
                                         )
-                                      : const Text('Reject'),
+                                      : Text('Reject'.tr),
                                 ),
                               ),
                             ),
@@ -757,49 +895,64 @@ class TeacherView extends GetView<TeacherController> {
   Widget _buildStatsCards() {
     return Obx(
       () => SizedBox(
-        height: 100,
+        height: 120,
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
-            _buildStatCard(
-              'Announcements',
-              '${controller.announcements.length}',
-              'Posted',
-              Colors.blue,
-              Icons.campaign,
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Announcements',
+                '${controller.announcements.length}',
+                'Posted',
+                Colors.blue,
+                Icons.campaign,
+              ),
             ),
             const SizedBox(width: 12),
-            _buildStatCard(
-              'Total Students',
-              '${controller.totalStudents}',
-              'Across all classes',
-              Colors.green,
-              Icons.people,
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Total Students',
+                '${controller.totalStudents}',
+                'Across all classes',
+                Colors.green,
+                Icons.people,
+              ),
             ),
             const SizedBox(width: 12),
-            _buildStatCard(
-              'Exercises',
-              '${controller.exercises.length}',
-              'Total uploaded',
-              Colors.purple,
-              Icons.assignment,
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Exercises',
+                '${controller.exercises.length}',
+                'Total uploaded',
+                Colors.purple,
+                Icons.assignment,
+              ),
             ),
             const SizedBox(width: 12),
-            _buildStatCard(
-              'Submissions',
-              '${controller.submissions.length}',
-              'Total received',
-              Colors.orange,
-              Icons.check_circle,
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Submissions',
+                '${controller.submissions.length}',
+                'Total received',
+                Colors.orange,
+                Icons.check_circle,
+              ),
             ),
             const SizedBox(width: 12),
-            _buildStatCard(
-              'Pending',
-              '${controller.pendingCount}',
-              'Need grading',
-              Colors.red,
-              Icons.pending_actions,
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Pending',
+                '${controller.pendingCount}',
+                'Need grading',
+                Colors.red,
+                Icons.pending_actions,
+              ),
             ),
           ],
         ),
@@ -814,11 +967,12 @@ class TeacherView extends GetView<TeacherController> {
     Color color,
     IconData icon,
   ) {
-    return SizedBox(
-      width: 140,
-      child: Card(
+    return Card(
+      child: Container(
+        width: 150,
+        constraints: const BoxConstraints(minHeight: 100),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -834,23 +988,28 @@ class TeacherView extends GetView<TeacherController> {
                       style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ),
-                  Icon(icon, size: 16, color: Colors.grey),
+                  Icon(icon, size: 14, color: Colors.grey),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
               ),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                ),
               ),
             ],
           ),
@@ -1047,7 +1206,7 @@ class TeacherView extends GetView<TeacherController> {
                         child: OutlinedButton.icon(
                           onPressed: controller.pickFile,
                           icon: const Icon(Icons.folder_open, size: 18),
-                          label: const Text('Choose File'),
+                          label: Text('Choose File'.tr),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
@@ -1082,7 +1241,7 @@ class TeacherView extends GetView<TeacherController> {
                         child: OutlinedButton.icon(
                           onPressed: controller.pickFile,
                           icon: const Icon(Icons.folder_open, size: 18),
-                          label: const Text('Choose File'),
+                          label: Text('Choose File'.tr),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
@@ -1291,7 +1450,7 @@ class TeacherView extends GetView<TeacherController> {
                         children: [
                           Expanded(child: Text(student.fullName)),
                           ChoiceChip(
-                            label: const Text('Present'),
+                            label: Text('Present'.tr),
                             selected: status == 'PRESENT',
                             onSelected: (selected) {
                               if (selected) {
@@ -1311,7 +1470,7 @@ class TeacherView extends GetView<TeacherController> {
                           ),
                           const SizedBox(width: 8),
                           ChoiceChip(
-                            label: const Text('Absent'),
+                            label: Text('Absent'.tr),
                             selected: status == 'ABSENT',
                             onSelected: (selected) {
                               if (selected) {
@@ -1454,10 +1613,10 @@ class TeacherView extends GetView<TeacherController> {
         padding: const EdgeInsets.all(16),
         child: Obx(() {
           if (controller.announcements.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No announcements yet'),
+                padding: const EdgeInsets.all(32),
+                child: Text('No announcements yet'.tr),
               ),
             );
           }
@@ -1545,10 +1704,10 @@ class TeacherView extends GetView<TeacherController> {
         padding: const EdgeInsets.all(16),
         child: Obx(() {
           if (controller.classes.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No classes assigned'),
+                padding: const EdgeInsets.all(32),
+                child: Text('No classes assigned'.tr),
               ),
             );
           }
@@ -1613,10 +1772,10 @@ class TeacherView extends GetView<TeacherController> {
         padding: const EdgeInsets.all(16),
         child: Obx(() {
           if (controller.exercises.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No exercises uploaded yet'),
+                padding: const EdgeInsets.all(32),
+                child: Text('No exercises uploaded yet'.tr),
               ),
             );
           }
@@ -1715,10 +1874,10 @@ class TeacherView extends GetView<TeacherController> {
             const SizedBox(height: 12),
             Obx(() {
               if (controller.submissions.isEmpty) {
-                return const Center(
+                return Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text('No submissions'),
+                    padding: const EdgeInsets.all(32),
+                    child: Text('No submissions'.tr),
                   ),
                 );
               }
@@ -1932,7 +2091,7 @@ class TeacherView extends GetView<TeacherController> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: controller.closeGradingDialog,
-                          child: const Text('Cancel'),
+                          child: Text('Cancel'.tr),
                         ),
                       ),
                     ],

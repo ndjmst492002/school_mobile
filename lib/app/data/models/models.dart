@@ -6,6 +6,7 @@ class ClassModel {
   final String? teacherName;
   final List<StudentInfo>? students;
   final int studentCount;
+  final EnrollmentStatusInfo? enrollmentStatus;
 
   ClassModel({
     required this.id,
@@ -15,9 +16,16 @@ class ClassModel {
     this.teacherName,
     this.students,
     this.studentCount = 0,
+    this.enrollmentStatus,
   });
 
   factory ClassModel.fromJson(Map<String, dynamic> json) {
+    EnrollmentStatusInfo? enrollmentStatus;
+    final enrollmentStatusJson = json['enrollment_status'];
+    if (enrollmentStatusJson is Map<String, dynamic>) {
+      enrollmentStatus = EnrollmentStatusInfo.fromJson(enrollmentStatusJson);
+    }
+
     return ClassModel(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
@@ -38,6 +46,27 @@ class ClassModel {
                 ? json['student_count']
                 : int.tryParse(json['student_count'].toString()) ?? 0)
           : 0,
+      enrollmentStatus: enrollmentStatus,
+    );
+  }
+}
+
+class EnrollmentStatusInfo {
+  final String status;
+  final String? requestedAt;
+  final String? respondedAt;
+
+  EnrollmentStatusInfo({
+    required this.status,
+    this.requestedAt,
+    this.respondedAt,
+  });
+
+  factory EnrollmentStatusInfo.fromJson(Map<String, dynamic> json) {
+    return EnrollmentStatusInfo(
+      status: json['status'] ?? 'PENDING',
+      requestedAt: json['requested_at'],
+      respondedAt: json['responded_at'],
     );
   }
 }

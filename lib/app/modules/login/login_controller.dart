@@ -1,12 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../routes/app_routes.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class LoginController extends GetxController {
   final AuthApi _authApi = AuthApi();
+  static const String _serverClientId =
+      '719247317672-32jg242u60iic2hjkvg2selclsb4ebrb.apps.googleusercontent.com';
+  late GoogleSignIn _googleSignIn;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (kIsWeb) {
+      _googleSignIn = GoogleSignIn(scopes: <String>['email', 'profile']);
+    } else {
+      _googleSignIn = GoogleSignIn(
+        serverClientId: _serverClientId,
+        scopes: <String>[
+          'email',
+          'profile',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+        ],
+      );
+    }
+  }
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -99,6 +122,9 @@ class LoginController extends GetxController {
           default:
             Get.offAllNamed(AppRoutes.login);
         }
+      } else {
+        error.value =
+            'No roles assigned to this account. Please complete registration first.';
       }
     } catch (e) {
       error.value = 'Invalid code or expired';
@@ -217,7 +243,12 @@ class LoginController extends GetxController {
         }
       } else {
         debugPrint('Response does not have user or role. Response: $response');
-        error.value = 'Invalid response from server';
+        if (roles.isEmpty) {
+          error.value =
+              'No roles assigned. Please complete your profile registration.';
+        } else {
+          error.value = 'Invalid response from server';
+        }
       }
     } on dio.DioException catch (e) {
       debugPrint('DioException: ${e.message}');
@@ -246,10 +277,108 @@ class LoginController extends GetxController {
     isLoading.value = true;
     error.value = null;
     try {
-      // TODO: Implement Google sign in for login
-      error.value = 'Google Sign-In coming soon!';
+      // Force fresh sign-in
+      await _googleSignIn.signOut();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        isLoading.value = false;
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // For Android, we can use serverAuthCode to get a proper token
+      final String? serverAuthCode = googleAuth.serverAuthCode;
+      debugPrint('serverAuthCode: $serverAuthCode');
+
+      // Use accessToken for backend verification
+      final String? token = googleAuth.accessToken;
+
+      debugPrint('Sending token: ${token?.substring(0, 30)}...');
+
+      if (token == null) {
+        error.value = 'Failed to get token';
+        isLoading.value = false;
+        return;
+      }
+
+      final response = await _authApi.googleLoginOnly(token);
+      debugPrint('Google login response: $response');
+      debugPrint('Response keys: ${response.keys.toList()}');
+
+      Map<String, dynamic>? userData;
+      String? role;
+      List<String> roles = [];
+
+      if (response.containsKey('user') && response.containsKey('roles')) {
+        userData = response['user'] as Map<String, dynamic>?;
+        roles =
+            (response['roles'] as List?)?.map((e) => e.toString()).toList() ??
+            [];
+        debugPrint('User data: $userData');
+        debugPrint('Roles: $roles');
+
+        // Set role from roles list
+        if (roles.contains('PARENT')) {
+          role = 'PARENT';
+        } else if (roles.contains('TEACHER')) {
+          role = 'TEACHER';
+        } else if (roles.contains('STUDENT')) {
+          role = 'STUDENT';
+        } else if (roles.contains('ADMIN')) {
+          role = 'ADMIN';
+        } else if (roles.isNotEmpty) {
+          role = roles.first;
+        }
+        debugPrint('Selected role: $role');
+      } else {
+        debugPrint('Response does not contain user/roles keys');
+        debugPrint('Full response: $response');
+      }
+
+      if (userData != null && role != null && role.isNotEmpty) {
+        _auth.setUser(userData, role: role, roles: roles);
+
+        // Save token for web
+        if (kIsWeb && response.containsKey('access')) {
+          final apiProvider = Get.find<ApiProvider>();
+          await apiProvider.setWebToken(response['access']);
+        }
+
+        switch (role.toUpperCase()) {
+          case 'TEACHER':
+            Get.offAllNamed(AppRoutes.teacher);
+            break;
+          case 'PARENT':
+            Get.offAllNamed(AppRoutes.parent);
+            break;
+          case 'STUDENT':
+            Get.offAllNamed(AppRoutes.student);
+            break;
+          case 'ADMIN':
+            Get.offAllNamed(AppRoutes.admin);
+            break;
+          default:
+            Get.offAllNamed(AppRoutes.login);
+        }
+      } else {
+        debugPrint('Login failed - roles list: $roles');
+        error.value =
+            'No roles assigned. If you just signed up, please complete your profile registration first.';
+      }
     } catch (e) {
-      error.value = 'Google sign in failed';
+      debugPrint('Google login error: $e');
+      String errorMessage = 'Google sign in failed';
+      if (e.toString().contains('404') ||
+          e.toString().contains('No account found')) {
+        errorMessage =
+            'No account found with this Google email. Please sign up first.';
+      } else if (e.toString().contains('detail')) {
+        errorMessage = e.toString();
+      }
+      error.value = errorMessage;
     } finally {
       isLoading.value = false;
     }

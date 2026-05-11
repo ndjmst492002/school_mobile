@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/models/models.dart';
 import '../../data/providers/api_provider.dart';
+import '../../routes/app_routes.dart';
 import 'student_controller.dart';
 
 class StudentView extends GetView<StudentController> {
@@ -14,10 +15,87 @@ class StudentView extends GetView<StudentController> {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
 
+      if (controller.profileNotFound.value) {
+        return Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.person_outline,
+                    size: 80,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Profile Not Found',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'You need to complete your student profile before accessing the dashboard.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () => Get.toNamed(
+                      AppRoutes.profileCompletion,
+                      arguments: {'role': 'STUDENT'},
+                    ),
+                    child: const Text('Complete Profile'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () {
+                      Get.offAllNamed('/login');
+                    },
+                    child: const Text('Logout'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Student Dashboard'),
-          actions: [_buildNotificationBell(), _buildProfileMenu()],
+          automaticallyImplyLeading: false,
+          title: null,
+          toolbarHeight: 80,
+          actions: [
+            _buildNotificationBell(),
+            _buildLanguageToggle(),
+            _buildProfileMenu(),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(50),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Student Dashboard',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Welcome, ${controller.userName}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.blueGrey,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
         body: RefreshIndicator(
           onRefresh: controller.loadData,
@@ -26,20 +104,13 @@ class StudentView extends GetView<StudentController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Obx(
-                  () => Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'Welcome, ${controller.userName}',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 8),
                 _buildStatsCards(),
                 const SizedBox(height: 16),
                 _buildTabs(),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 _buildTabContent(),
+                const SizedBox(height: 16),
                 _buildSubmitDialog(),
               ],
             ),
@@ -51,65 +122,103 @@ class StudentView extends GetView<StudentController> {
 
   Widget _buildStatsCards() {
     return Obx(
-      () => Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              'My Classes',
-              '${controller.enrolledCount}',
-              'Enrolled in',
+      () => SizedBox(
+        height: 120,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          children: [
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'My Classes',
+                '${controller.enrolledCount}',
+                'Enrolled in',
+                Colors.blue,
+                Icons.class_,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              'Exercises',
-              '${controller.exercises.length}',
-              'Available',
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Exercises',
+                '${controller.exercises.length}',
+                'Available',
+                Colors.purple,
+                Icons.assignment,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              'Submitted',
-              '${controller.submissions.length}',
-              'Completed',
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 150,
+              child: _buildStatCard(
+                'Submitted',
+                '${controller.submissions.length}',
+                'Completed',
+                Colors.green,
+                Icons.check_circle,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, String subtitle) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    String subtitle,
+    Color color,
+    IconData icon,
+  ) {
     return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10, color: Colors.grey),
-            ),
-          ],
+      child: Container(
+        width: 150,
+        constraints: const BoxConstraints(minHeight: 100),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ),
+                  Icon(icon, size: 14, color: Colors.grey),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -378,7 +487,41 @@ class StudentView extends GetView<StudentController> {
     );
   }
 
+  Widget _buildFilterButton(String label, String value, String currentFilter) {
+    final isSelected = currentFilter == value;
+    Color backgroundColor;
+    Color textColor;
+
+    if (value == 'all') {
+      backgroundColor = isSelected ? Colors.blue : Colors.grey[200]!;
+      textColor = isSelected ? Colors.white : Colors.black87;
+    } else if (value == 'enrolled') {
+      backgroundColor = isSelected ? Colors.green : Colors.grey[200]!;
+      textColor = isSelected ? Colors.white : Colors.black87;
+    } else if (value == 'not_enrolled') {
+      backgroundColor = isSelected ? Colors.orange : Colors.grey[200]!;
+      textColor = isSelected ? Colors.white : Colors.black87;
+    } else {
+      backgroundColor = Colors.grey[200]!;
+      textColor = Colors.black87;
+    }
+
+    return Expanded(
+      child: OutlinedButton(
+        onPressed: () => controller.setEnrollmentFilter(value),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          minimumSize: Size.zero,
+        ),
+        child: Text(label, style: const TextStyle(fontSize: 12)),
+      ),
+    );
+  }
+
   Widget _buildClassesCard() {
+    final searchController = TextEditingController();
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -390,17 +533,66 @@ class StudentView extends GetView<StudentController> {
               'Available Classes',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
+            const SizedBox(height: 8),
+            const Text(
+              'Browse and enroll in classes to access exercises',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
             const SizedBox(height: 12),
+            // Search Bar
+            TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by class name or teacher...',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                isDense: true,
+              ),
+              onChanged: (value) => controller.setSearchQuery(value),
+            ),
+            const SizedBox(height: 12),
+            // Filter Buttons
+            Obx(
+              () => Row(
+                children: [
+                  _buildFilterButton(
+                    'All Classes',
+                    'all',
+                    controller.enrollmentFilter.value,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterButton(
+                    'Enrolled',
+                    'enrolled',
+                    controller.enrollmentFilter.value,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterButton(
+                    'Not Enrolled',
+                    'not_enrolled',
+                    controller.enrollmentFilter.value,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Obx(() {
-              if (controller.classes.isEmpty) {
-                return const Text('No classes available');
+              final filteredClasses = controller.filteredClasses;
+              if (filteredClasses.isEmpty) {
+                return const Text('No classes match your filters');
               }
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.classes.length,
+                itemCount: filteredClasses.length,
                 itemBuilder: (context, index) {
-                  final cls = controller.classes[index];
+                  final cls = filteredClasses[index];
                   final enrolled = controller.isEnrolled(cls.id);
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -457,67 +649,126 @@ class StudentView extends GetView<StudentController> {
                                     ),
                                   ],
                                 ),
-                                if (enrolled)
-                                  Container(
+                                Obx(() {
+                                  final status = controller.getEnrollmentStatus(
+                                    cls.id,
+                                  );
+                                  Color badgeColor;
+                                  String statusText;
+                                  if (status == 'APPROVED') {
+                                    badgeColor = Colors.green[100]!;
+                                    statusText = 'Enrolled ✓';
+                                  } else if (status == 'PENDING') {
+                                    badgeColor = Colors.orange[100]!;
+                                    statusText = 'Pending...';
+                                  } else if (status == 'REJECTED') {
+                                    badgeColor = Colors.red[100]!;
+                                    statusText = 'Rejected';
+                                  } else {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Container(
                                     margin: const EdgeInsets.only(top: 6),
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.green[100],
+                                      color: badgeColor,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Text(
-                                      'Enrolled ✓',
-                                      style: TextStyle(fontSize: 10),
+                                    child: Text(
+                                      statusText,
+                                      style: const TextStyle(fontSize: 10),
                                     ),
-                                  ),
+                                  );
+                                }),
                               ],
                             ),
                           ),
                           const SizedBox(width: 12),
-                          if (!enrolled)
-                            SizedBox(
+                          Obx(() {
+                            final status = controller.getEnrollmentStatus(
+                              cls.id,
+                            );
+                            if (status == 'APPROVED') {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[100],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Enrolled',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              );
+                            } else if (status == 'PENDING') {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[100],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Pending',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                              );
+                            } else if (status == 'REJECTED') {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[100],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Rejected',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              );
+                            }
+                            return SizedBox(
                               height: 36,
-                              child: Obx(
-                                () => ElevatedButton(
-                                  onPressed:
-                                      controller.enrolling.value == cls.id
-                                      ? null
-                                      : () => controller.enrollInClass(cls.id),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+                              child: controller.enrolling.value == cls.id
+                                  ? const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : ElevatedButton(
+                                      onPressed: () =>
+                                          controller.enrollInClass(cls.id),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Enroll',
+                                        style: TextStyle(fontSize: 12),
+                                      ),
                                     ),
-                                  ),
-                                  child: Text(
-                                    controller.enrolling.value == cls.id
-                                        ? '...'
-                                        : 'Enroll',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              ),
-                            )
-                          else
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green[100],
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'Enrolled',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -931,6 +1182,18 @@ class StudentView extends GetView<StudentController> {
     });
   }
 
+  Widget _buildLanguageToggle() {
+    return Obx(() {
+      return TextButton(
+        onPressed: controller.toggleLanguage,
+        child: Text(
+          controller.currentLanguage == 'en' ? 'ع' : 'EN',
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+      );
+    });
+  }
+
   void _showNotificationsDialog() {
     controller.markAllNotificationsAsRead();
     Get.dialog(
@@ -1113,35 +1376,95 @@ class StudentView extends GetView<StudentController> {
           if (auth.hasMultipleRoles) ...[
             const PopupMenuDivider(),
             if (auth.roles.contains('PARENT'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'parent',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.people, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Parent'),
+                    Row(
+                      children: [
+                        const Icon(Icons.people, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Parent'),
+                      ],
+                    ),
+                    if (auth.role == 'PARENT')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
             if (auth.roles.contains('TEACHER'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'teacher',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.school, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Teacher'),
+                    Row(
+                      children: [
+                        const Icon(Icons.school, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Teacher'),
+                      ],
+                    ),
+                    if (auth.role == 'TEACHER')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
             if (auth.roles.contains('ADMIN'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'admin',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.admin_panel_settings, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Admin'),
+                    Row(
+                      children: [
+                        const Icon(Icons.admin_panel_settings, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Admin'),
+                      ],
+                    ),
+                    if (auth.role == 'ADMIN')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),

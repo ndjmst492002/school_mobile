@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'admin_controller.dart';
+import '../../data/providers/api_provider.dart';
+import '../../data/models/models.dart';
 
 class AdminView extends GetView<AdminController> {
   const AdminView({super.key});
@@ -9,14 +11,35 @@ class AdminView extends GetView<AdminController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        actions: [
-          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: controller.logout,
+        automaticallyImplyLeading: false,
+        title: null,
+        actions: [_buildNotificationBell(), _buildProfileMenu()],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Admin Dashboard',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Obx(
+                  () => Text(
+                    'Welcome, ${controller.userName}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -41,14 +64,15 @@ class AdminView extends GetView<AdminController> {
                 children: [
                   const Icon(Icons.admin_panel_settings, color: Colors.blue),
                   const SizedBox(width: 8),
-                  Expanded(  // ← Add this
+                  Expanded(
+                    // ← Add this
                     child: Text(
                       'Admin Only: You have full system access',
                       style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.w500,
                       ),
-                      softWrap: true,  // ← Allow text to wrap to next line
+                      softWrap: true, // ← Allow text to wrap to next line
                     ),
                   ),
                 ],
@@ -95,10 +119,12 @@ class AdminView extends GetView<AdminController> {
   Widget _buildStatsGrid() {
     // Calculate crossAxisCount based on screen width
     final screenWidth = MediaQuery.of(Get.context!).size.width;
-    final crossAxisCount = screenWidth < 600 ? 2 : 4;  // 2 columns on phones, 4 on tablets
+    final crossAxisCount = screenWidth < 600
+        ? 2
+        : 4; // 2 columns on phones, 4 on tablets
 
     return GridView.count(
-      crossAxisCount: crossAxisCount,  // ← Changed from fixed 4
+      crossAxisCount: crossAxisCount, // ← Changed from fixed 4
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 8,
@@ -257,7 +283,7 @@ class AdminView extends GetView<AdminController> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,  // ← Keep this
+          mainAxisSize: MainAxisSize.min, // ← Keep this
           children: [
             const Text(
               'Quick Actions',
@@ -288,7 +314,7 @@ class AdminView extends GetView<AdminController> {
 
   Widget _buildActionButton(IconData icon, String label) {
     return SizedBox(
-      width: 120,  // Fixed width
+      width: 120, // Fixed width
       child: OutlinedButton(
         onPressed: () {},
         style: OutlinedButton.styleFrom(
@@ -307,6 +333,354 @@ class AdminView extends GetView<AdminController> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationBell() {
+    return Obx(() {
+      final hasUnread = controller.unreadNotificationCount > 0;
+      return Stack(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () => _showNotificationsDialog(),
+          ),
+          if (hasUnread)
+            Positioned(
+              right: 6,
+              top: 6,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                child: Text(
+                  '${controller.unreadNotificationCount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      );
+    });
+  }
+
+  void _showNotificationsDialog() {
+    controller.loadNotifications();
+    Get.dialog(
+      Dialog(
+        alignment: Alignment.centerRight,
+        insetPadding: EdgeInsets.zero,
+        child: Container(
+          width: 350,
+          height: double.infinity,
+          color: Colors.white,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Notifications',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Get.back(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Obx(() {
+                  if (controller.notifications.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No notifications',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: controller.notifications.length,
+                    itemBuilder: (context, index) {
+                      final notification = controller.notifications[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        color: notification.isRead ? null : Colors.blue[50],
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      notification.title,
+                                      style: TextStyle(
+                                        fontWeight: notification.isRead
+                                            ? FontWeight.normal
+                                            : FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  if (!notification.isRead)
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.blue,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                notification.message,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _getTimeAgo(notification.createdAt),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  String _getTimeAgo(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inSeconds < 60) {
+        return '${difference.inSeconds}s ago';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes}m ago';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours}h ago';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays}d ago';
+      } else {
+        return '${date.day}/${date.month}/${date.year}';
+      }
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  Widget _buildProfileMenu() {
+    final auth = Get.find<AuthService>();
+    return Obx(
+      () => PopupMenuButton<String>(
+        icon: CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.blue,
+          child: Text(
+            controller.userName.isNotEmpty
+                ? controller.userName[0].toUpperCase()
+                : 'U',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        onSelected: (v) {
+          if (v == 'logout') {
+            controller.logout();
+          } else if (v == 'parent') {
+            controller.switchToRole('PARENT');
+          } else if (v == 'student') {
+            controller.switchToRole('STUDENT');
+          } else if (v == 'teacher') {
+            controller.switchToRole('TEACHER');
+          } else if (v == 'dark_mode') {
+            controller.toggleDarkMode();
+          } else if (v == 'language') {
+            controller.toggleLanguage();
+          }
+        },
+        itemBuilder: (ctx) => [
+          PopupMenuItem(
+            enabled: false,
+            child: Text(
+              controller.userName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: 'dark_mode',
+            child: Row(
+              children: [
+                Icon(
+                  controller.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 'language',
+            child: Row(
+              children: [
+                const Icon(Icons.language, size: 20),
+                const SizedBox(width: 8),
+                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+              ],
+            ),
+          ),
+          if (auth.hasMultipleRoles) ...[
+            const PopupMenuDivider(),
+            if (auth.roles.contains('TEACHER'))
+              PopupMenuItem(
+                value: 'teacher',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.school, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Teacher'),
+                      ],
+                    ),
+                    if (auth.role == 'TEACHER')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('STUDENT'))
+              PopupMenuItem(
+                value: 'student',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.person, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Student'),
+                      ],
+                    ),
+                    if (auth.role == 'STUDENT')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            if (auth.roles.contains('PARENT'))
+              PopupMenuItem(
+                value: 'parent',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.people, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Parent'),
+                      ],
+                    ),
+                    if (auth.role == 'PARENT')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+          const PopupMenuDivider(),
+          const PopupMenuItem(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(Icons.logout, size: 20, color: Colors.red),
+                const SizedBox(width: 8),
+                const Text('Logout', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

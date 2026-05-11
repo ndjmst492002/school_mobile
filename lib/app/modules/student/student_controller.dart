@@ -9,6 +9,7 @@ import '../../data/services/student_api.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
+import '../../data/exceptions.dart';
 
 class StudentController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -26,6 +27,43 @@ class StudentController extends GetxController {
   final selectedSubmitFile = Rxn<PlatformFile>();
   final isSubmitting = false.obs;
   final activeTab = 'class-enrollment'.obs;
+  final profileNotFound = false.obs;
+  final searchQuery = ''.obs;
+  final enrollmentFilter = 'all'.obs; // 'all', 'enrolled', 'not_enrolled'
+
+  List<ClassModel> get filteredClasses {
+    var result = classes.toList();
+
+    // Apply search filter
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      result = result
+          .where(
+            (cls) =>
+                cls.name.toLowerCase().contains(query) ||
+                cls.description.toLowerCase().contains(query) ||
+                (cls.teacherName?.toLowerCase().contains(query) ?? false),
+          )
+          .toList();
+    }
+
+    // Apply enrollment filter
+    if (enrollmentFilter.value == 'enrolled') {
+      result = result.where((cls) => isEnrolled(cls.id)).toList();
+    } else if (enrollmentFilter.value == 'not_enrolled') {
+      result = result.where((cls) => !isEnrolled(cls.id)).toList();
+    }
+
+    return result;
+  }
+
+  void setSearchQuery(String query) {
+    searchQuery.value = query;
+  }
+
+  void setEnrollmentFilter(String filter) {
+    enrollmentFilter.value = filter;
+  }
 
   AuthService get _auth => Get.find<AuthService>();
   ThemeService get _theme => Get.find<ThemeService>();
@@ -82,6 +120,7 @@ class StudentController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
+    profileNotFound.value = false;
     try {
       debugPrint('Loading student data...');
       final results = await Future.wait([
@@ -101,6 +140,14 @@ class StudentController extends GetxController {
       debugPrint(
         'Loaded ${attendance.length} attendance records, ${notifications.length} notifications',
       );
+    } on ProfileNotFoundException catch (e) {
+      debugPrint('Profile not found: ${e.message}');
+      profileNotFound.value = true;
+      Get.snackbar(
+        'Profile Required',
+        e.message,
+        duration: const Duration(seconds: 5),
+      );
     } catch (e) {
       debugPrint('Error loading data: $e');
     } finally {
@@ -110,7 +157,27 @@ class StudentController extends GetxController {
 
   bool isEnrolled(int classId) {
     final cls = classes.firstWhereOrNull((c) => c.id == classId);
+    if (cls?.enrollmentStatus != null) {
+      return cls!.enrollmentStatus!.status == 'APPROVED';
+    }
     return cls?.students?.any((s) => s.id == userId) ?? false;
+  }
+
+  String getEnrollmentStatus(int classId) {
+    final cls = classes.firstWhereOrNull((c) => c.id == classId);
+    if (cls?.enrollmentStatus != null) {
+      return cls!.enrollmentStatus!.status;
+    }
+    if (isEnrolled(classId)) return 'APPROVED';
+    return 'NOT_ENROLLED';
+  }
+
+  bool isPending(int classId) {
+    return getEnrollmentStatus(classId) == 'PENDING';
+  }
+
+  bool isRejected(int classId) {
+    return getEnrollmentStatus(classId) == 'REJECTED';
   }
 
   Future<void> enrollInClass(int classId) async {

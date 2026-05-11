@@ -4,12 +4,33 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../providers/api_provider.dart';
 import '../models/models.dart';
+import '../exceptions.dart';
 
 class StudentApi {
   final ApiProvider _api = Get.find<ApiProvider>();
 
+  bool _isProfileNotFoundError(dynamic data) {
+    if (data is Map) {
+      final detail = data['detail'];
+      return detail != null &&
+          (detail.toString().contains('profile not found') ||
+              detail.toString().contains('not found') ||
+              detail.toString().contains('Student not found'));
+    }
+    return false;
+  }
+
   Future<List<ClassModel>> getAllClasses() async {
     final response = await _api.get('/users/classes/');
+    if (response.data is! List) {
+      debugPrint('getAllClasses response is not a list: ${response.data}');
+      if (_isProfileNotFoundError(response.data)) {
+        throw ProfileNotFoundException(
+          'Student profile not found. Please complete your profile.',
+        );
+      }
+      return [];
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => ClassModel.fromJson(json)).toList();
   }
@@ -20,12 +41,30 @@ class StudentApi {
 
   Future<List<Exercise>> getExercises() async {
     final response = await _api.get('/users/student/exercises/');
+    if (response.data is! List) {
+      debugPrint('getExercises response is not a list: ${response.data}');
+      if (_isProfileNotFoundError(response.data)) {
+        throw ProfileNotFoundException(
+          'Student profile not found. Please complete your profile.',
+        );
+      }
+      return [];
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => Exercise.fromJson(json)).toList();
   }
 
   Future<List<Submission>> getSubmissions() async {
     final response = await _api.get('/users/student/submissions/');
+    if (response.data is! List) {
+      debugPrint('getSubmissions response is not a list: ${response.data}');
+      if (_isProfileNotFoundError(response.data)) {
+        throw ProfileNotFoundException(
+          'Student profile not found. Please complete your profile.',
+        );
+      }
+      return [];
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => Submission.fromJson(json)).toList();
   }
@@ -71,18 +110,40 @@ class StudentApi {
 
   Future<List<Announcement>> getAnnouncements() async {
     final response = await _api.get('/users/student/announcements/');
+    if (response.data is! List) {
+      debugPrint('getAnnouncements response is not a list: ${response.data}');
+      if (_isProfileNotFoundError(response.data)) {
+        throw ProfileNotFoundException(
+          'Student profile not found. Please complete your profile.',
+        );
+      }
+      return [];
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => Announcement.fromJson(json)).toList();
   }
 
   Future<List<AttendanceRecord>> getAttendance() async {
     final response = await _api.get('/users/student/attendance/');
+    if (response.data is! List) {
+      debugPrint('getAttendance response is not a list: ${response.data}');
+      if (_isProfileNotFoundError(response.data)) {
+        throw ProfileNotFoundException(
+          'Student profile not found. Please complete your profile.',
+        );
+      }
+      return [];
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => AttendanceRecord.fromJson(json)).toList();
   }
 
   Future<List<AppNotification>> getNotifications() async {
     final response = await _api.get('/users/notifications/');
+    if (response.data is! List) {
+      debugPrint('getNotifications response is not a list: ${response.data}');
+      return [];
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => AppNotification.fromJson(json)).toList();
   }

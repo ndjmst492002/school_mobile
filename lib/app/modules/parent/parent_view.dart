@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../data/models/parent_models.dart';
 import '../../data/providers/api_provider.dart';
+import '../../routes/app_routes.dart';
 import 'parent_controller.dart';
 import '../chat/chat_view.dart';
 import '../chat/chat_controller.dart';
@@ -16,35 +16,117 @@ class ParentView extends GetView<ParentController> {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
 
-      return Scaffold(
-        appBar: AppBar(
-          title: Obx(
-            () => Row(
-              children: [
-                Text('Parent Dashboard'),
-                const SizedBox(width: 8),
-                Text(
-                  ', ${controller.userName}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
+      if (controller.profileNotFound.value) {
+        return Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.person_outline,
+                    size: 80,
+                    color: Colors.blue,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Profile Not Found',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'You need to complete your parent profile before accessing the dashboard.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () => Get.toNamed(
+                      AppRoutes.profileCompletion,
+                      arguments: {'role': 'PARENT'},
+                    ),
+                    child: Text('Complete Profile'.tr),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () {
+                      Get.offAllNamed('/login');
+                    },
+                    child: const Text('Logout'),
+                  ),
+                ],
+              ),
             ),
           ),
+        );
+      }
+
+      return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: null,
+          toolbarHeight: controller.showChat.value ? 60 : 80,
           actions: [
-            _buildNotificationBell(),
-            _buildChatButton(),
-            _buildLanguageToggle(),
-            _buildProfileMenu(),
+            if (!controller.showChat.value) ...[
+              _buildNotificationBell(),
+              _buildChatButton(),
+              _buildLanguageToggle(),
+              _buildProfileMenu(),
+            ] else ...[
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  Get.delete<ChatController>();
+                  controller.toggleChat();
+                  controller.updateUnreadMessageCount(0);
+                },
+              ),
+            ],
           ],
+          bottom: controller.showChat.value
+              ? null // No bottom content when chat is open
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(50),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 12,
+                    ),
+                    child: Obx(
+                      () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Parent Dashboard',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Welcome, ${controller.userName}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.blueGrey,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
         ),
         body: controller.showChat.value
             ? ChatView(
                 onClose: () {
                   Get.delete<ChatController>();
                   controller.toggleChat();
+                  controller.updateUnreadMessageCount(0);
                 },
               )
             : _buildBody(),
@@ -80,7 +162,7 @@ class ParentView extends GetView<ParentController> {
         children: [
           _buildTabButton('my-children', 'My Children'),
           _buildTabButton('announcements', 'Announcements'),
-          _buildTabButton('attendance-records', 'Attendance'),
+          _buildTabButton('attendance-records', 'Attendance Records'),
           _buildTabButton('predictions', 'Predictions'),
         ],
       ),
@@ -139,34 +221,14 @@ class ParentView extends GetView<ParentController> {
   Widget _buildAnnouncementsTab() {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildChildFilter(
-            controller.selectedChildForAnnouncements.value,
-            (v) => controller.setSelectedChildForAnnouncements(v),
-          ),
-          const SizedBox(height: 16),
-          _buildAnnouncementsCard(),
-        ],
-      ),
+      child: _buildAnnouncementsCard(),
     );
   }
 
   Widget _buildAttendanceTab() {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildChildFilter(
-            controller.selectedChildForAttendance.value,
-            (v) => controller.setSelectedChildForAttendance(v),
-          ),
-          const SizedBox(height: 16),
-          _buildAttendanceCard(),
-        ],
-      ),
+      child: _buildAttendanceCard(),
     );
   }
 
@@ -192,48 +254,16 @@ class ParentView extends GetView<ParentController> {
     );
   }
 
-  Widget _buildChildFilter(String selectedValue, Function(String) onChanged) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Obx(
-        () => Row(
-          children: [
-            ChoiceChip(
-              label: const Text('All'),
-              selected: selectedValue.isEmpty,
-              onSelected: (s) {
-                if (s) onChanged('');
-              },
-            ),
-            const SizedBox(width: 8),
-            ...controller.children.map(
-              (c) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(c.fullName),
-                  selected: selectedValue == c.fullName,
-                  onSelected: (s) {
-                    if (s) onChanged(c.fullName);
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildStatsCards() {
     return Obx(
       () => SizedBox(
-        height: 100,
+        height: 120,
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             SizedBox(
-              width: 150,
+              width: 160,
               child: _buildStatCard(
                 'My Children',
                 '${controller.children.length}',
@@ -244,7 +274,7 @@ class ParentView extends GetView<ParentController> {
             ),
             const SizedBox(width: 12),
             SizedBox(
-              width: 150,
+              width: 160,
               child: _buildStatCard(
                 'Average Progress',
                 controller.children.isNotEmpty ? 'Good' : 'N/A',
@@ -255,7 +285,7 @@ class ParentView extends GetView<ParentController> {
             ),
             const SizedBox(width: 12),
             SizedBox(
-              width: 150,
+              width: 160,
               child: _buildStatCard(
                 'Enrolled Classes',
                 controller.children.isNotEmpty ? 'Active' : 'N/A',
@@ -266,7 +296,7 @@ class ParentView extends GetView<ParentController> {
             ),
             const SizedBox(width: 12),
             SizedBox(
-              width: 150,
+              width: 160,
               child: _buildStatCard(
                 'Notifications',
                 '${controller.children.isNotEmpty ? controller.children.length : 0}',
@@ -289,44 +319,51 @@ class ParentView extends GetView<ParentController> {
     IconData icon,
   ) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+      child: Container(
+        width: 160,
+        constraints: const BoxConstraints(minHeight: 110),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
                   ),
-                ),
-                Icon(icon, size: 16, color: Colors.grey),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
+                  Icon(icon, size: 14, color: Colors.grey),
+                ],
               ),
-            ),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 10, color: Colors.grey),
-            ),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -344,19 +381,54 @@ class ParentView extends GetView<ParentController> {
               'Announcements',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
+            const SizedBox(height: 8),
+            Obx(() {
+              if (controller.children.isEmpty) return const SizedBox.shrink();
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildChildFilterChip(
+                        'All',
+                        controller.selectedChildForAnnouncements.value.isEmpty,
+                        () => controller.selectChildForAnnouncements(''),
+                      ),
+                      ...controller.children.map(
+                        (child) => _buildChildFilterChip(
+                          child.fullName,
+                          controller.selectedChildForAnnouncements.value ==
+                              child.fullName,
+                          () => controller.selectChildForAnnouncements(
+                            child.fullName,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
             const SizedBox(height: 12),
             Obx(() {
-              if (controller.announcements.isEmpty) {
+              if (controller.filteredAnnouncements.isEmpty) {
                 return const Text('No announcements');
               }
+
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.announcements.length > 5
+                itemCount: controller.filteredAnnouncements.length > 5
                     ? 5
-                    : controller.announcements.length,
+                    : controller.filteredAnnouncements.length,
                 itemBuilder: (context, index) {
-                  final childAnn = controller.announcements[index];
+                  final childAnn = controller.filteredAnnouncements[index];
                   final ann = childAnn.announcement;
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -366,7 +438,6 @@ class ParentView extends GetView<ParentController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Teacher name (matching StudentView)
                           Text(
                             'From: ${ann.teacherName ?? "Teacher"}',
                             maxLines: 1,
@@ -378,7 +449,6 @@ class ParentView extends GetView<ParentController> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          // Child name (additional info for parent)
                           Text(
                             'Child: ${childAnn.childName}',
                             maxLines: 1,
@@ -389,7 +459,6 @@ class ParentView extends GetView<ParentController> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          // Title (matching StudentView)
                           Text(
                             ann.title,
                             maxLines: 2,
@@ -400,7 +469,6 @@ class ParentView extends GetView<ParentController> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          // Content (matching StudentView)
                           Text(
                             ann.content,
                             maxLines: 3,
@@ -408,7 +476,6 @@ class ParentView extends GetView<ParentController> {
                             style: const TextStyle(fontSize: 13),
                           ),
                           const SizedBox(height: 8),
-                          // Tags (matching StudentView)
                           Wrap(
                             spacing: 8,
                             runSpacing: 4,
@@ -475,13 +542,47 @@ class ParentView extends GetView<ParentController> {
               'Attendance Records',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
+            const SizedBox(height: 8),
+            Obx(() {
+              if (controller.children.isEmpty) return const SizedBox.shrink();
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildChildFilterChip(
+                        'All',
+                        controller.selectedChildForAttendance.value.isEmpty,
+                        () => controller.selectChildForAttendance(''),
+                      ),
+                      ...controller.children.map(
+                        (child) => _buildChildFilterChip(
+                          child.fullName,
+                          controller.selectedChildForAttendance.value ==
+                              child.fullName,
+                          () => controller.selectChildForAttendance(
+                            child.fullName,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
             const SizedBox(height: 12),
             Obx(() {
-              if (controller.attendance.isEmpty) {
+              if (controller.filteredAttendance.isEmpty) {
                 return const Text('No attendance records');
               }
               return Column(
-                children: controller.attendance.map((childAtt) {
+                children: controller.filteredAttendance.map((childAtt) {
                   final presentCount = childAtt.attendance
                       .where((a) => a.status == 'PRESENT')
                       .length;
@@ -737,6 +838,133 @@ class ParentView extends GetView<ParentController> {
     );
   }
 
+  Widget _buildInfoChip(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        SizedBox(
+          width: 120,
+          child: Text(
+            value,
+            softWrap: true,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImportantInfoCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Important Information',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Obx(() {
+              if (controller.children.isEmpty) {
+                return const Text(
+                  'Contact the school administration to link your children to your account.',
+                );
+              }
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: controller.children.length,
+                itemBuilder: (context, index) {
+                  final child = controller.children[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            child.fullName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildInfoRow(
+                            Icons.notifications,
+                            Colors.blue,
+                            'You are linked as the parent of this student',
+                          ),
+                          if (child.phoneNumber != null)
+                            _buildInfoRow(
+                              Icons.phone,
+                              Colors.green,
+                              'Contact number: ${child.phoneNumber}',
+                            ),
+                          _buildInfoRow(
+                            Icons.book,
+                            Colors.purple,
+                            'Check their exercises and assignments regularly',
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, Color color, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              softWrap: true,
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChildFilterChip(
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(label, style: TextStyle(fontSize: 12)),
+        selected: isSelected,
+        onSelected: (_) => onTap(),
+        selectedColor: Colors.blue[100],
+        checkmarkColor: Colors.blue,
+      ),
+    );
+  }
+
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
@@ -876,116 +1104,6 @@ class ParentView extends GetView<ParentController> {
     });
   }
 
-  Widget _buildInfoChip(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-        SizedBox(
-          width: 120,
-          child: Text(
-            value,
-            softWrap: true,
-            style: const TextStyle(fontSize: 12),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildImportantInfoCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Important Information',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.children.isEmpty) {
-                return const Text(
-                  'Contact the school administration to link your children to your account.',
-                );
-              }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.children.length,
-                itemBuilder: (context, index) {
-                  final child = controller.children[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            child.fullName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _buildInfoRow(
-                            Icons.notifications,
-                            Colors.blue,
-                            'You are linked as the parent of this student',
-                          ),
-                          if (child.phoneNumber != null)
-                            _buildInfoRow(
-                              Icons.phone,
-                              Colors.green,
-                              'Contact number: ${child.phoneNumber}',
-                            ),
-                          _buildInfoRow(
-                            Icons.book,
-                            Colors.purple,
-                            'Check their exercises and assignments regularly',
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, Color color, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              softWrap: true,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showNotificationsDialog() {
     controller.markAllNotificationsAsRead();
     Get.dialog(
@@ -998,7 +1116,6 @@ class ParentView extends GetView<ParentController> {
           color: Colors.white,
           child: Column(
             children: [
-              // Header - Clean white with bottom border (no blue)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -1026,7 +1143,6 @@ class ParentView extends GetView<ParentController> {
                   ],
                 ),
               ),
-              // Content
               Expanded(
                 child: Obx(() {
                   if (controller.notifications.isEmpty) {
@@ -1114,6 +1230,7 @@ class ParentView extends GetView<ParentController> {
         constraints: const BoxConstraints(maxHeight: 400),
         child: GridView.builder(
           shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 12,
@@ -1279,12 +1396,25 @@ class ParentView extends GetView<ParentController> {
             controller.switchToRole('TEACHER');
           else if (v == 'student')
             controller.switchToRole('STUDENT');
+          else if (v.startsWith('student_'))
+            controller.switchToRole(v);
           else if (v == 'admin')
             controller.switchToRole('ADMIN');
           else if (v == 'dark_mode')
             controller.toggleDarkMode();
           else if (v == 'language')
             controller.toggleLanguage();
+          else if (v.startsWith('child_')) {
+            final childId = int.tryParse(v.replaceFirst('child_', ''));
+            if (childId != null) {
+              final child = controller.children.firstWhereOrNull(
+                (c) => c.id == childId,
+              );
+              if (child != null) {
+                controller.selectChildForProfile(child.fullName);
+              }
+            }
+          }
         },
         itemBuilder: (ctx) => [
           PopupMenuItem(
@@ -1321,38 +1451,158 @@ class ParentView extends GetView<ParentController> {
           if (auth.hasMultipleRoles) ...[
             const PopupMenuDivider(),
             if (auth.roles.contains('TEACHER'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'teacher',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.school, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Teacher'),
+                    Row(
+                      children: [
+                        Icon(Icons.school, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Teacher'),
+                      ],
+                    ),
+                    if (auth.role == 'TEACHER')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
             if (auth.roles.contains('STUDENT'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'student',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.person, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Student'),
+                    Row(
+                      children: [
+                        Icon(Icons.person, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Student'),
+                      ],
+                    ),
+                    if (auth.role == 'STUDENT')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
             if (auth.roles.contains('ADMIN'))
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'admin',
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.admin_panel_settings, size: 20),
-                    SizedBox(width: 8),
-                    Text('Switch to Admin'),
+                    Row(
+                      children: [
+                        Icon(Icons.admin_panel_settings, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Admin'),
+                      ],
+                    ),
+                    if (auth.role == 'ADMIN')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
                   ],
                 ),
               ),
+            if (auth.roles.contains('ADMIN'))
+              PopupMenuItem(
+                value: 'admin',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.admin_panel_settings, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Switch to Admin'),
+                      ],
+                    ),
+                    if (auth.role == 'ADMIN')
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+          if (controller.children.isNotEmpty) ...[
+            const PopupMenuDivider(),
+            const PopupMenuItem(
+              enabled: false,
+              child: Text(
+                'Select Child',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            ...controller.children.map(
+              (child) => PopupMenuItem(
+                value: 'child_${child.id}',
+                child: Row(
+                  children: [
+                    const Icon(Icons.child_care, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(child.fullName)),
+                    if (controller.selectedChildForProfile.value ==
+                        child.fullName)
+                      const Icon(Icons.check, size: 16, color: Colors.green),
+                  ],
+                ),
+              ),
+            ),
           ],
           const PopupMenuDivider(),
           const PopupMenuItem(

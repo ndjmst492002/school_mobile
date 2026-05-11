@@ -3,12 +3,14 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
+  String? _webToken;
 
-  //static const String baseUrl = 'http://192.168.1.4:8000/api';
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://192.168.1.4:8000/api';
+  //static const String baseUrl = 'http://localhost:8000/api';
 
   Future<ApiProvider> init() async {
     _dio = dio_pkg.Dio(
@@ -24,14 +26,18 @@ class ApiProvider extends GetxService {
     if (!kIsWeb) {
       var cookieJar = CookieJar();
       _dio.interceptors.add(CookieManager(cookieJar));
+    } else {
+      // On web, load token from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      _webToken = prefs.getString('web_token');
     }
 
     _dio.interceptors.add(
       dio_pkg.InterceptorsWrapper(
         onRequest: (options, handler) {
-          // For web, ensure credentials are included
-          if (kIsWeb) {
-            options.extra['withCredentials'] = true;
+          // For web, add JWT token from storage
+          if (kIsWeb && _webToken != null) {
+            options.headers['Authorization'] = 'Bearer $_webToken';
           }
           return handler.next(options);
         },
@@ -98,6 +104,22 @@ class ApiProvider extends GetxService {
   Future<void> downloadFile(String url, String filename) async {
     await _dio.download(url, filename);
   }
+
+  Future<void> setWebToken(String token) async {
+    _webToken = token;
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('web_token', token);
+    }
+  }
+
+  Future<void> clearWebToken() async {
+    _webToken = null;
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('web_token');
+    }
+  }
 }
 
 class AuthService extends GetxService {
@@ -117,8 +139,19 @@ class AuthService extends GetxService {
   bool get hasMultipleRoles => _roles.length > 1;
   int get userId => _user.value?['id'] ?? 0;
   String get userEmail => _user.value?['email'] ?? '';
-  String get userFullName =>
-      _user.value?['full_name'] ?? _user.value?['email'] ?? '';
+  String get userFullName {
+    final fullName = _user.value?['full_name'] ?? '';
+    if (fullName.isNotEmpty) return fullName;
+
+    // Construct from first_name and last_name
+    final firstName = _user.value?['first_name'] ?? '';
+    final lastName = _user.value?['last_name'] ?? '';
+    if (firstName.isNotEmpty || lastName.isNotEmpty) {
+      return '$firstName $lastName'.trim();
+    }
+
+    return _user.value?['email'] ?? '';
+  }
 
   void setUser(
     Map<String, dynamic>? userData, {
@@ -156,5 +189,10 @@ class AuthService extends GetxService {
   void logout() {
     _user.value = null;
     _isAuthenticated.value = false;
+    // Clear web token
+    if (kIsWeb) {
+      final apiProvider = Get.find<ApiProvider>();
+      apiProvider.clearWebToken();
+    }
   }
 }

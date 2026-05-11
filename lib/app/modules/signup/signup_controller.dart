@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../routes/app_routes.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-enum SignupStep { details, role, teacher, parent }
+enum SignupStep { details, phone, role, teacher, parent }
 
 class StudentData {
   String firstName;
@@ -36,6 +38,22 @@ class StudentData {
 
 class SignupController extends GetxController {
   final AuthApi _authApi = AuthApi();
+  static const String _serverClientId =
+      '719247317672-32jg242u60iic2hjkvg2selclsb4ebrb.apps.googleusercontent.com';
+  late GoogleSignIn googleSignIn;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (kIsWeb) {
+      googleSignIn = GoogleSignIn(scopes: ['email', 'profile', 'openid']);
+    } else {
+      googleSignIn = GoogleSignIn(
+        serverClientId: _serverClientId,
+        scopes: ['email', 'profile', 'openid'],
+      );
+    }
+  }
 
   final currentStep = SignupStep.details.obs;
   final isLoading = false.obs;
@@ -81,7 +99,7 @@ class SignupController extends GetxController {
       return;
     }
     error.value = null;
-    currentStep.value = SignupStep.role;
+    currentStep.value = SignupStep.phone;
   }
 
   void goBackToDetails() {
@@ -89,8 +107,16 @@ class SignupController extends GetxController {
   }
 
   void goToPhoneStep() {
-    // No longer used - direct to role
-    currentStep.value = SignupStep.role;
+    if (firstNameController.text.isEmpty) {
+      error.value = 'First name is required';
+      return;
+    }
+    if (lastNameController.text.isEmpty) {
+      error.value = 'Last name is required';
+      return;
+    }
+    error.value = null;
+    currentStep.value = SignupStep.phone;
   }
 
   Future<void> sendOTP() async {
@@ -106,10 +132,10 @@ class SignupController extends GetxController {
     isLoading.value = true;
     error.value = null;
     try {
-      await _authApi.sendOTP(phoneNumberController.text);
+      final response = await _authApi.sendOTP(phoneNumberController.text);
       otpSent.value = true;
     } catch (e) {
-      error.value = 'Failed to send OTP. Please try again.';
+      error.value = 'Failed to send OTP: ${e.toString()}';
     } finally {
       isLoading.value = false;
     }
@@ -120,17 +146,17 @@ class SignupController extends GetxController {
       error.value = 'Please enter the verification code';
       return;
     }
-    if (emailController.text.isEmpty) {
-      error.value = 'Please enter your email';
-      return;
-    }
     isLoading.value = true;
     error.value = null;
     try {
+      final email = emailController.text.isNotEmpty
+          ? emailController.text
+          : '${phoneNumberController.text}@phone.local';
+
       await _authApi.verifyOTP(
         phoneNumber: phoneNumberController.text,
         code: otpCodeController.text,
-        email: emailController.text,
+        email: email,
         firstName: firstNameController.text,
         lastName: lastNameController.text,
         address: addressController.text,
@@ -179,8 +205,9 @@ class SignupController extends GetxController {
     }
     isLoading.value = true;
     error.value = null;
+    debugPrint('=== Submitting teacher profile ===');
     try {
-      await _authApi.createTeacherProfile(
+      final result = await _authApi.createTeacherProfile(
         hireDate: hireDateController.text,
         specialization: specializationController.text,
         className: classNameController.text,
@@ -188,14 +215,21 @@ class SignupController extends GetxController {
             ? classDescriptionController.text
             : null,
       );
-
+      debugPrint('Teacher profile result: $result');
       if (isParentSelected) {
         currentStep.value = SignupStep.parent;
       } else {
-        await _autoLoginAfterSignup();
+        Get.snackbar(
+          'Registration Complete!',
+          'Please login again with Google to access your dashboard.',
+          duration: const Duration(seconds: 5),
+        );
+        Get.offAllNamed(AppRoutes.login);
       }
     } catch (e) {
-      error.value = 'Failed to create teacher profile. Please try again.';
+      debugPrint('Teacher profile creation error: $e');
+      error.value =
+          'Failed to create teacher profile. Please try again. Error: $e';
     } finally {
       isLoading.value = false;
     }
@@ -275,9 +309,25 @@ class SignupController extends GetxController {
         students: studentsData,
       );
 
-      await _autoLoginAfterSignup();
+      debugPrint('Parent profile created successfully');
+      Get.snackbar(
+        'Registration Complete!',
+        'Please login again with Google to access your dashboard.',
+        duration: const Duration(seconds: 5),
+      );
+      Get.offAllNamed(AppRoutes.login);
     } catch (e) {
-      error.value = 'Failed to create parent profile. Please try again.';
+      debugPrint('Parent profile creation error: $e');
+      String errorMsg = 'Failed to create parent profile.';
+      if (e.toString().contains('401')) {
+        errorMsg = 'Authentication failed. Please try logging in again.';
+      } else if (e.toString().contains('400')) {
+        errorMsg = 'Invalid data. Please check your inputs.';
+      } else {
+        errorMsg =
+            'Failed to create parent profile. Please try again. Error: $e';
+      }
+      error.value = errorMsg;
     } finally {
       isLoading.value = false;
     }
@@ -286,9 +336,64 @@ class SignupController extends GetxController {
   Future<void> signInWithGoogle() async {
     isLoading.value = true;
     error.value = null;
-    await Future.delayed(const Duration(milliseconds: 500));
-    error.value = 'Google Sign-Up coming soon!';
-    isLoading.value = false;
+    debugPrint('=== Starting Google Sign-In ===');
+    try {
+      // Force fresh sign-in to show account picker
+      await googleSignIn.signOut();
+      debugPrint('Signed out previous session');
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      debugPrint('Google user: $googleUser');
+
+      if (googleUser == null) {
+        debugPrint('Google sign-in cancelled by user');
+        isLoading.value = false;
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      debugPrint('Got Google auth');
+      // Use accessToken for backend (idToken doesn't work with tokeninfo endpoint)
+      final String? token = googleAuth.accessToken ?? googleAuth.idToken;
+
+      if (token == null) {
+        error.value = 'Failed to get token';
+        isLoading.value = false;
+        return;
+      }
+
+      debugPrint('Calling backend googleAuth...');
+      try {
+        final response = await _authApi.googleAuth(token);
+        debugPrint('Backend auth response: $response');
+        // Save token for web
+        if (kIsWeb && response.containsKey('access')) {
+          final apiProvider = Get.find<ApiProvider>();
+          await apiProvider.setWebToken(response['access'].toString());
+          debugPrint('Web token saved');
+        }
+      } catch (e) {
+        debugPrint('Backend auth failed: $e');
+        rethrow;
+      }
+
+      final displayName = googleUser.displayName ?? '';
+      final nameParts = displayName.split(' ');
+      firstNameController.text = nameParts.isNotEmpty ? nameParts.first : '';
+      lastNameController.text = nameParts.length > 1
+          ? nameParts.sublist(1).join(' ')
+          : '';
+      emailController.text = googleUser.email;
+
+      debugPrint('Moving to phone step');
+      currentStep.value = SignupStep.phone;
+    } catch (e) {
+      debugPrint('Google sign-in error: $e');
+      error.value = 'Google sign-in failed: ${e.toString()}';
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void setEmailFromGoogle(String email) {
@@ -320,18 +425,8 @@ class SignupController extends GetxController {
         _auth.setLoading(false);
       }
 
-      // Navigate without any cleanup - let controllers be garbage collected naturally
-      if (role?.toUpperCase() == 'TEACHER') {
-        Get.offAllNamed(AppRoutes.teacher);
-      } else if (role?.toUpperCase() == 'PARENT') {
-        Get.offAllNamed(AppRoutes.parent);
-      } else if (role?.toUpperCase() == 'STUDENT') {
-        Get.offAllNamed(AppRoutes.student);
-      } else if (role?.toUpperCase() == 'ADMIN') {
-        Get.offAllNamed(AppRoutes.admin);
-      } else {
-        Get.offAllNamed(AppRoutes.login);
-      }
+      // After signup, redirect to login page (like web frontend)
+      Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       error.value =
           'Registration successful but auto-login failed. Please login manually.';

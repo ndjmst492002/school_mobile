@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'app/data/providers/api_provider.dart';
+import 'app/data/services/translations_service.dart';
 import 'app/theme/app_theme.dart';
 import 'app/routes/app_routes.dart';
 import 'app/initial_binding.dart';
@@ -48,6 +49,7 @@ void main() async {
 
 Future<void> initServices() async {
   Get.put(ThemeService());
+  Get.put(TranslationsService());
   Get.put(AuthService());
   await Get.putAsync(() => ApiProvider().init());
   InitialBinding().dependencies();
@@ -63,6 +65,7 @@ class SchoolMobileApp extends StatelessWidget {
       () => GetMaterialApp(
         title: 'Smart School',
         debugShowCheckedModeBanner: false,
+        translations: TranslationsService(),
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: themeService.isDarkMode ? ThemeMode.dark : ThemeMode.light,

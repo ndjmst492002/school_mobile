@@ -9,6 +9,7 @@ import '../../data/services/teacher_api.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
+import '../../data/exceptions.dart';
 
 class TeacherController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -36,6 +37,7 @@ class TeacherController extends GetxController {
   final unreadMessageCount = 0.obs;
   final unreadNotificationCount = 0.obs;
   final respondingEnrollment = Rxn<int>();
+  final profileNotFound = false.obs;
 
   final activeTab = 'my-classes'.obs;
   final uploadClassId = ''.obs;
@@ -120,6 +122,7 @@ class TeacherController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
+    profileNotFound.value = false;
     try {
       debugPrint('Loading teacher data...');
       final results = await Future.wait([
@@ -138,6 +141,14 @@ class TeacherController extends GetxController {
       skills.value = results[5] as List<Skill>;
       debugPrint(
         'Loaded ${classes.length} classes, ${exercises.length} exercises, ${enrollments.length} enrollments',
+      );
+    } on ProfileNotFoundException catch (e) {
+      debugPrint('Profile not found: ${e.message}');
+      profileNotFound.value = true;
+      Get.snackbar(
+        'Profile Required',
+        e.message,
+        duration: const Duration(seconds: 5),
       );
     } catch (e) {
       debugPrint('Error loading data: $e');

@@ -9,7 +9,10 @@ class AuthApi {
       '/users/login/',
       data: {'email': email, 'password': password},
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<void> logout() async {
@@ -22,7 +25,10 @@ class AuthApi {
 
   Future<Map<String, dynamic>> getCurrentUser() async {
     final response = await _api.get('/users/me/');
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {};
   }
 
   Future<String> getWsTicket() async {
@@ -35,7 +41,10 @@ class AuthApi {
       '/users/otp/send/',
       data: {'phone_number': phoneNumber},
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<Map<String, dynamic>> verifyOTP({
@@ -59,7 +68,10 @@ class AuthApi {
         'date_of_birth': dateOfBirth ?? '',
       },
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<Map<String, dynamic>> phoneLoginSend(String phoneNumber) async {
@@ -67,7 +79,10 @@ class AuthApi {
       '/users/login/phone/send/',
       data: {'phone_number': phoneNumber},
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<Map<String, dynamic>> phoneLoginVerify(
@@ -78,7 +93,10 @@ class AuthApi {
       '/users/login/phone/verify/',
       data: {'phone_number': phoneNumber, 'code': code},
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<Map<String, dynamic>> googleAuth(String accessToken) async {
@@ -86,7 +104,36 @@ class AuthApi {
       '/users/auth/google/',
       data: {'access_token': accessToken},
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
+  }
+
+  Future<Map<String, dynamic>> googleLoginOnly(String accessToken) async {
+    final response = await _api.post(
+      '/users/login/google/',
+      data: {'access_token': accessToken},
+    );
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
+  }
+
+  Future<Map<String, dynamic>> contactUs({
+    required String name,
+    required String email,
+    required String message,
+  }) async {
+    final response = await _api.post(
+      '/users/contact/',
+      data: {'name': name, 'email': email, 'message': message},
+    );
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<Map<String, dynamic>> createTeacherProfile({
@@ -104,7 +151,10 @@ class AuthApi {
         'class_description': classDescription ?? '',
       },
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 
   Future<Map<String, dynamic>> createParentProfile({
@@ -115,6 +165,9 @@ class AuthApi {
       '/users/profile/parent/',
       data: {'occupation': occupation, 'students': students},
     );
-    return response.data;
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'success': true};
   }
 }

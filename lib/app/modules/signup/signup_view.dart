@@ -7,38 +7,40 @@ import '../../routes/app_routes.dart';
 
 class SignupView extends GetView<SignupController> {
   const SignupView({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Get.isDarkMode;
-    return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF18181B)
-          : const Color(0xFFF9FAFB),
-      body: Stack(
-        children: [
-          const _AnimatedBackground(),
-          SafeArea(
-            child: Column(
-              children: [
-                _buildTopBar(isDark),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Center(
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 500),
-                        child: Obx(() => _buildStep(isDark)),
+    final theme = Get.find<ThemeService>();
+    return Obx(() {
+      final isDark = theme.isDarkMode;
+      return Scaffold(
+        backgroundColor: isDark
+            ? const Color(0xFF18181B)
+            : const Color(0xFFF9FAFB),
+        body: Stack(
+          children: [
+            const _AnimatedBackground(),
+            SafeArea(
+              child: Column(
+                children: [
+                  _buildTopBar(isDark),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Center(
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          child: Obx(() => _buildStep(isDark)),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildTopBar(bool isDark) {
@@ -85,12 +87,19 @@ class SignupView extends GetView<SignupController> {
     required Widget icon,
     required VoidCallback onPressed,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Get.isDarkMode ? Colors.grey[800] : Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
+    final theme = Get.find<ThemeService>();
+    return Obx(
+      () => Container(
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: theme.isDarkMode ? Colors.white : Colors.black,
+            width: 1,
+          ),
+        ),
+        child: IconButton(icon: icon, onPressed: onPressed),
       ),
-      child: IconButton(icon: icon, onPressed: onPressed),
     );
   }
 
@@ -98,6 +107,8 @@ class SignupView extends GetView<SignupController> {
     switch (controller.currentStep.value) {
       case SignupStep.details:
         return _buildDetailsStep(isDark);
+      case SignupStep.phone:
+        return _buildPhoneStep(isDark);
       case SignupStep.role:
         return _buildRoleStep(isDark);
       case SignupStep.teacher:
@@ -131,7 +142,7 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Sign Up',
+              'Sign Up'.tr,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -141,7 +152,7 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Create your account',
+              'Create your account'.tr,
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
                 fontSize: 14,
@@ -212,12 +223,29 @@ class SignupView extends GetView<SignupController> {
                 onPressed: controller.isLoading.value
                     ? null
                     : controller.signInWithGoogle,
-                child: const Text('Sign Up with Google'),
+                child: Text('Sign Up with Google'.tr),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.goToPhoneStep,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('Continue to Phone Verification'.tr),
               ),
             ),
             const SizedBox(height: 16),
@@ -366,7 +394,7 @@ class SignupView extends GetView<SignupController> {
                 onPressed: controller.isLoading.value
                     ? null
                     : controller.goBackToDetails,
-                child: const Text('Go Back'),
+                child: Text('Go Back'.tr),
               ),
             ),
           ],
@@ -599,7 +627,7 @@ class SignupView extends GetView<SignupController> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text('Saving...'),
+                            Text('Saving...'.tr),
                           ],
                         )
                       : Text(
@@ -703,7 +731,7 @@ class SignupView extends GetView<SignupController> {
               child: OutlinedButton.icon(
                 onPressed: controller.addStudent,
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Another Student'),
+                label: Text('Add Another Student'.tr),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -739,7 +767,7 @@ class SignupView extends GetView<SignupController> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text('Creating...'),
+                            Text('Creating...'.tr),
                           ],
                         )
                       : const Text(
@@ -983,9 +1011,9 @@ class SignupView extends GetView<SignupController> {
                       vertical: 4,
                     ),
                     borderRadius: BorderRadius.circular(8),
-                    items: const [
-                      DropdownMenuItem(value: true, child: Text('Male')),
-                      DropdownMenuItem(value: false, child: Text('Female')),
+                    items: [
+                      DropdownMenuItem(value: true, child: Text('Male'.tr)),
+                      DropdownMenuItem(value: false, child: Text('Female'.tr)),
                     ],
                     onChanged: (v) {
                       if (v != null) {

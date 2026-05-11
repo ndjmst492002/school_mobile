@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
+import '../../data/services/auth_api.dart';
 import 'login_controller.dart';
 import '../../../main.dart';
 
@@ -10,287 +11,417 @@ class LoginView extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Get.isDarkMode;
-    return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF18181B)
-          : const Color(0xFFF9FAFB),
-      body: Stack(
-        children: [
-          _AnimatedBackground(isDark: isDark),
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Card(
-                  elevation: 8,
-                  color: isDark ? const Color(0xFF27272A) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 16),
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary,
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            child: const Icon(
-                              Icons.school,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'School Portal'.tr,
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Sign in to your account'.tr,
-                          style: TextStyle(
-                            color: isDark ? Colors.grey[400] : Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 32),
-                        Obx(() {
-                          if (controller.error.value != null) {
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.all(12),
+    final theme = Get.find<ThemeService>();
+    return Obx(() {
+      final isDark = theme.isDarkMode;
+      return Scaffold(
+        backgroundColor: isDark
+            ? const Color(0xFF18181B)
+            : const Color(0xFFF9FAFB),
+        body: Stack(
+          children: [
+            _AnimatedBackground(isDark: isDark),
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Card(
+                    elevation: 8,
+                    color: isDark ? const Color(0xFF27272A) : Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 16),
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Colors.red[50],
+                                color: AppTheme.primary,
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: const Icon(
+                                Icons.school,
+                                size: 40,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'School Portal'.tr,
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Sign in to your account'.tr,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+                          Obx(() {
+                            if (controller.error.value != null) {
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.red[200]!),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Colors.red[700],
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        controller.error.value!,
+                                        style: TextStyle(
+                                          color: Colors.red[700],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }),
+                          Obx(
+                            () => Container(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF18181B)
+                                    : Colors.grey[100],
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red[200]!),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: Colors.red[700],
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
                                   Expanded(
-                                    child: Text(
-                                      controller.error.value!,
-                                      style: TextStyle(color: Colors.red[700]),
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          controller.switchTab('email'),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              controller.selectedTab.value ==
+                                                  'email'
+                                              ? AppTheme.primary
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Email'.tr,
+                                          style: TextStyle(
+                                            color:
+                                                controller.selectedTab.value ==
+                                                    'email'
+                                                ? Colors.white
+                                                : (isDark
+                                                      ? Colors.grey[300]
+                                                      : Colors.grey[700]),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          controller.switchTab('phone'),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              controller.selectedTab.value ==
+                                                  'phone'
+                                              ? AppTheme.primary
+                                              : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Phone'.tr,
+                                          style: TextStyle(
+                                            color:
+                                                controller.selectedTab.value ==
+                                                    'phone'
+                                                ? Colors.white
+                                                : (isDark
+                                                      ? Colors.grey[300]
+                                                      : Colors.grey[700]),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        }),
-                        Obx(
-                          () => Container(
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF18181B)
-                                  : Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => controller.switchTab('email'),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            controller.selectedTab.value ==
-                                                'email'
-                                            ? AppTheme.primary
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        'Email'.tr,
-                                        style: TextStyle(
-                                          color:
-                                              controller.selectedTab.value ==
-                                                  'email'
-                                              ? Colors.white
-                                              : (isDark
-                                                    ? Colors.grey[300]
-                                                    : Colors.grey[700]),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => controller.switchTab('phone'),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            controller.selectedTab.value ==
-                                                'phone'
-                                            ? AppTheme.primary
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        'Phone'.tr,
-                                        style: TextStyle(
-                                          color:
-                                              controller.selectedTab.value ==
-                                                  'phone'
-                                              ? Colors.white
-                                              : (isDark
-                                                    ? Colors.grey[300]
-                                                    : Colors.grey[700]),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        Obx(() {
-                          if (controller.selectedTab.value == 'email') {
-                            return _EmailForm(isDark: isDark);
-                          } else {
-                            return _PhoneForm(isDark: isDark);
-                          }
-                        }),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                color: isDark
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Text(
-                                'or',
-                                style: TextStyle(
+                          const SizedBox(height: 24),
+                          Obx(() {
+                            if (controller.selectedTab.value == 'email') {
+                              return _EmailForm(isDark: isDark);
+                            } else {
+                              return _PhoneForm(isDark: isDark);
+                            }
+                          }),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
                                   color: isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600],
+                                      ? Colors.grey[600]
+                                      : Colors.grey[400],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Text(
+                                  'or',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: isDark
+                                      ? Colors.grey[600]
+                                      : Colors.grey[400],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          // Google Sign In button
+                          SizedBox(
+                            height: 48,
+                            child: OutlinedButton(
+                              onPressed: controller.isLoading.value
+                                  ? null
+                                  : controller.signInWithGoogle,
+                              child: Text('Sign in with Google'.tr),
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                             ),
-                            Expanded(
-                              child: Divider(
-                                color: isDark
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          GestureDetector(
+                            onTap: () => Get.toNamed(AppRoutes.signup),
+                            child: Text(
+                              'Don\'t have an account? Sign Up'.tr,
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Google Sign In button
-                        SizedBox(
-                          height: 48,
-                          child: OutlinedButton(
-                            onPressed: controller.isLoading.value
-                                ? null
-                                : controller.signInWithGoogle,
-                            child: const Text('Sign in with Google'),
-                            style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        GestureDetector(
-                          onTap: () => Get.toNamed(AppRoutes.signup),
-                          child: Text(
-                            'Don\'t have an account? Sign Up',
-                            style: TextStyle(
-                              color: AppTheme.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Row(
-              children: [
-                _buildIconButton(
-                  icon: Obx(() {
-                    final theme = Get.find<ThemeService>();
-                    return Text(
-                      theme.locale.languageCode == 'en' ? 'ع' : 'EN',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Row(
+                children: [
+                  _buildIconButton(
+                    icon: Obx(() {
+                      final theme = Get.find<ThemeService>();
+                      return Text(
+                        theme.locale.languageCode == 'en' ? 'ع' : 'EN',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      );
+                    }),
+                    onPressed: () {
+                      final theme = Get.find<ThemeService>();
+                      theme.toggleLanguage();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildIconButton(
+                    icon: Obx(() {
+                      final theme = Get.find<ThemeService>();
+                      return Icon(
+                        theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                         color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    );
-                  }),
-                  onPressed: () {
-                    final theme = Get.find<ThemeService>();
-                    theme.toggleLanguage();
-                  },
-                ),
-                const SizedBox(width: 8),
-                _buildIconButton(
-                  icon: Obx(() {
-                    final theme = Get.find<ThemeService>();
-                    return Icon(
-                      theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                      );
+                    }),
+                    onPressed: () {
+                      final theme = Get.find<ThemeService>();
+                      theme.toggleTheme();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildIconButton(
+                    icon: Icon(
+                      Icons.contact_mail,
                       color: isDark ? Colors.white : Colors.black87,
-                    );
-                  }),
-                  onPressed: () {
-                    final theme = Get.find<ThemeService>();
-                    theme.toggleTheme();
-                  },
+                    ),
+                    onPressed: () => _showContactDialog(context, isDark),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showContactDialog(BuildContext context, bool isDark) {
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final messageController = TextEditingController();
+    final isSubmitting = false.obs;
+
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF27272A) : Colors.white,
+        title: Text(
+          'Contact Us',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: 'Your Name',
+                  labelStyle: TextStyle(
+                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF18181B)
+                      : Colors.grey[100],
                 ),
-              ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: 'Your Email',
+                  labelStyle: TextStyle(
+                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF18181B)
+                      : Colors.grey[100],
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: messageController,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                maxLines: 4,
+                decoration: InputDecoration(
+                  labelText: 'Message',
+                  labelStyle: TextStyle(
+                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF18181B)
+                      : Colors.grey[100],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: Text('Cancel')),
+          Obx(
+            () => ElevatedButton(
+              onPressed: isSubmitting.value
+                  ? null
+                  : () async {
+                      if (nameController.text.isEmpty ||
+                          emailController.text.isEmpty ||
+                          messageController.text.isEmpty) {
+                        Get.snackbar('Error', 'Please fill in all fields');
+                        return;
+                      }
+                      isSubmitting.value = true;
+                      try {
+                        final authApi = AuthApi();
+                        await authApi.contactUs(
+                          name: nameController.text,
+                          email: emailController.text,
+                          message: messageController.text,
+                        );
+                        Get.back();
+                        Get.snackbar('Success', 'Your message has been sent');
+                      } catch (e) {
+                        Get.snackbar('Error', 'Failed to send message');
+                      } finally {
+                        isSubmitting.value = false;
+                      }
+                    },
+              child: isSubmitting.value
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Send'),
             ),
           ),
         ],
@@ -302,12 +433,19 @@ class LoginView extends GetView<LoginController> {
     required Widget icon,
     required VoidCallback onPressed,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Get.isDarkMode ? Colors.grey[800] : Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
+    final theme = Get.find<ThemeService>();
+    return Obx(
+      () => Container(
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: theme.isDarkMode ? Colors.white : Colors.black,
+            width: 1,
+          ),
+        ),
+        child: IconButton(icon: icon, onPressed: onPressed),
       ),
-      child: IconButton(icon: icon, onPressed: onPressed),
     );
   }
 }
