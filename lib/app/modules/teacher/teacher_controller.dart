@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/teacher_api.dart';
+import '../../data/services/websocket_service.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
@@ -75,6 +77,21 @@ class TeacherController extends GetxController {
     loadData();
     loadUnreadMessageCount();
     loadNotifications();
+    _initWebSocketListeners();
+  }
+
+  void _initWebSocketListeners() {
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.notificationCountStream.listen((int count) {
+        loadNotifications();
+      });
+      wsService.chatUnreadCountStream.listen((int count) {
+        unreadMessageCount.value = count;
+      });
+    } catch (e) {
+      debugPrint('WebSocket listeners error: $e');
+    }
   }
 
   void setActiveTab(String tab) {
@@ -517,6 +534,12 @@ class TeacherController extends GetxController {
       // Continue even if logout fails
     }
     _auth.logout();
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.disconnectAll();
+    } catch (e) {
+      debugPrint('WebSocket disconnect error: $e');
+    }
     Get.offAllNamed(AppRoutes.login);
   }
 

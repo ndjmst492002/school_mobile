@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/student_api.dart';
+import '../../data/services/websocket_service.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
@@ -30,6 +31,11 @@ class StudentController extends GetxController {
   final profileNotFound = false.obs;
   final searchQuery = ''.obs;
   final enrollmentFilter = 'all'.obs; // 'all', 'enrolled', 'not_enrolled'
+
+  int? childId;
+  String? viewingAsChildName;
+
+  bool get isViewingAsChild => childId != null;
 
   List<ClassModel> get filteredClasses {
     var result = classes.toList();
@@ -115,6 +121,11 @@ class StudentController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final args = Get.arguments;
+    if (args is Map) {
+      childId = args['childId'] as int?;
+      viewingAsChildName = args['childName'] as String?;
+    }
     loadData();
   }
 
@@ -124,11 +135,11 @@ class StudentController extends GetxController {
     try {
       debugPrint('Loading student data...');
       final results = await Future.wait([
-        _studentApi.getAllClasses(),
-        _studentApi.getExercises(),
-        _studentApi.getSubmissions(),
-        _studentApi.getAnnouncements(),
-        _studentApi.getAttendance(),
+        _studentApi.getAllClasses(studentId: childId),
+        _studentApi.getExercises(studentId: childId),
+        _studentApi.getSubmissions(studentId: childId),
+        _studentApi.getAnnouncements(studentId: childId),
+        _studentApi.getAttendance(studentId: childId),
         _studentApi.getNotifications(),
       ]);
       classes.value = results[0] as List<ClassModel>;
@@ -183,7 +194,7 @@ class StudentController extends GetxController {
   Future<void> enrollInClass(int classId) async {
     enrolling.value = classId;
     try {
-      await _studentApi.enrollInClass(classId);
+      await _studentApi.enrollInClass(classId, studentId: childId);
       loadData();
       Get.snackbar('Success', 'Enrolled in class successfully');
     } catch (e) {
@@ -272,6 +283,7 @@ class StudentController extends GetxController {
         filePath: filePath,
         fileBytes: fileBytes,
         fileName: fileName,
+        studentId: childId,
       );
       closeSubmitDialog();
       loadData();
@@ -290,6 +302,12 @@ class StudentController extends GetxController {
       // Continue even if logout fails
     }
     _auth.logout();
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.disconnectAll();
+    } catch (e) {
+      debugPrint('WebSocket disconnect error: $e');
+    }
     Get.offAllNamed(AppRoutes.login);
   }
 

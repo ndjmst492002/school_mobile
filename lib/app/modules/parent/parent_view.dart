@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/providers/api_provider.dart';
 import '../../routes/app_routes.dart';
+import '../../theme/app_theme.dart';
+import '../../../main.dart';
 import 'parent_controller.dart';
 import '../chat/chat_view.dart';
 import '../chat/chat_controller.dart';
@@ -30,13 +32,13 @@ class ParentView extends GetView<ParentController> {
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Profile Not Found',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    'Profile Not Found'.tr,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'You need to complete your parent profile before accessing the dashboard.',
+                  Text(
+                    'You need to complete your parent profile before accessing the dashboard.'.tr,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
@@ -53,7 +55,7 @@ class ParentView extends GetView<ParentController> {
                     onPressed: () {
                       Get.offAllNamed('/login');
                     },
-                    child: const Text('Logout'),
+                    child: Text('Logout'.tr),
                   ),
                 ],
               ),
@@ -99,8 +101,8 @@ class ParentView extends GetView<ParentController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Parent Dashboard',
+                          Text(
+                            'Parent Dashboard'.tr,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -108,7 +110,7 @@ class ParentView extends GetView<ParentController> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Welcome, ${controller.userName}',
+                            '${"Welcome".tr}, ${controller.userName}',
                             style: const TextStyle(
                               fontSize: 13,
                               color: Colors.blueGrey,
@@ -155,16 +157,21 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          _buildTabButton('my-children', 'My Children'),
-          _buildTabButton('announcements', 'Announcements'),
-          _buildTabButton('attendance-records', 'Attendance Records'),
-          _buildTabButton('predictions', 'Predictions'),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            _buildTabButton('my-children', 'My Children'),
+            _buildTabButton('announcements', 'Announcements'),
+            _buildTabButton('attendance-records', 'Attendance Records'),
+            _buildTabButton('predictions', 'Predictions'),
+          ],
+        ),
       ),
     );
   }
@@ -172,16 +179,26 @@ class ParentView extends GetView<ParentController> {
   Widget _buildTabButton(String tabId, String label) {
     return Obx(() {
       final isActive = controller.activeTab.value == tabId;
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: ChoiceChip(
-          label: Text(label),
-          selected: isActive,
-          onSelected: (selected) {
-            if (selected) controller.setActiveTab(tabId);
-          },
-          selectedColor: Colors.blue,
-          labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black),
+      return GestureDetector(
+        onTap: () => controller.setActiveTab(tabId),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isActive ? AppTheme.primary : Colors.transparent,
+                width: 2,
+              ),
+            ),
+          ),
+          child: Text(
+            label.tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              color: isActive ? AppTheme.primary : Colors.grey[600],
+            ),
+          ),
         ),
       );
     });
@@ -238,13 +255,13 @@ class ParentView extends GetView<ParentController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'AI Predictions',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          Text(
+            'AI Predictions'.tr,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Predict student dropout/graduation outcomes',
+          Text(
+            'Predict student dropout/graduation outcomes'.tr,
             style: TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 16),
@@ -265,9 +282,9 @@ class ParentView extends GetView<ParentController> {
             SizedBox(
               width: 160,
               child: _buildStatCard(
-                'My Children',
+                'My Children'.tr,
                 '${controller.children.length}',
-                'Enrolled students',
+                'Enrolled students'.tr,
                 Colors.blue,
                 Icons.group,
               ),
@@ -276,9 +293,9 @@ class ParentView extends GetView<ParentController> {
             SizedBox(
               width: 160,
               child: _buildStatCard(
-                'Average Progress',
+                'Average Progress'.tr,
                 controller.children.isNotEmpty ? 'Good' : 'N/A',
-                'Overall status',
+                'Overall status'.tr,
                 Colors.green,
                 Icons.trending_up,
               ),
@@ -287,9 +304,9 @@ class ParentView extends GetView<ParentController> {
             SizedBox(
               width: 160,
               child: _buildStatCard(
-                'Enrolled Classes',
+                'Enrolled Classes'.tr,
                 controller.children.isNotEmpty ? 'Active' : 'N/A',
-                'Class status',
+                'Class status'.tr,
                 Colors.purple,
                 Icons.menu_book,
               ),
@@ -298,9 +315,9 @@ class ParentView extends GetView<ParentController> {
             SizedBox(
               width: 160,
               child: _buildStatCard(
-                'Notifications',
+                'Notifications'.tr,
                 '${controller.children.isNotEmpty ? controller.children.length : 0}',
-                'Children linked',
+                'Children linked'.tr,
                 Colors.orange,
                 Icons.notifications,
               ),
@@ -333,7 +350,7 @@ class ParentView extends GetView<ParentController> {
                 children: [
                   Expanded(
                     child: Text(
-                      title,
+                      title.tr,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 11, color: Colors.grey),
@@ -356,7 +373,7 @@ class ParentView extends GetView<ParentController> {
               const SizedBox(height: 4),
               Flexible(
                 child: Text(
-                  subtitle,
+                  subtitle.tr,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 10, color: Colors.grey),
@@ -377,9 +394,9 @@ class ParentView extends GetView<ParentController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Announcements',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Text(
+              'Announcements'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Obx(() {
@@ -743,14 +760,14 @@ class ParentView extends GetView<ParentController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'My Children',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Text(
+              'My Children'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 12),
             Obx(() {
               if (controller.children.isEmpty) {
-                return const Text('No children linked');
+                return Text('No children linked'.tr);
               }
               return ListView.builder(
                 shrinkWrap: true,
@@ -789,9 +806,9 @@ class ParentView extends GetView<ParentController> {
                                   color: Colors.green[100],
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Text(
-                                  'Active',
-                                  style: TextStyle(fontSize: 11),
+                                child: Text(
+                                  'Active'.tr,
+                                  style: const TextStyle(fontSize: 11),
                                 ),
                               ),
                             ],
@@ -843,7 +860,7 @@ class ParentView extends GetView<ParentController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        Text(label.tr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
         SizedBox(
           width: 120,
           child: Text(
@@ -864,15 +881,15 @@ class ParentView extends GetView<ParentController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Important Information',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Text(
+              'Important Information'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 12),
             Obx(() {
               if (controller.children.isEmpty) {
-                return const Text(
-                  'Contact the school administration to link your children to your account.',
+                return Text(
+                  'Contact the school administration to link your children to your account.'.tr,
                 );
               }
               return ListView.builder(
@@ -902,18 +919,18 @@ class ParentView extends GetView<ParentController> {
                           _buildInfoRow(
                             Icons.notifications,
                             Colors.blue,
-                            'You are linked as the parent of this student',
+                            'You are linked as the parent of this student'.tr,
                           ),
                           if (child.phoneNumber != null)
                             _buildInfoRow(
                               Icons.phone,
                               Colors.green,
-                              'Contact number: ${child.phoneNumber}',
+                              'Contact number'.tr + ': ${child.phoneNumber}',
                             ),
                           _buildInfoRow(
                             Icons.book,
                             Colors.purple,
-                            'Check their exercises and assignments regularly',
+                            'Check their exercises and assignments regularly'.tr,
                           ),
                         ],
                       ),
@@ -1010,19 +1027,19 @@ class ParentView extends GetView<ParentController> {
       final unreadCount = controller.unreadMessageCount.value;
       return Stack(
         children: [
-          controller.showChat.value
-              ? TextButton.icon(
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Chat', style: TextStyle(fontSize: 12)),
-                  onPressed: () {
-                    Get.delete<ChatController>();
-                    controller.toggleChat();
-                    controller.updateUnreadMessageCount(0);
-                  },
-                )
-              : TextButton.icon(
-                  icon: const Icon(Icons.chat, size: 18),
-                  label: const Text('Chat', style: TextStyle(fontSize: 12)),
+              controller.showChat.value
+                  ? TextButton.icon(
+                      icon: const Icon(Icons.close, size: 18),
+                      label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
+                      onPressed: () {
+                        Get.delete<ChatController>();
+                        controller.toggleChat();
+                        controller.updateUnreadMessageCount(0);
+                      },
+                    )
+                  : TextButton.icon(
+                      icon: const Icon(Icons.chat, size: 18),
+                      label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
                   onPressed: () {
                     Get.put(ChatController());
                     controller.toggleChat();
@@ -1106,20 +1123,27 @@ class ParentView extends GetView<ParentController> {
 
   void _showNotificationsDialog() {
     controller.markAllNotificationsAsRead();
+    final isDark = Get.find<ThemeService>().isDarkMode;
     Get.dialog(
       Dialog(
         alignment: Alignment.centerRight,
         insetPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            bottomLeft: Radius.circular(12),
+          ),
+        ),
         child: Container(
           width: 350,
           height: double.infinity,
-          color: Colors.white,
+          color: isDark ? const Color(0xFF262638) : Colors.white,
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF262638) : Colors.white,
                   border: Border(
                     bottom: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
@@ -1127,11 +1151,12 @@ class ParentView extends GetView<ParentController> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Notifications',
+                    Text(
+                      'Notifications'.tr,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
                     IconButton(
@@ -1146,10 +1171,10 @@ class ParentView extends GetView<ParentController> {
               Expanded(
                 child: Obx(() {
                   if (controller.notifications.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        'No notifications',
-                        style: TextStyle(color: Colors.grey),
+                        'No notifications'.tr,
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     );
                   }
@@ -1221,7 +1246,7 @@ class ParentView extends GetView<ParentController> {
   Widget _buildPredictionsCard() {
     return Obx(() {
       if (controller.children.isEmpty)
-        return const Text('No children linked to your account yet');
+        return Text('No children linked to your account yet'.tr);
 
       final predictionsMap = controller.predictions;
       final predictingId = controller.predicting.value;
@@ -1277,8 +1302,8 @@ class ParentView extends GetView<ParentController> {
                               vertical: 8,
                             ),
                           ),
-                          child: Text(
-                            isPredicting ? '...' : 'Predict',
+                            child: Text(
+                              isPredicting ? '...' : 'Predict'.tr,
                             style: const TextStyle(fontSize: 12),
                           ),
                         ),
@@ -1327,19 +1352,19 @@ class ParentView extends GetView<ParentController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildFeatureRow(
-                              'Absences',
+                              'Absences'.tr,
                               '${prediction.featuresUsed['total_absences'] ?? 0}',
                             ),
                             _buildFeatureRow(
-                              'Absence Rate',
+                              'Absence Rate'.tr,
                               '${((prediction.featuresUsed['absence_rate'] ?? 0.0) * 100).toStringAsFixed(0)}%',
                             ),
                             _buildFeatureRow(
-                              'Exercises',
+                              'Exercises'.tr,
                               '${prediction.featuresUsed['exercises_completed'] ?? 0}',
                             ),
                             _buildFeatureRow(
-                              'Completion',
+                              'Completion'.tr,
                               '${((prediction.featuresUsed['exercise_completion_rate'] ?? 0.0) * 100).toStringAsFixed(0)}%',
                             ),
                           ],
@@ -1376,16 +1401,23 @@ class ParentView extends GetView<ParentController> {
     final auth = Get.find<AuthService>();
     return Obx(
       () => PopupMenuButton<String>(
-        icon: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.blue,
-          child: Text(
-            controller.userName.isNotEmpty
-                ? controller.userName[0].toUpperCase()
-                : 'U',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        icon: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: Center(
+            child: Text(
+              controller.userName.isNotEmpty
+                  ? controller.userName[0].toUpperCase()
+                  : 'U',
+              style: const TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ),
         ),
@@ -1434,17 +1466,7 @@ class ParentView extends GetView<ParentController> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'language',
-            child: Row(
-              children: [
-                const Icon(Icons.language, size: 20),
-                const SizedBox(width: 8),
-                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+                Text(controller.isDarkMode ? 'Light Mode'.tr : 'Dark Mode'.tr),
               ],
             ),
           ),
@@ -1460,7 +1482,7 @@ class ParentView extends GetView<ParentController> {
                       children: [
                         Icon(Icons.school, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Teacher'),
+                        Text('Switch to Teacher'.tr),
                       ],
                     ),
                     if (auth.role == 'TEACHER')
@@ -1473,15 +1495,15 @@ class ParentView extends GetView<ParentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
                 ),
               ),
-            if (auth.roles.contains('STUDENT'))
+            if (auth.roles.contains('STUDENT') && auth.role != 'PARENT')
               PopupMenuItem(
                 value: 'student',
                 child: Row(
@@ -1491,7 +1513,7 @@ class ParentView extends GetView<ParentController> {
                       children: [
                         Icon(Icons.person, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Student'),
+                        Text('Switch to Student'.tr),
                       ],
                     ),
                     if (auth.role == 'STUDENT')
@@ -1504,9 +1526,9 @@ class ParentView extends GetView<ParentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -1522,7 +1544,7 @@ class ParentView extends GetView<ParentController> {
                       children: [
                         Icon(Icons.admin_panel_settings, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Admin'),
+                        Text('Switch to Admin'.tr),
                       ],
                     ),
                     if (auth.role == 'ADMIN')
@@ -1535,9 +1557,9 @@ class ParentView extends GetView<ParentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -1553,7 +1575,7 @@ class ParentView extends GetView<ParentController> {
                       children: [
                         Icon(Icons.admin_panel_settings, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Admin'),
+                        Text('Switch to Admin'.tr),
                       ],
                     ),
                     if (auth.role == 'ADMIN')
@@ -1566,9 +1588,9 @@ class ParentView extends GetView<ParentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -1577,11 +1599,11 @@ class ParentView extends GetView<ParentController> {
           ],
           if (controller.children.isNotEmpty) ...[
             const PopupMenuDivider(),
-            const PopupMenuItem(
+            PopupMenuItem(
               enabled: false,
               child: Text(
-                'Select Child',
-                style: TextStyle(
+                'Select Child'.tr,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                   color: Colors.grey,
@@ -1590,28 +1612,25 @@ class ParentView extends GetView<ParentController> {
             ),
             ...controller.children.map(
               (child) => PopupMenuItem(
-                value: 'child_${child.id}',
+                value: 'student_${child.id}',
                 child: Row(
                   children: [
-                    const Icon(Icons.child_care, size: 20),
+                    const Icon(Icons.visibility, size: 20),
                     const SizedBox(width: 8),
                     Expanded(child: Text(child.fullName)),
-                    if (controller.selectedChildForProfile.value ==
-                        child.fullName)
-                      const Icon(Icons.check, size: 16, color: Colors.green),
                   ],
                 ),
               ),
             ),
           ],
           const PopupMenuDivider(),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'logout',
             child: Row(
               children: [
-                Icon(Icons.logout, size: 20, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Logout', style: TextStyle(color: Colors.red)),
+                const Icon(Icons.logout, size: 20, color: Colors.red),
+                const SizedBox(width: 8),
+                Text('Logout'.tr, style: const TextStyle(color: Colors.red)),
               ],
             ),
           ),

@@ -8,7 +8,7 @@ class ProfileCompletionView extends GetView<ProfileCompletionController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Complete Your Profile')),
+      appBar: AppBar(title: Text('Complete Your Profile'.tr)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -17,13 +17,13 @@ class ProfileCompletionView extends GetView<ProfileCompletionController> {
             const Icon(Icons.person_add, size: 80, color: Colors.blue),
             const SizedBox(height: 16),
             Text(
-              'Create Your Teacher Profile',
+              'Create Your Teacher Profile'.tr,
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Fill in your details to start teaching',
+              'Fill in your details to start teaching'.tr,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
@@ -32,31 +32,31 @@ class ProfileCompletionView extends GetView<ProfileCompletionController> {
             const SizedBox(height: 32),
             TextField(
               controller: controller.specializationController,
-              decoration: const InputDecoration(
-                labelText: 'Specialization *',
-                hintText: 'e.g., Mathematics, Science',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.school),
+              decoration: InputDecoration(
+                labelText: 'Specialization *'.tr,
+                hintText: 'e.g., Mathematics, Science'.tr,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.school),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: controller.classNameController,
-              decoration: const InputDecoration(
-                labelText: 'Class Name *',
-                hintText: 'e.g., Grade 5-A',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.school),
+              decoration: InputDecoration(
+                labelText: 'Class Name *'.tr,
+                hintText: 'e.g., Grade 5-A'.tr,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.school),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: controller.classDescriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Class Description',
-                hintText: 'Optional description for your class',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description),
+              decoration: InputDecoration(
+                labelText: 'Class Description'.tr,
+                hintText: 'Optional description for your class'.tr,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.description),
               ),
               maxLines: 3,
             ),
@@ -89,13 +89,13 @@ class ProfileCompletionView extends GetView<ProfileCompletionController> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Create Profile'),
+                    : Text('Create Profile'.tr),
               );
             }),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Get.offAllNamed('/login'),
-              child: const Text('Logout and try again'),
+              child: Text('Logout and try again'.tr),
             ),
           ],
         ),

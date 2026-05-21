@@ -415,7 +415,7 @@ class SignupView extends GetView<SignupController> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Select Your Role',
+              'Select Your Role'.tr,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -425,7 +425,7 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Choose one or both roles',
+              'Choose one or both roles'.tr,
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
                 fontSize: 14,
@@ -444,7 +444,7 @@ class SignupView extends GetView<SignupController> {
                 children: [
                   Expanded(
                     child: _buildRoleButton(
-                      label: 'Teacher',
+                      label: 'Teacher'.tr,
                       icon: Icons.person,
                       isSelected: controller.isTeacherSelected,
                       isDark: isDark,
@@ -454,7 +454,7 @@ class SignupView extends GetView<SignupController> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildRoleButton(
-                      label: 'Parent',
+                      label: 'Parent'.tr,
                       icon: Icons.family_restroom,
                       isSelected: controller.isParentSelected,
                       isDark: isDark,
@@ -469,7 +469,7 @@ class SignupView extends GetView<SignupController> {
                 return Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
-                    'You\'ll fill in teacher details first, then add your children.',
+                    'You\'ll fill in teacher details first, then add your children.'.tr,
                     style: TextStyle(
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
                       fontSize: 13,
@@ -497,9 +497,9 @@ class SignupView extends GetView<SignupController> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    'Continue'.tr,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -524,7 +524,7 @@ class SignupView extends GetView<SignupController> {
             Obx(() {
               if (controller.isParentSelected) {
                 return Text(
-                  'Step 1 of 2',
+                  'Step 1 of 2'.tr,
                   style: TextStyle(
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                     fontSize: 12,
@@ -535,7 +535,7 @@ class SignupView extends GetView<SignupController> {
               return const SizedBox.shrink();
             }),
             Text(
-              'Teacher Information',
+              'Teacher Information'.tr,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -545,7 +545,7 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Enter your teaching details',
+              'Enter your teaching details'.tr,
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
                 fontSize: 14,
@@ -632,8 +632,8 @@ class SignupView extends GetView<SignupController> {
                         )
                       : Text(
                           controller.isParentSelected
-                              ? 'Save & Continue to Parent Info'
-                              : 'Complete Registration',
+                              ? 'Save & Continue to Parent Info'.tr
+                              : 'Complete Registration'.tr,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -662,7 +662,7 @@ class SignupView extends GetView<SignupController> {
             Obx(() {
               if (controller.isTeacherSelected) {
                 return Text(
-                  'Step 2 of 2',
+                  'Step 2 of 2'.tr,
                   style: TextStyle(
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                     fontSize: 12,
@@ -673,7 +673,7 @@ class SignupView extends GetView<SignupController> {
               return const SizedBox.shrink();
             }),
             Text(
-              'Parent & Children Information',
+              'Parent & Children Information'.tr,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -683,7 +683,7 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Enter your occupation and add your children',
+              'Enter your occupation and add your children'.tr,
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
                 fontSize: 14,
@@ -707,7 +707,7 @@ class SignupView extends GetView<SignupController> {
             Row(
               children: [
                 Text(
-                  'Children (at least 1) *',
+                  'Children (at least 1) *'.tr,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -770,8 +770,8 @@ class SignupView extends GetView<SignupController> {
                             Text('Creating...'.tr),
                           ],
                         )
-                      : const Text(
-                          'Complete Registration',
+                      : Text(
+                          'Complete Registration'.tr,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1051,7 +1051,7 @@ class SignupView extends GetView<SignupController> {
       onChanged: onChanged,
       style: TextStyle(color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
-        labelText: label,
+        labelText: label.tr,
         labelStyle: TextStyle(
           color: isDark ? Colors.grey[300] : Colors.grey[700],
         ),

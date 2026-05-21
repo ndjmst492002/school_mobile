@@ -13,6 +13,8 @@ import '../modules/parent/parent_binding.dart';
 import '../modules/parent/parent_view.dart';
 import '../modules/profile_completion/profile_completion_binding.dart';
 import '../modules/profile_completion/profile_completion_view.dart';
+import '../modules/subscription/subscription_binding.dart';
+import '../modules/subscription/subscription_view.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -22,6 +24,7 @@ class AppRoutes {
   static const String student = '/student';
   static const String parent = '/parent';
   static const String profileCompletion = '/profile-completion';
+  static const String subscription = '/subscription';
   static const String home = '/';
 
   static List<GetPage> get pages => [
@@ -59,6 +62,11 @@ class AppRoutes {
       name: profileCompletion,
       page: () => const ProfileCompletionView(),
       binding: ProfileCompletionBinding(),
+    ),
+    GetPage(
+      name: subscription,
+      page: () => const SubscriptionView(),
+      binding: SubscriptionBinding(),
     ),
   ];
 }

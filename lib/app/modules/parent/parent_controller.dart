@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/parent_api.dart';
+import '../../data/services/websocket_service.dart';
 import '../../data/models/parent_models.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
@@ -91,6 +93,30 @@ class ParentController extends GetxController {
     super.onInit();
     loadData();
     loadUnreadMessageCount();
+    _initWebSocketListeners();
+  }
+
+  void _initWebSocketListeners() {
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.notificationCountStream.listen((int count) {
+        _refreshNotifications();
+      });
+      wsService.chatUnreadCountStream.listen((int count) {
+        unreadMessageCount.value = count;
+      });
+    } catch (e) {
+      debugPrint('WebSocket listeners error: $e');
+    }
+  }
+
+  Future<void> _refreshNotifications() async {
+    try {
+      final data = await _parentApi.getNotifications();
+      notifications.value = data;
+    } catch (e) {
+      debugPrint('Error refreshing notifications: $e');
+    }
   }
 
   Future<void> loadUnreadMessageCount() async {
@@ -270,6 +296,12 @@ class ParentController extends GetxController {
       // Continue even if logout fails
     }
     _auth.logout();
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.disconnectAll();
+    } catch (e) {
+      debugPrint('WebSocket disconnect error: $e');
+    }
     Get.offAllNamed(AppRoutes.login);
   }
 
@@ -277,13 +309,21 @@ class ParentController extends GetxController {
     debugPrint('=== switchToRole called with: $role ===');
     // Handle switching to a specific child (format: student_123)
     if (role.startsWith('student_')) {
-      final childId = role.replaceFirst('student_', '');
+      final childIdStr = role.replaceFirst('student_', '');
+      final childId = int.tryParse(childIdStr);
       debugPrint('Switching to child with ID: $childId');
-      // For now, just switch to student role - the student dashboard will handle showing the specific child
-      _auth.switchRole('STUDENT');
-      debugPrint('About to navigate to student dashboard...');
-      Get.offAllNamed(AppRoutes.student);
-      debugPrint('Navigation called');
+      if (childId != null) {
+        final child = children.firstWhereOrNull((c) => c.id == childId);
+        _auth.switchRole('STUDENT');
+        debugPrint('About to navigate to student dashboard with childId: $childId');
+        Get.offAllNamed(
+          AppRoutes.student,
+          arguments: {'childId': childId, 'childName': child?.fullName},
+        );
+      } else {
+        _auth.switchRole('STUDENT');
+        Get.offAllNamed(AppRoutes.student);
+      }
       return;
     }
 

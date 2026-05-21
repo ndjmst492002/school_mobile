@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/parent_api.dart';
+import '../../data/services/websocket_service.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
@@ -30,6 +31,7 @@ class AdminController extends GetxController {
     super.onInit();
     loadNotifications();
   }
+
   Future<void> loadNotifications() async {
     try {
       final data = await _parentApi.getNotifications();
@@ -39,6 +41,7 @@ class AdminController extends GetxController {
       debugPrint('Error loading notifications: $e');
     }
   }
+
   void toggleLanguage() {
     _theme.toggleLanguage();
   }
@@ -71,6 +74,12 @@ class AdminController extends GetxController {
       // Continue even if logout fails
     }
     _auth.logout();
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.disconnectAll();
+    } catch (e) {
+      debugPrint('WebSocket disconnect error: $e');
+    }
     Get.offAllNamed(AppRoutes.login);
   }
 }

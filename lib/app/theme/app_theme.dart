@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primary = Color(0xFF353535);
-  static const Color primaryForeground = Color(0xFFFCFCFC);
-  static const Color secondary = Color(0xFFF6F6F6);
-  static const Color secondaryForeground = Color(0xFF353535);
+  // Light mode - matching shadcn/ui React palette (gray/slate)
+  static const Color primary = Color(0xFF1E293B);
+  static const Color primaryForeground = Color(0xFFF8FAFC);
+  static const Color secondary = Color(0xFFF1F5F9);
+  static const Color secondaryForeground = Color(0xFF1E293B);
   static const Color background = Color(0xFFFFFFFF);
-  static const Color foreground = Color(0xFF222222);
+  static const Color foreground = Color(0xFF1A1F36);
   static const Color card = Color(0xFFFFFFFF);
-  static const Color cardForeground = Color(0xFF222222);
+  static const Color cardForeground = Color(0xFF1A1F36);
   static const Color popover = Color(0xFFFFFFFF);
-  static const Color popoverForeground = Color(0xFF222222);
-  static const Color muted = Color(0xFFF6F6F6);
-  static const Color mutedForeground = Color(0xFF71717A);
-  static const Color accent = Color(0xFFF6F6F6);
-  static const Color accentForeground = Color(0xFF353535);
-  static const Color destructive = Color(0xFFE53935);
-  static const Color border = Color(0xFFE5E5E5);
-  static const Color input = Color(0xFFE5E5E5);
-  static const Color ring = Color(0xFFB4B4B4);
+  static const Color popoverForeground = Color(0xFF1A1F36);
+  static const Color muted = Color(0xFFF1F5F9);
+  static const Color mutedForeground = Color(0xFF64748B);
+  static const Color accent = Color(0xFFF1F5F9);
+  static const Color accentForeground = Color(0xFF1E293B);
+  static const Color destructive = Color(0xFFDC2626);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color input = Color(0xFFE2E8F0);
+  static const Color ring = Color(0xFF94A3B8);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -46,15 +47,15 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: card,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.04),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: border),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.white,
+        filled: false,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: border),
@@ -95,29 +96,33 @@ class AppTheme {
     );
   }
 
-  static const Color darkPrimary = Color(0xFF4B4B4B);
-  static const Color darkBackground = Color(0xFF1A1A1A);
-  static const Color darkSurface = Color(0xFF2D2D2D);
-  static const Color darkForeground = Color(0xFFF5F5F5);
-  static const Color darkCard = Color(0xFF2D2D2D);
-  static const Color darkBorder = Color(0xFF404040);
+  // Dark mode - matching shadcn/ui React dark palette (zinc)
+  static const Color darkPrimary = Color(0xFFE2E8F0);
+  static const Color darkPrimaryForeground = Color(0xFF27272A);
+  static const Color darkBackground = Color(0xFF27272A);
+  static const Color darkSurface = Color(0xFF3F3F46);
+  static const Color darkForeground = Color(0xFFF8FAFC);
+  static const Color darkCard = Color(0xFF3F3F46);
+  static const Color darkBorder = Color(0x14FFFFFF);
+  static const Color darkMutedForeground = Color(0xFFA1A1AA);
+  static const Color darkDestructive = Color(0xFFEF4444);
 
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.dark(
-        primary: Colors.blue,
-        onPrimary: Colors.white,
-        secondary: Colors.blueGrey,
-        onSecondary: Colors.white,
+        primary: darkPrimary,
+        onPrimary: darkPrimaryForeground,
+        secondary: darkSurface,
+        onSecondary: darkForeground,
         surface: darkSurface,
         onSurface: darkForeground,
-        error: destructive,
+        error: darkDestructive,
         outline: darkBorder,
       ),
       scaffoldBackgroundColor: darkBackground,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF2D2D2D),
+        backgroundColor: Color(0xFF3F3F46),
         foregroundColor: darkForeground,
         elevation: 1,
         titleTextStyle: TextStyle(
@@ -128,26 +133,26 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: darkCard,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: darkBorder),
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0x14FFFFFF)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: darkCard,
+        filled: false,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: darkBorder),
+          borderSide: const BorderSide(color: Color(0x14FFFFFF)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: darkBorder),
+          borderSide: const BorderSide(color: Color(0x14FFFFFF)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
+          borderSide: const BorderSide(color: darkPrimary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -156,8 +161,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
+          backgroundColor: darkPrimary,
+          foregroundColor: darkPrimaryForeground,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
@@ -167,13 +172,13 @@ class AppTheme {
           foregroundColor: darkForeground,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          side: const BorderSide(color: darkBorder),
+          side: const BorderSide(color: Color(0x14FFFFFF)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: Colors.blue),
+        style: TextButton.styleFrom(foregroundColor: darkPrimary),
       ),
-      dividerTheme: const DividerThemeData(color: darkBorder, thickness: 1),
+      dividerTheme: const DividerThemeData(color: Color(0x14FFFFFF), thickness: 1),
     );
   }
 }

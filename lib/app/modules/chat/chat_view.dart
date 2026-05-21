@@ -41,9 +41,9 @@ class ChatView extends GetView<ChatController> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Chat',
-                            style: TextStyle(
+                          Text(
+                            'Chat'.tr,
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -76,10 +76,10 @@ class ChatView extends GetView<ChatController> {
                           return const Center(child: CircularProgressIndicator());
                         }
                         if (controller.contacts.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('No contacts', textAlign: TextAlign.center, style: TextStyle(fontSize: 11)),
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('No contacts'.tr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11)),
                             ),
                           );
                         }
@@ -167,7 +167,7 @@ class ChatView extends GetView<ChatController> {
                             color: Colors.grey[300],
                           ),
                           const SizedBox(height: 12),
-                          const Text('Select a contact', style: TextStyle(fontSize: 12)),
+                          Text('Select a contact'.tr, style: const TextStyle(fontSize: 12)),
                         ],
                       ),
                     );
@@ -230,10 +230,10 @@ class ChatView extends GetView<ChatController> {
                                         const SizedBox(width: 4),
                                         Text(
                                           controller.isWsConnected.value
-                                              ? 'Connected'
+                                              ? 'Connected'.tr
                                               : controller.connectionStatus.value.isNotEmpty
                                               ? controller.connectionStatus.value
-                                              : 'Connecting...',
+                                              : 'Connecting...'.tr,
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: controller.isWsConnected.value
@@ -332,8 +332,8 @@ class ChatView extends GetView<ChatController> {
                             Expanded(
                               child: TextField(
                                 controller: controller.messageController,
-                                decoration: const InputDecoration(
-                                  hintText: 'Type a message...',
+                                decoration: InputDecoration(
+                                  hintText: 'Type a message...'.tr,
                                   border: OutlineInputBorder(),
                                   contentPadding: EdgeInsets.symmetric(
                                     horizontal: 12,

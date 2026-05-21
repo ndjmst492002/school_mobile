@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../data/providers/api_provider.dart';
+import '../../routes/app_routes.dart';
+import '../../theme/app_theme.dart';
+import '../../../main.dart';
 import 'teacher_controller.dart';
 import '../chat/chat_view.dart';
 import '../chat/chat_controller.dart';
-import '../../data/providers/api_provider.dart';
-import '../../routes/app_routes.dart';
 
 class TeacherView extends GetView<TeacherController> {
   const TeacherView({super.key});
@@ -30,13 +32,13 @@ class TeacherView extends GetView<TeacherController> {
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Profile Not Found',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    'Profile Not Found'.tr,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'You need to complete your teacher profile before accessing the dashboard.',
+                  Text(
+                    'You need to complete your teacher profile before accessing the dashboard.'.tr,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
@@ -97,16 +99,16 @@ class TeacherView extends GetView<TeacherController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Teacher Dashboard',
-                          style: TextStyle(
+                        Text(
+                          'Teacher Dashboard'.tr,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Welcome, ${controller.userName}',
+                          '${"Welcome".tr}, ${controller.userName}',
                           style: const TextStyle(
                             fontSize: 13,
                             color: Colors.blueGrey,
@@ -212,16 +214,23 @@ class TeacherView extends GetView<TeacherController> {
     final auth = Get.find<AuthService>();
     return Obx(
       () => PopupMenuButton<String>(
-        icon: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.blue,
-          child: Text(
-            controller.userName.isNotEmpty
-                ? controller.userName[0].toUpperCase()
-                : 'U',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        icon: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: Center(
+            child: Text(
+              controller.userName.isNotEmpty
+                  ? controller.userName[0].toUpperCase()
+                  : 'U',
+              style: const TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ),
         ),
@@ -236,8 +245,6 @@ class TeacherView extends GetView<TeacherController> {
             controller.switchToRole('ADMIN');
           else if (v == 'dark_mode')
             controller.toggleDarkMode();
-          else if (v == 'language')
-            controller.toggleLanguage();
         },
         itemBuilder: (ctx) => [
           PopupMenuItem(
@@ -257,17 +264,7 @@ class TeacherView extends GetView<TeacherController> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'language',
-            child: Row(
-              children: [
-                const Icon(Icons.language, size: 20),
-                const SizedBox(width: 8),
-                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+                Text(controller.isDarkMode ? 'Light Mode'.tr : 'Dark Mode'.tr),
               ],
             ),
           ),
@@ -281,7 +278,7 @@ class TeacherView extends GetView<TeacherController> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.people, size: 20),
+                        Icon(Icons.family_restroom, size: 20),
                         const SizedBox(width: 8),
                         Text('Switch to Parent'.tr),
                       ],
@@ -296,15 +293,15 @@ class TeacherView extends GetView<TeacherController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
                 ),
               ),
-            if (auth.roles.contains('STUDENT'))
+            if (auth.roles.contains('STUDENT') && auth.role != 'TEACHER' && auth.role != 'PARENT')
               PopupMenuItem(
                 value: 'student',
                 child: Row(
@@ -312,7 +309,7 @@ class TeacherView extends GetView<TeacherController> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.person, size: 20),
+                        Icon(Icons.person, size: 20),
                         const SizedBox(width: 8),
                         Text('Switch to Student'.tr),
                       ],
@@ -327,9 +324,9 @@ class TeacherView extends GetView<TeacherController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -385,20 +382,27 @@ class TeacherView extends GetView<TeacherController> {
 
   void _showNotificationsDialog() {
     controller.markAllNotificationsAsRead();
+    final isDark = Get.find<ThemeService>().isDarkMode;
     Get.dialog(
       Dialog(
         alignment: Alignment.centerRight,
         insetPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            bottomLeft: Radius.circular(12),
+          ),
+        ),
         child: Container(
           width: 350,
           height: double.infinity,
-          color: Colors.white,
+          color: isDark ? const Color(0xFF262638) : Colors.white,
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF262638) : Colors.white,
                   border: Border(
                     bottom: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
@@ -406,11 +410,12 @@ class TeacherView extends GetView<TeacherController> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Notifications',
+                    Text(
+                      'Notifications'.tr,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
                     IconButton(
@@ -507,19 +512,24 @@ class TeacherView extends GetView<TeacherController> {
             _buildStatsCards(),
             const SizedBox(height: 16),
             // Tabs
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Obx(
-                () => Row(
-                  children: [
-                    _buildTabChip('my-classes', 'My Classes'),
-                    _buildTabChip('enrollments', 'Enrollments'),
-                    _buildTabChip('mark-attendance', 'Attendance'),
-                    _buildTabChip('create-announcement', 'Announcements'),
-                    _buildTabChip('upload-exercise', 'Exercises'),
-                    _buildTabChip('student-submissions', 'Submissions'),
-                  ],
+            Container(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Obx(
+                  () => Row(
+                    children: [
+                      _buildTabChip('my-classes', 'My Classes'),
+                      _buildTabChip('enrollments', 'Enrollments'),
+                      _buildTabChip('mark-attendance', 'Attendance'),
+                      _buildTabChip('create-announcement', 'Announcements'),
+                      _buildTabChip('upload-exercise', 'Exercises'),
+                      _buildTabChip('student-submissions', 'Submissions'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -552,16 +562,26 @@ class TeacherView extends GetView<TeacherController> {
 
   Widget _buildTabChip(String tabId, String label) {
     final isActive = controller.activeTab.value == tabId;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label, style: const TextStyle(fontSize: 13)),
-        selected: isActive,
-        onSelected: (selected) {
-          if (selected) controller.setActiveTab(tabId);
-        },
-        selectedColor: Colors.blue,
-        labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black),
+    return GestureDetector(
+      onTap: () => controller.setActiveTab(tabId),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isActive ? AppTheme.primary : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Text(
+          label.tr,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            color: isActive ? AppTheme.primary : Colors.grey[600],
+          ),
+        ),
       ),
     );
   }

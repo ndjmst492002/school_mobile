@@ -170,4 +170,23 @@ class AuthApi {
     }
     return {'success': true};
   }
+
+  Future<Map<String, dynamic>> createSubscription(String planType) async {
+    final response = await _api.post(
+      '/users/payments/checkout/',
+      data: {'plan_type': planType},
+    );
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'checkout_url': ''};
+  }
+
+  Future<Map<String, dynamic>> getSubscriptionStatus() async {
+    final response = await _api.get('/users/payments/status/');
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'is_active_subscription': false};
+  }
 }

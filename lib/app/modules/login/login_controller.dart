@@ -4,6 +4,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
+import '../../data/services/websocket_service.dart';
 import '../../routes/app_routes.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -122,6 +123,8 @@ class LoginController extends GetxController {
           default:
             Get.offAllNamed(AppRoutes.login);
         }
+
+        _connectWebSocket();
       } else {
         error.value =
             'No roles assigned to this account. Please complete registration first.';
@@ -130,6 +133,49 @@ class LoginController extends GetxController {
       error.value = 'Invalid code or expired';
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _checkSubscriptionAndNavigate(String role) async {
+    _connectWebSocket();
+
+    // Only check subscription for TEACHER and PARENT roles
+    if (role != 'TEACHER' && role != 'PARENT') {
+      _navigateToDashboard(role);
+      return;
+    }
+
+    try {
+      final subData = await _authApi.getSubscriptionStatus();
+      final isActive = subData['is_active_subscription'] ?? false;
+
+      if (!isActive) {
+        Get.offAllNamed(AppRoutes.subscription);
+      } else {
+        _navigateToDashboard(role);
+      }
+    } catch (e) {
+      debugPrint('Error checking subscription: $e');
+      _navigateToDashboard(role);
+    }
+  }
+
+  void _navigateToDashboard(String role) {
+    switch (role.toUpperCase()) {
+      case 'ADMIN':
+        Get.offAllNamed(AppRoutes.admin);
+        break;
+      case 'TEACHER':
+        Get.offAllNamed(AppRoutes.teacher);
+        break;
+      case 'STUDENT':
+        Get.offAllNamed(AppRoutes.student);
+        break;
+      case 'PARENT':
+        Get.offAllNamed(AppRoutes.parent);
+        break;
+      default:
+        Get.offAllNamed(AppRoutes.home);
     }
   }
 
@@ -225,22 +271,7 @@ class LoginController extends GetxController {
           'Login successful with role: $role, roles: $roles, navigating to $role dashboard',
         );
 
-        switch (role.toUpperCase()) {
-          case 'ADMIN':
-            Get.offAllNamed(AppRoutes.admin);
-            break;
-          case 'TEACHER':
-            Get.offAllNamed(AppRoutes.teacher);
-            break;
-          case 'STUDENT':
-            Get.offAllNamed(AppRoutes.student);
-            break;
-          case 'PARENT':
-            Get.offAllNamed(AppRoutes.parent);
-            break;
-          default:
-            Get.offAllNamed(AppRoutes.home);
-        }
+        await _checkSubscriptionAndNavigate(role.toUpperCase());
       } else {
         debugPrint('Response does not have user or role. Response: $response');
         if (roles.isEmpty) {
@@ -270,6 +301,17 @@ class LoginController extends GetxController {
       error.value = 'Login failed';
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void _connectWebSocket() {
+    try {
+      final wsService = Get.find<WebSocketService>();
+      wsService.connectChat();
+      wsService.connectNotifications();
+      debugPrint('WebSocket connected after login');
+    } catch (e) {
+      debugPrint('Failed to connect WebSocket: $e');
     }
   }
 
@@ -347,22 +389,7 @@ class LoginController extends GetxController {
           await apiProvider.setWebToken(response['access']);
         }
 
-        switch (role.toUpperCase()) {
-          case 'TEACHER':
-            Get.offAllNamed(AppRoutes.teacher);
-            break;
-          case 'PARENT':
-            Get.offAllNamed(AppRoutes.parent);
-            break;
-          case 'STUDENT':
-            Get.offAllNamed(AppRoutes.student);
-            break;
-          case 'ADMIN':
-            Get.offAllNamed(AppRoutes.admin);
-            break;
-          default:
-            Get.offAllNamed(AppRoutes.login);
-        }
+        await _checkSubscriptionAndNavigate(role.toUpperCase());
       } else {
         debugPrint('Login failed - roles list: $roles');
         error.value =
@@ -381,6 +408,23 @@ class LoginController extends GetxController {
       error.value = errorMessage;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> contactUs({
+    required String name,
+    required String email,
+    required String message,
+  }) async {
+    try {
+      await _authApi.contactUs(
+        name: name,
+        email: email,
+        message: message,
+      );
+    } catch (e) {
+      debugPrint('Contact Us error: $e');
+      rethrow;
     }
   }
 

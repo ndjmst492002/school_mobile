@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../data/models/models.dart';
 import '../../data/providers/api_provider.dart';
 import '../../routes/app_routes.dart';
+import '../../theme/app_theme.dart';
+import '../../../main.dart';
 import 'student_controller.dart';
 
 class StudentView extends GetView<StudentController> {
@@ -29,15 +30,15 @@ class StudentView extends GetView<StudentController> {
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Profile Not Found',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Text(
+                    'Profile Not Found'.tr,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'You need to complete your student profile before accessing the dashboard.',
+                  Text(
+                    'You need to complete your student profile before accessing the dashboard.'.tr,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
@@ -45,14 +46,14 @@ class StudentView extends GetView<StudentController> {
                       AppRoutes.profileCompletion,
                       arguments: {'role': 'STUDENT'},
                     ),
-                    child: const Text('Complete Profile'),
+                    child: Text('Complete Profile'.tr),
                   ),
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () {
                       Get.offAllNamed('/login');
                     },
-                    child: const Text('Logout'),
+                    child: Text('Logout'.tr),
                   ),
                 ],
               ),
@@ -64,6 +65,14 @@ class StudentView extends GetView<StudentController> {
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
+          leading: controller.isViewingAsChild
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Get.offAllNamed(AppRoutes.parent);
+                  },
+                )
+              : null,
           title: null,
           toolbarHeight: 80,
           actions: [
@@ -79,13 +88,15 @@ class StudentView extends GetView<StudentController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Student Dashboard',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    'Student Dashboard'.tr,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Welcome, ${controller.userName}',
+                    controller.isViewingAsChild
+                        ? '${"Viewing as:".tr} ${controller.viewingAsChildName ?? controller.userName}'
+                        : '${"Welcome".tr}, ${controller.userName}',
                     style: const TextStyle(
                       fontSize: 13,
                       color: Colors.blueGrey,
@@ -1196,21 +1207,27 @@ class StudentView extends GetView<StudentController> {
 
   void _showNotificationsDialog() {
     controller.markAllNotificationsAsRead();
+    final isDark = Get.find<ThemeService>().isDarkMode;
     Get.dialog(
       Dialog(
         alignment: Alignment.centerRight,
         insetPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            bottomLeft: Radius.circular(12),
+          ),
+        ),
         child: Container(
           width: 350,
-          height: double.infinity, // Full screen height
-          color: Colors.white,
+          height: double.infinity,
+          color: isDark ? const Color(0xFF262638) : Colors.white,
           child: Column(
             children: [
-              // Header
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF262638) : Colors.white,
                   border: Border(
                     bottom: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
@@ -1218,11 +1235,12 @@ class StudentView extends GetView<StudentController> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Notifications',
+                    Text(
+                      'Notifications'.tr,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
                     IconButton(
@@ -1314,16 +1332,23 @@ class StudentView extends GetView<StudentController> {
     final auth = Get.find<AuthService>();
     return Obx(
       () => PopupMenuButton<String>(
-        icon: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.blue,
-          child: Text(
-            controller.userName.isNotEmpty
-                ? controller.userName[0].toUpperCase()
-                : 'U',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        icon: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: Center(
+            child: Text(
+              controller.userName.isNotEmpty
+                  ? controller.userName[0].toUpperCase()
+                  : 'U',
+              style: const TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ),
         ),
@@ -1338,8 +1363,6 @@ class StudentView extends GetView<StudentController> {
             controller.switchToRole('ADMIN');
           else if (v == 'dark_mode')
             controller.toggleDarkMode();
-          else if (v == 'language')
-            controller.toggleLanguage();
         },
         itemBuilder: (ctx) => [
           PopupMenuItem(
@@ -1359,17 +1382,7 @@ class StudentView extends GetView<StudentController> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'language',
-            child: Row(
-              children: [
-                const Icon(Icons.language, size: 20),
-                const SizedBox(width: 8),
-                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+                Text(controller.isDarkMode ? 'Light Mode'.tr : 'Dark Mode'.tr),
               ],
             ),
           ),
@@ -1385,7 +1398,7 @@ class StudentView extends GetView<StudentController> {
                       children: [
                         const Icon(Icons.people, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Parent'),
+                        Text('Switch to Parent'.tr),
                       ],
                     ),
                     if (auth.role == 'PARENT')
@@ -1398,9 +1411,9 @@ class StudentView extends GetView<StudentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -1416,7 +1429,7 @@ class StudentView extends GetView<StudentController> {
                       children: [
                         const Icon(Icons.school, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Teacher'),
+                        Text('Switch to Teacher'.tr),
                       ],
                     ),
                     if (auth.role == 'TEACHER')
@@ -1429,9 +1442,9 @@ class StudentView extends GetView<StudentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -1447,7 +1460,7 @@ class StudentView extends GetView<StudentController> {
                       children: [
                         const Icon(Icons.admin_panel_settings, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Admin'),
+                        Text('Switch to Admin'.tr),
                       ],
                     ),
                     if (auth.role == 'ADMIN')
@@ -1460,8 +1473,8 @@ class StudentView extends GetView<StudentController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
+                        child: Text(
+                          'ACTIVE'.tr,
                           style: TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
@@ -1469,14 +1482,14 @@ class StudentView extends GetView<StudentController> {
                 ),
               ),
           ],
-          const PopupMenuDivider(),
-          const PopupMenuItem(
+          PopupMenuDivider(),
+          PopupMenuItem(
             value: 'logout',
             child: Row(
               children: [
-                Icon(Icons.logout, size: 20, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Logout', style: TextStyle(color: Colors.red)),
+                const Icon(Icons.logout, size: 20, color: Colors.red),
+                const SizedBox(width: 8),
+                Text('Logout'.tr, style: const TextStyle(color: Colors.red)),
               ],
             ),
           ),
@@ -1486,16 +1499,21 @@ class StudentView extends GetView<StudentController> {
   }
 
   Widget _buildTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          _buildTabButton('class-enrollment', 'Classes'),
-          _buildTabButton('announcements', 'Announcements'),
-          _buildTabButton('available-exercises', 'Exercises'),
-          _buildTabButton('my-attendance', 'Attendance'),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            _buildTabButton('class-enrollment', 'Classes'),
+            _buildTabButton('announcements', 'Announcements'),
+            _buildTabButton('available-exercises', 'Exercises'),
+            _buildTabButton('my-attendance', 'Attendance'),
+          ],
+        ),
       ),
     );
   }
@@ -1503,16 +1521,26 @@ class StudentView extends GetView<StudentController> {
   Widget _buildTabButton(String tabId, String label) {
     return Obx(() {
       final isActive = controller.activeTab.value == tabId;
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: ChoiceChip(
-          label: Text(label),
-          selected: isActive,
-          onSelected: (selected) {
-            if (selected) controller.setActiveTab(tabId);
-          },
-          selectedColor: Colors.blue,
-          labelStyle: TextStyle(color: isActive ? Colors.white : Colors.black),
+      return GestureDetector(
+        onTap: () => controller.setActiveTab(tabId),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isActive ? AppTheme.primary : Colors.transparent,
+                width: 2,
+              ),
+            ),
+          ),
+          child: Text(
+            label.tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              color: isActive ? AppTheme.primary : Colors.grey[600],
+            ),
+          ),
         ),
       );
     });

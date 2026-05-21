@@ -20,8 +20,10 @@ class StudentApi {
     return false;
   }
 
-  Future<List<ClassModel>> getAllClasses() async {
-    final response = await _api.get('/users/classes/');
+  Future<List<ClassModel>> getAllClasses({int? studentId}) async {
+    final params = <String, dynamic>{};
+    if (studentId != null) params['student_id'] = studentId;
+    final response = await _api.get('/users/classes/', queryParameters: params);
     if (response.data is! List) {
       debugPrint('getAllClasses response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
@@ -35,12 +37,16 @@ class StudentApi {
     return data.map((json) => ClassModel.fromJson(json)).toList();
   }
 
-  Future<void> enrollInClass(int classId) async {
-    await _api.post('/users/student/enroll/', data: {'class_id': classId});
+  Future<void> enrollInClass(int classId, {int? studentId}) async {
+    final data = <String, dynamic>{'class_id': classId};
+    if (studentId != null) data['student_id'] = studentId;
+    await _api.post('/users/student/enroll/', data: data);
   }
 
-  Future<List<Exercise>> getExercises() async {
-    final response = await _api.get('/users/student/exercises/');
+  Future<List<Exercise>> getExercises({int? studentId}) async {
+    final params = <String, dynamic>{};
+    if (studentId != null) params['student_id'] = studentId;
+    final response = await _api.get('/users/student/exercises/', queryParameters: params);
     if (response.data is! List) {
       debugPrint('getExercises response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
@@ -54,8 +60,10 @@ class StudentApi {
     return data.map((json) => Exercise.fromJson(json)).toList();
   }
 
-  Future<List<Submission>> getSubmissions() async {
-    final response = await _api.get('/users/student/submissions/');
+  Future<List<Submission>> getSubmissions({int? studentId}) async {
+    final params = <String, dynamic>{};
+    if (studentId != null) params['student_id'] = studentId;
+    final response = await _api.get('/users/student/submissions/', queryParameters: params);
     if (response.data is! List) {
       debugPrint('getSubmissions response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
@@ -74,6 +82,7 @@ class StudentApi {
     String? filePath,
     Uint8List? fileBytes,
     String? fileName,
+    int? studentId,
   }) async {
     dio_pkg.MultipartFile file;
 
@@ -91,6 +100,7 @@ class StudentApi {
     final formData = dio_pkg.FormData.fromMap({
       'exercise': exerciseId,
       'submission_file': file,
+      if (studentId != null) 'student_id': studentId,
     });
 
     final response = await _api.uploadFile(
@@ -108,8 +118,10 @@ class StudentApi {
     return '${ApiProvider.baseUrl}/users/submissions/$submissionId/download/';
   }
 
-  Future<List<Announcement>> getAnnouncements() async {
-    final response = await _api.get('/users/student/announcements/');
+  Future<List<Announcement>> getAnnouncements({int? studentId}) async {
+    final params = <String, dynamic>{};
+    if (studentId != null) params['student_id'] = studentId;
+    final response = await _api.get('/users/student/announcements/', queryParameters: params);
     if (response.data is! List) {
       debugPrint('getAnnouncements response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
@@ -123,8 +135,10 @@ class StudentApi {
     return data.map((json) => Announcement.fromJson(json)).toList();
   }
 
-  Future<List<AttendanceRecord>> getAttendance() async {
-    final response = await _api.get('/users/student/attendance/');
+  Future<List<AttendanceRecord>> getAttendance({int? studentId}) async {
+    final params = <String, dynamic>{};
+    if (studentId != null) params['student_id'] = studentId;
+    final response = await _api.get('/users/student/attendance/', queryParameters: params);
     if (response.data is! List) {
       debugPrint('getAttendance response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {

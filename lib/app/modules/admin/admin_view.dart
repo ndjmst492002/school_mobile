@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../theme/app_theme.dart';
+import '../../../main.dart';
 import 'admin_controller.dart';
 import '../../data/providers/api_provider.dart';
-import '../../data/models/models.dart';
 
 class AdminView extends GetView<AdminController> {
   const AdminView({super.key});
@@ -22,95 +23,78 @@ class AdminView extends GetView<AdminController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Admin Dashboard',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  'Admin Dashboard'.tr,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Obx(
-                  () => Text(
-                    'Welcome, ${controller.userName}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.blueGrey,
-                    ),
+                Text(
+                  '${"Welcome back".tr}, ${controller.userName}',
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[200]!),
                   ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.admin_panel_settings, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Admin Only: You have full system access'.tr,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Admin View Active'.tr,
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildStatsGrid(),
+                const SizedBox(height: 24),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildRecentActivity()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildQuickActions()),
+                  ],
                 ),
               ],
             ),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Obx(
-              () => Text(
-                'Welcome back, ${controller.userName}',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue[200]!),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.admin_panel_settings, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    // ← Add this
-                    child: Text(
-                      'Admin Only: You have full system access',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      softWrap: true, // ← Allow text to wrap to next line
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 16),
-                  SizedBox(width: 8),
-                  Text(
-                    'Admin View Active',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildStatsGrid(),
-            const SizedBox(height: 24),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _buildRecentActivity()),
-                const SizedBox(width: 16),
-                Expanded(child: _buildQuickActions()),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -375,20 +359,27 @@ class AdminView extends GetView<AdminController> {
 
   void _showNotificationsDialog() {
     controller.loadNotifications();
+    final isDark = Get.find<ThemeService>().isDarkMode;
     Get.dialog(
       Dialog(
         alignment: Alignment.centerRight,
         insetPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            bottomLeft: Radius.circular(12),
+          ),
+        ),
         child: Container(
           width: 350,
           height: double.infinity,
-          color: Colors.white,
+          color: isDark ? const Color(0xFF262638) : Colors.white,
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF262638) : Colors.white,
                   border: Border(
                     bottom: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
@@ -396,11 +387,12 @@ class AdminView extends GetView<AdminController> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Notifications',
+                    Text(
+                      'Notifications'.tr,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
                     IconButton(
@@ -513,16 +505,23 @@ class AdminView extends GetView<AdminController> {
     final auth = Get.find<AuthService>();
     return Obx(
       () => PopupMenuButton<String>(
-        icon: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.blue,
-          child: Text(
-            controller.userName.isNotEmpty
-                ? controller.userName[0].toUpperCase()
-                : 'U',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        icon: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: Center(
+            child: Text(
+              controller.userName.isNotEmpty
+                  ? controller.userName[0].toUpperCase()
+                  : 'U',
+              style: const TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ),
         ),
@@ -537,8 +536,6 @@ class AdminView extends GetView<AdminController> {
             controller.switchToRole('TEACHER');
           } else if (v == 'dark_mode') {
             controller.toggleDarkMode();
-          } else if (v == 'language') {
-            controller.toggleLanguage();
           }
         },
         itemBuilder: (ctx) => [
@@ -559,17 +556,7 @@ class AdminView extends GetView<AdminController> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'language',
-            child: Row(
-              children: [
-                const Icon(Icons.language, size: 20),
-                const SizedBox(width: 8),
-                Text(controller.currentLanguage == 'en' ? 'ع' : 'EN'),
+                Text(controller.isDarkMode ? 'Light Mode'.tr : 'Dark Mode'.tr),
               ],
             ),
           ),
@@ -585,7 +572,7 @@ class AdminView extends GetView<AdminController> {
                       children: [
                         Icon(Icons.school, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Teacher'),
+                        Text('Switch to Teacher'.tr),
                       ],
                     ),
                     if (auth.role == 'TEACHER')
@@ -598,9 +585,9 @@ class AdminView extends GetView<AdminController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -616,7 +603,7 @@ class AdminView extends GetView<AdminController> {
                       children: [
                         Icon(Icons.person, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Student'),
+                        Text('Switch to Student'.tr),
                       ],
                     ),
                     if (auth.role == 'STUDENT')
@@ -629,9 +616,9 @@ class AdminView extends GetView<AdminController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
@@ -647,7 +634,7 @@ class AdminView extends GetView<AdminController> {
                       children: [
                         Icon(Icons.people, size: 20),
                         const SizedBox(width: 8),
-                        const Text('Switch to Parent'),
+                        Text('Switch to Parent'.tr),
                       ],
                     ),
                     if (auth.role == 'PARENT')
@@ -660,23 +647,23 @@ class AdminView extends GetView<AdminController> {
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'ACTIVE',
-                          style: TextStyle(fontSize: 10, color: Colors.green),
+                        child: Text(
+                          'ACTIVE'.tr,
+                          style: const TextStyle(fontSize: 10, color: Colors.green),
                         ),
                       ),
                   ],
                 ),
               ),
           ],
-          const PopupMenuDivider(),
-          const PopupMenuItem(
+          PopupMenuDivider(),
+          PopupMenuItem(
             value: 'logout',
             child: Row(
               children: [
                 Icon(Icons.logout, size: 20, color: Colors.red),
                 const SizedBox(width: 8),
-                const Text('Logout', style: TextStyle(color: Colors.red)),
+                Text('Logout'.tr, style: const TextStyle(color: Colors.red)),
               ],
             ),
           ),

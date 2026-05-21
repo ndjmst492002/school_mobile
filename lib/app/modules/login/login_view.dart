@@ -214,7 +214,7 @@ class LoginView extends GetView<LoginController> {
                                   horizontal: 16,
                                 ),
                                 child: Text(
-                                  'or',
+                                  'or'.tr,
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.grey[400]
@@ -260,6 +260,7 @@ class LoginView extends GetView<LoginController> {
                               textAlign: TextAlign.center,
                             ),
                           ),
+                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
@@ -330,7 +331,7 @@ class LoginView extends GetView<LoginController> {
       AlertDialog(
         backgroundColor: isDark ? const Color(0xFF27272A) : Colors.white,
         title: Text(
-          'Contact Us',
+          'Contact Us'.tr,
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         ),
         content: SingleChildScrollView(
@@ -341,7 +342,7 @@ class LoginView extends GetView<LoginController> {
                 controller: nameController,
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                 decoration: InputDecoration(
-                  labelText: 'Your Name',
+                  labelText: 'Your Name'.tr,
                   labelStyle: TextStyle(
                     color: isDark ? Colors.grey[300] : Colors.grey[700],
                   ),
@@ -356,7 +357,7 @@ class LoginView extends GetView<LoginController> {
                 controller: emailController,
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                 decoration: InputDecoration(
-                  labelText: 'Your Email',
+                  labelText: 'Your Email'.tr,
                   labelStyle: TextStyle(
                     color: isDark ? Colors.grey[300] : Colors.grey[700],
                   ),
@@ -373,7 +374,7 @@ class LoginView extends GetView<LoginController> {
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: 'Message',
+                  labelText: 'Message'.tr,
                   labelStyle: TextStyle(
                     color: isDark ? Colors.grey[300] : Colors.grey[700],
                   ),
@@ -387,7 +388,7 @@ class LoginView extends GetView<LoginController> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text('Cancel'.tr)),
           Obx(
             () => ElevatedButton(
               onPressed: isSubmitting.value
@@ -396,7 +397,7 @@ class LoginView extends GetView<LoginController> {
                       if (nameController.text.isEmpty ||
                           emailController.text.isEmpty ||
                           messageController.text.isEmpty) {
-                        Get.snackbar('Error', 'Please fill in all fields');
+                        Get.snackbar('Error'.tr, 'Please fill in all fields'.tr);
                         return;
                       }
                       isSubmitting.value = true;
@@ -408,9 +409,9 @@ class LoginView extends GetView<LoginController> {
                           message: messageController.text,
                         );
                         Get.back();
-                        Get.snackbar('Success', 'Your message has been sent');
+                        Get.snackbar('Success'.tr, 'Your message has been sent'.tr);
                       } catch (e) {
-                        Get.snackbar('Error', 'Failed to send message');
+                        Get.snackbar('Error'.tr, 'Failed to send message'.tr);
                       } finally {
                         isSubmitting.value = false;
                       }
@@ -421,7 +422,7 @@ class LoginView extends GetView<LoginController> {
                       width: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Send'),
+                  : Text('Send'.tr),
             ),
           ),
         ],
@@ -813,6 +814,104 @@ class _PhoneForm extends StatelessWidget {
           }
         }),
       ],
+    );
+  }
+
+  void _showContactUsDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final messageController = TextEditingController();
+    final isLoading = false.obs;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Contact Us'.tr),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Name'.tr,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Email'.tr,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: messageController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  labelText: 'Message'.tr,
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'.tr),
+          ),
+          Obx(
+            () => ElevatedButton(
+              onPressed: isLoading.value
+                  ? null
+                  : () async {
+                      if (nameController.text.isEmpty ||
+                          emailController.text.isEmpty ||
+                          messageController.text.isEmpty) {
+                        Get.snackbar('Error'.tr, 'Please fill all fields'.tr);
+                        return;
+                      }
+                      isLoading.value = true;
+                      try {
+                        final loginController = Get.find<LoginController>();
+                        await loginController.contactUs(
+                          name: nameController.text,
+                          email: emailController.text,
+                          message: messageController.text,
+                        );
+                        Navigator.pop(context);
+                        Get.snackbar(
+                          'Success'.tr,
+                          'Message sent successfully!'.tr,
+                        );
+                      } catch (e) {
+                        Get.snackbar('Error'.tr, 'Failed to send message'.tr);
+                      } finally {
+                        isLoading.value = false;
+                      }
+                    },
+              child: isLoading.value
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text('Send'.tr),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
