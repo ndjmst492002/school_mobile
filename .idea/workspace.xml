@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5a3a1f1c-366a-4de0-956b-000d29ce0209" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/chat/chat_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/chat/chat_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/subscription/subscription_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/subscription/subscription_controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_view.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
