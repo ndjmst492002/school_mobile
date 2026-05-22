@@ -73,6 +73,7 @@ class TeacherView extends GetView<TeacherController> {
             if (!controller.showChat.value) ...[
               _buildNotificationBell(),
               _buildChatButton(),
+              _buildLanguageToggle(),
               _buildProfileMenu(),
             ] else ...[
               IconButton(
@@ -208,6 +209,25 @@ class TeacherView extends GetView<TeacherController> {
         ],
       );
     });
+  }
+
+  Widget _buildLanguageToggle() {
+    return Obx(() => TextButton(
+      onPressed: () => controller.toggleLanguage(),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(
+        controller.currentLanguage == 'en' ? 'ع' : 'EN',
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: AppTheme.primary,
+        ),
+      ),
+    ));
   }
 
   Widget _buildProfileMenu() {

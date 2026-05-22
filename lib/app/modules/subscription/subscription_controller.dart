@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/websocket_service.dart';
 import '../../data/providers/api_provider.dart';
@@ -72,7 +73,13 @@ class SubscriptionController extends GetxController {
   }
 
   void _startCheckingSubscription() {
+    int attempts = 0;
     _checkTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      attempts++;
+      if (attempts > 60) {
+        timer.cancel();
+        return;
+      }
       await checkSubscriptionStatus();
     });
   }
@@ -91,11 +98,17 @@ class SubscriptionController extends GetxController {
 
       if (response.containsKey('checkout_url') && response['checkout_url'] != null && response['checkout_url'].isNotEmpty) {
         debugPrint('Received checkout URL: ${response['checkout_url']}');
-        Get.snackbar(
-          'Redirecting',
-          'Opening payment page...',
-          duration: const Duration(seconds: 2),
-        );
+        final uri = Uri.parse(response['checkout_url']);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          Get.snackbar(
+            'Payment',
+            'Complete payment in your browser, then wait a moment to be redirected back',
+            duration: const Duration(seconds: 4),
+          );
+        } else {
+          error.value = 'Could not open payment page';
+        }
       } else {
         error.value = 'Failed to create checkout';
       }
