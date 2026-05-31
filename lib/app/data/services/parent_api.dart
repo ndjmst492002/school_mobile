@@ -96,4 +96,48 @@ class ParentApi {
     final response = await _api.get('/users/predict/student/$studentId/');
     return PredictionResult.fromJson(response.data);
   }
+
+  Future<List<Exercise>> searchExercises({
+    required int studentId,
+    String? level,
+    String? className,
+    String? skillIds,
+  }) async {
+    final params = <String, dynamic>{'student_id': studentId};
+    if (level != null && level.isNotEmpty) params['level'] = level;
+    if (className != null && className.isNotEmpty) params['class_name'] = className;
+    if (skillIds != null && skillIds.isNotEmpty) params['skill_ids'] = skillIds;
+    final response = await _api.get(
+      '/users/parent/exercises/search/',
+      queryParameters: params,
+    );
+    if (response.data is! List) {
+      debugPrint('searchExercises response is not a list: ${response.data}');
+      return [];
+    }
+    final List<dynamic> data = response.data;
+    return data.map((json) => Exercise.fromJson(json)).toList();
+  }
+
+  Future<void> assignExercise(int studentId, int exerciseId) async {
+    await _api.post(
+      '/users/parent/exercises/assign/',
+      data: {'student_id': studentId, 'exercise_id': exerciseId},
+    );
+  }
+
+  Future<List<Submission>> getSubmissions({int? studentId}) async {
+    final params = <String, dynamic>{};
+    if (studentId != null) params['student_id'] = studentId;
+    final response = await _api.get(
+      '/users/parent/submissions/',
+      queryParameters: params,
+    );
+    if (response.data is! List) {
+      debugPrint('getSubmissions response is not a list: ${response.data}');
+      return [];
+    }
+    final List<dynamic> data = response.data;
+    return data.map((json) => Submission.fromJson(json)).toList();
+  }
 }

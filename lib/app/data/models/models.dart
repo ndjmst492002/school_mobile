@@ -1,3 +1,49 @@
+class Level {
+  final int id;
+  final String name;
+
+  Level({required this.id, required this.name});
+
+  factory Level.fromJson(Map<String, dynamic> json) {
+    return Level(id: json['id'] ?? 0, name: json['name'] ?? '');
+  }
+}
+
+class TeacherInfo {
+  final int id;
+  final String name;
+  final int classTeacherId;
+  final int? levelId;
+  final String? levelName;
+
+  TeacherInfo({
+    required this.id,
+    required this.name,
+    required this.classTeacherId,
+    this.levelId,
+    this.levelName,
+  });
+
+  factory TeacherInfo.fromJson(Map<String, dynamic> json) {
+    final level = json['level'];
+    String? levelName;
+    int? levelId;
+    if (level is Map<String, dynamic>) {
+      levelName = level['name'];
+      levelId = level['id'];
+    } else if (level is String) {
+      levelName = level;
+    }
+    return TeacherInfo(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      classTeacherId: json['class_teacher_id'] ?? 0,
+      levelId: levelId ?? json['level_id'],
+      levelName: levelName ?? json['level_name'],
+    );
+  }
+}
+
 class ClassModel {
   final int id;
   final String name;
@@ -7,6 +53,8 @@ class ClassModel {
   final List<StudentInfo>? students;
   final int studentCount;
   final EnrollmentStatusInfo? enrollmentStatus;
+  final List<TeacherInfo>? teachers;
+  final String? levelName;
 
   ClassModel({
     required this.id,
@@ -17,6 +65,8 @@ class ClassModel {
     this.students,
     this.studentCount = 0,
     this.enrollmentStatus,
+    this.teachers,
+    this.levelName,
   });
 
   factory ClassModel.fromJson(Map<String, dynamic> json) {
@@ -26,12 +76,19 @@ class ClassModel {
       enrollmentStatus = EnrollmentStatusInfo.fromJson(enrollmentStatusJson);
     }
 
+    List<TeacherInfo>? teachers;
+    if (json['teachers'] is List) {
+      teachers = (json['teachers'] as List)
+          .map((t) => TeacherInfo.fromJson(t as Map<String, dynamic>))
+          .toList();
+    }
+
     return ClassModel(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       teacher: json['teacher'],
-      teacherName: json['teacher_name'],
+      teacherName: json['teacher_name'] ?? (teachers?.isNotEmpty == true ? teachers!.first.name : null),
       students: json['students'] != null
           ? (json['students'] as List)
                 .map(
@@ -47,6 +104,8 @@ class ClassModel {
                 : int.tryParse(json['student_count'].toString()) ?? 0)
           : 0,
       enrollmentStatus: enrollmentStatus,
+      teachers: teachers,
+      levelName: json['level_name'] ?? (teachers?.isNotEmpty == true ? teachers!.first.levelName : null),
     );
   }
 }
@@ -73,12 +132,17 @@ class EnrollmentStatusInfo {
 
 class StudentInfo {
   final int id;
+  final int? userId;
   final String fullName;
 
-  StudentInfo({required this.id, required this.fullName});
+  StudentInfo({required this.id, this.userId, required this.fullName});
 
   factory StudentInfo.fromJson(Map<String, dynamic> json) {
-    return StudentInfo(id: json['id'] ?? 0, fullName: json['full_name'] ?? '');
+    return StudentInfo(
+      id: json['id'] ?? 0,
+      userId: json['user_id'],
+      fullName: json['full_name'] ?? '',
+    );
   }
 }
 
@@ -91,6 +155,12 @@ class Exercise {
   final String? className;
   final String? teacherName;
   final String? dueDate;
+  final String? level;
+  final int? levelId;
+  final String status;
+  final String? createdAt;
+  final bool isAssigned;
+  final List<Skill> skills;
 
   Exercise({
     required this.id,
@@ -101,9 +171,22 @@ class Exercise {
     this.className,
     this.teacherName,
     this.dueDate,
+    this.level,
+    this.levelId,
+    this.status = 'APPROVED',
+    this.createdAt,
+    this.isAssigned = false,
+    this.skills = const [],
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
+    List<Skill> skills = [];
+    if (json['skills'] is List) {
+      skills = (json['skills'] as List).map((s) {
+        if (s is Map<String, dynamic>) return Skill.fromJson(s);
+        return Skill(id: s is int ? s : 0, name: '');
+      }).toList();
+    }
     return Exercise(
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
@@ -113,6 +196,12 @@ class Exercise {
       className: json['class_name'],
       teacherName: json['teacher_name'],
       dueDate: json['due_date'],
+      level: json['level'],
+      levelId: json['level_id'],
+      status: json['status'] ?? 'APPROVED',
+      createdAt: json['created_at'],
+      isAssigned: json['is_assigned'] ?? false,
+      skills: skills,
     );
   }
 }
@@ -264,11 +353,16 @@ class AppNotification {
 class Skill {
   final int id;
   final String name;
+  final List<int>? levels;
 
-  Skill({required this.id, required this.name});
+  Skill({required this.id, required this.name, this.levels});
 
   factory Skill.fromJson(Map<String, dynamic> json) {
-    return Skill(id: json['id'] ?? 0, name: json['name'] ?? '');
+    List<int>? levels;
+    if (json['levels'] is List) {
+      levels = (json['levels'] as List).map((e) => e is int ? e : int.tryParse(e.toString()) ?? 0).toList();
+    }
+    return Skill(id: json['id'] ?? 0, name: json['name'] ?? '', levels: levels);
   }
 }
 
@@ -282,6 +376,8 @@ class EnrollmentRequest {
   final String status;
   final String requestedAt;
   final String? respondedAt;
+  final int? classTeacherId;
+  final String? levelName;
 
   EnrollmentRequest({
     required this.id,
@@ -293,6 +389,8 @@ class EnrollmentRequest {
     required this.status,
     required this.requestedAt,
     this.respondedAt,
+    this.classTeacherId,
+    this.levelName,
   });
 
   factory EnrollmentRequest.fromJson(Map<String, dynamic> json) {
@@ -306,6 +404,8 @@ class EnrollmentRequest {
       status: json['status'] ?? 'PENDING',
       requestedAt: json['requested_at'] ?? '',
       respondedAt: json['responded_at'],
+      classTeacherId: json['class_teacher'],
+      levelName: json['level_name'],
     );
   }
 }

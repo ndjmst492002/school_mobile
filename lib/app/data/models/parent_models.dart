@@ -9,6 +9,7 @@ class StudentChild {
   final String? dateOfBirth;
   final String? enrollmentDate;
   final String? parentName;
+  final int? enrollmentAge;
 
   StudentChild({
     required this.id,
@@ -19,18 +20,21 @@ class StudentChild {
     this.dateOfBirth,
     this.enrollmentDate,
     this.parentName,
+    this.enrollmentAge,
   });
 
   factory StudentChild.fromJson(Map<String, dynamic> json) {
+    final user = json['user'] as Map<String, dynamic>?;
     return StudentChild(
       id: json['id'] ?? 0,
       fullName: json['full_name'] ?? '',
-      phoneNumber: json['phone_number'],
-      address: json['address'],
+      phoneNumber: user?['phone_number'],
+      address: user?['address'],
       parentOccupation: json['parent_occupation'],
-      dateOfBirth: json['date_of_birth'],
+      dateOfBirth: json['date_of_birth'] ?? user?['date_of_birth'],
       enrollmentDate: json['enrollment_date'],
       parentName: json['parent_name'],
+      enrollmentAge: json['enrollment_age'],
     );
   }
 }

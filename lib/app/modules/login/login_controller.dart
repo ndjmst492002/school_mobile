@@ -217,9 +217,15 @@ class LoginController extends GetxController {
         roles =
             (response['roles'] as List?)?.map((e) => e.toString()).toList() ??
             [];
-        // Prioritize PARENT role if available, otherwise use first role
-        if (roles.contains('PARENT')) {
+        // Match web: ADMIN > TEACHER > PARENT > STUDENT > first
+        if (roles.contains('ADMIN')) {
+          role = 'ADMIN';
+        } else if (roles.contains('TEACHER')) {
+          role = 'TEACHER';
+        } else if (roles.contains('PARENT')) {
           role = 'PARENT';
+        } else if (roles.contains('STUDENT')) {
+          role = 'STUDENT';
         } else if (roles.isNotEmpty) {
           role = roles.first;
         }
@@ -238,8 +244,15 @@ class LoginController extends GetxController {
             roles =
                 (data['roles'] as List?)?.map((e) => e.toString()).toList() ??
                 [];
-            if (roles.contains('PARENT')) {
+            // Match web: ADMIN > TEACHER > PARENT > STUDENT > first
+            if (roles.contains('ADMIN')) {
+              role = 'ADMIN';
+            } else if (roles.contains('TEACHER')) {
+              role = 'TEACHER';
+            } else if (roles.contains('PARENT')) {
               role = 'PARENT';
+            } else if (roles.contains('STUDENT')) {
+              role = 'STUDENT';
             } else if (roles.isNotEmpty) {
               role = roles.first;
             }
@@ -257,11 +270,10 @@ class LoginController extends GetxController {
       // If we found user data and role, proceed
       if (userData != null && role != null && role.isNotEmpty) {
         // Save token for web if present in response
-        if (response.containsKey('token')) {
+        if (kIsWeb && response.containsKey('access')) {
           final apiProvider = Get.find<ApiProvider>();
-          apiProvider.dio.options.headers['Authorization'] =
-              'Bearer ${response['token']}';
-          debugPrint('Saved token for web requests');
+          await apiProvider.setWebToken(response['access']);
+          debugPrint('Saved access token for web');
         }
 
         _auth.setUser(userData, role: role, roles: roles);
@@ -362,15 +374,15 @@ class LoginController extends GetxController {
         debugPrint('User data: $userData');
         debugPrint('Roles: $roles');
 
-        // Set role from roles list
-        if (roles.contains('PARENT')) {
-          role = 'PARENT';
+        // Match web: ADMIN > TEACHER > PARENT > STUDENT > first
+        if (roles.contains('ADMIN')) {
+          role = 'ADMIN';
         } else if (roles.contains('TEACHER')) {
           role = 'TEACHER';
+        } else if (roles.contains('PARENT')) {
+          role = 'PARENT';
         } else if (roles.contains('STUDENT')) {
           role = 'STUDENT';
-        } else if (roles.contains('ADMIN')) {
-          role = 'ADMIN';
         } else if (roles.isNotEmpty) {
           role = roles.first;
         }

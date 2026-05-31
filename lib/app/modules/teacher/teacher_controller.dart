@@ -43,6 +43,7 @@ class TeacherController extends GetxController {
 
   final activeTab = 'my-classes'.obs;
   final uploadClassId = ''.obs;
+  final uploadLevelId = Rxn<int>();
   final announcementClassId = ''.obs;
   final attendanceClassId = ''.obs;
   final attendanceDateController = TextEditingController();
@@ -112,6 +113,28 @@ class TeacherController extends GetxController {
     } else {
       selectedSkills.add(skillId);
     }
+  }
+
+  static const List<Map<String, dynamic>> _allLevelsData = [
+    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
+    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
+    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
+    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
+    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
+    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
+  ];
+
+  List<Level> get uploadLevels =>
+      _allLevelsData.map((e) => Level(id: e['id'] as int, name: e['name'] as String)).toList();
+
+  List<ClassModel> get filteredClasses {
+    if (uploadLevelId.value == null) return classes;
+    return classes.where((c) => c.levelName != null && c.levelName == uploadLevels.firstWhere((l) => l.id == uploadLevelId.value).name).toList();
+  }
+
+  void onUploadLevelChanged(int? levelId) {
+    uploadLevelId.value = levelId;
+    uploadClassId.value = '';
   }
 
   void addSkill(int skillId) {
@@ -385,6 +408,7 @@ class TeacherController extends GetxController {
         dueDate: uploadDueDateController.text.isNotEmpty
             ? uploadDueDateController.text
             : null,
+        skillIds: selectedSkills.isNotEmpty ? selectedSkills.toList() : null,
       );
       toggleUploadForm();
       loadData();

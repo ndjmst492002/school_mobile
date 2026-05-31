@@ -17,8 +17,9 @@ class LoginView extends GetView<LoginController> {
       return Scaffold(
         backgroundColor: isDark
             ? const Color(0xFF18181B)
-            : const Color(0xFFF9FAFB),
+            : Colors.white,
         body: Stack(
+          textDirection: TextDirection.ltr,
           children: [
             _AnimatedBackground(isDark: isDark),
             Center(
@@ -40,16 +41,17 @@ class LoginView extends GetView<LoginController> {
                         children: [
                           const SizedBox(height: 16),
                           Center(
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: AppTheme.primary,
+                                color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                                 borderRadius: BorderRadius.circular(50),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.school,
                                 size: 40,
-                                color: Colors.white,
+                                color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                               ),
                             ),
                           ),
@@ -68,8 +70,8 @@ class LoginView extends GetView<LoginController> {
                             'Sign in to your account'.tr,
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
+                                  ? AppTheme.darkMutedForeground
+                                  : AppTheme.mutedForeground,
                               fontSize: 14,
                             ),
                             textAlign: TextAlign.center,
@@ -108,105 +110,95 @@ class LoginView extends GetView<LoginController> {
                             return const SizedBox.shrink();
                           }),
                           Obx(
-                            () => Container(
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF18181B)
-                                    : Colors.grey[100],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () =>
-                                          controller.switchTab('email'),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              controller.selectedTab.value ==
-                                                  'email'
-                                              ? AppTheme.primary
-                                              : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Email'.tr,
-                                          style: TextStyle(
-                                            color:
-                                                controller.selectedTab.value ==
-                                                    'email'
-                                                ? Colors.white
-                                                : (isDark
-                                                      ? Colors.grey[300]
-                                                      : Colors.grey[700]),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
+                            () => Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => controller.switchTab('email'),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: controller.selectedTab.value == 'email'
+                                                ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                                : Colors.transparent,
+                                        width: 2,
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () =>
-                                          controller.switchTab('phone'),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              controller.selectedTab.value ==
-                                                  'phone'
-                                              ? AppTheme.primary
-                                              : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
+                                  child: Text(
+                                    'Email'.tr,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: controller.selectedTab.value == 'email'
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                      color: controller.selectedTab.value == 'email'
+                                          ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                                          : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => controller.switchTab('phone'),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: controller.selectedTab.value == 'phone'
+                                            ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                                            : Colors.transparent,
+                                            width: 2,
                                           ),
                                         ),
-                                        child: Text(
-                                          'Phone'.tr,
-                                          style: TextStyle(
-                                            color:
-                                                controller.selectedTab.value ==
-                                                    'phone'
-                                                ? Colors.white
-                                                : (isDark
-                                                      ? Colors.grey[300]
-                                                      : Colors.grey[700]),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
+                                      ),
+                                      child: Text(
+                                        'Phone'.tr,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: controller.selectedTab.value == 'phone'
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                      color: controller.selectedTab.value == 'phone'
+                                          ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                                          : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
                                         ),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Obx(() {
-                            if (controller.selectedTab.value == 'email') {
-                              return _EmailForm(isDark: isDark);
-                            } else {
-                              return _PhoneForm(isDark: isDark);
-                            }
-                          }),
+                          Obx(
+                            () => AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, animation) {
+                                return FadeTransition(opacity: animation, child: child);
+                              },
+                              child: controller.selectedTab.value == 'email'
+                                  ? _EmailForm(key: const ValueKey('email'), isDark: isDark)
+                                  : _PhoneForm(key: const ValueKey('phone'), isDark: isDark),
+                            ),
+                          ),
                           const SizedBox(height: 16),
                           Row(
                             children: [
                               Expanded(
                                 child: Divider(
                                   color: isDark
-                                      ? Colors.grey[600]
-                                      : Colors.grey[400],
+                                      ? AppTheme.darkBorder
+                                      : AppTheme.border,
                                 ),
                               ),
                               Padding(
@@ -217,16 +209,16 @@ class LoginView extends GetView<LoginController> {
                                   'or'.tr,
                                   style: TextStyle(
                                     color: isDark
-                                        ? Colors.grey[400]
-                                        : Colors.grey[600],
+                                        ? AppTheme.darkMutedForeground
+                                        : AppTheme.mutedForeground,
                                   ),
                                 ),
                               ),
                               Expanded(
                                 child: Divider(
                                   color: isDark
-                                      ? Colors.grey[600]
-                                      : Colors.grey[400],
+                                      ? AppTheme.darkBorder
+                                      : AppTheme.border,
                                 ),
                               ),
                             ],
@@ -253,7 +245,7 @@ class LoginView extends GetView<LoginController> {
                             child: Text(
                               'Don\'t have an account? Sign Up'.tr,
                               style: TextStyle(
-                                color: AppTheme.primary,
+                                color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -277,7 +269,7 @@ class LoginView extends GetView<LoginController> {
                     icon: Obx(() {
                       final theme = Get.find<ThemeService>();
                       return Text(
-                        theme.locale.languageCode == 'en' ? 'ع' : 'EN',
+                        theme.locale.languageCode == 'en' ? '\u0639' : 'EN',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -344,12 +336,12 @@ class LoginView extends GetView<LoginController> {
                 decoration: InputDecoration(
                   labelText: 'Your Name'.tr,
                   labelStyle: TextStyle(
-                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                   ),
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF18181B)
-                      : Colors.grey[100],
+                      : AppTheme.muted,
                 ),
               ),
               const SizedBox(height: 12),
@@ -359,12 +351,12 @@ class LoginView extends GetView<LoginController> {
                 decoration: InputDecoration(
                   labelText: 'Your Email'.tr,
                   labelStyle: TextStyle(
-                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                   ),
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF18181B)
-                      : Colors.grey[100],
+                      : AppTheme.muted,
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -376,12 +368,12 @@ class LoginView extends GetView<LoginController> {
                 decoration: InputDecoration(
                   labelText: 'Message'.tr,
                   labelStyle: TextStyle(
-                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                   ),
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF18181B)
-                      : Colors.grey[100],
+                      : AppTheme.muted,
                 ),
               ),
             ],
@@ -436,16 +428,27 @@ class LoginView extends GetView<LoginController> {
   }) {
     final theme = Get.find<ThemeService>();
     return Obx(
-      () => Container(
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? Colors.black : Colors.white,
+      () => Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: theme.isDarkMode ? Colors.white : Colors.black,
-            width: 1,
+          onTap: onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? Colors.transparent : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: theme.isDarkMode ? Colors.white38 : Colors.black26,
+                width: 1,
+              ),
+            ),
+            child: icon,
           ),
         ),
-        child: IconButton(icon: icon, onPressed: onPressed),
       ),
     );
   }
@@ -546,7 +549,7 @@ class _MatrixPainter extends CustomPainter {
 
 class _EmailForm extends StatelessWidget {
   final bool isDark;
-  const _EmailForm({required this.isDark});
+  const _EmailForm({super.key, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -558,19 +561,7 @@ class _EmailForm extends StatelessWidget {
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
           decoration: InputDecoration(
             labelText: 'Email'.tr,
-            labelStyle: TextStyle(
-              color: isDark ? Colors.grey[300] : Colors.grey[700],
-            ),
             hintText: 'Enter your email'.tr,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.grey[500] : Colors.grey[500],
-            ),
-            filled: true,
-            fillColor: isDark ? const Color(0xFF18181B) : Colors.grey[100],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
           ),
           keyboardType: TextInputType.emailAddress,
         ),
@@ -581,25 +572,13 @@ class _EmailForm extends StatelessWidget {
             style: TextStyle(color: isDark ? Colors.white : Colors.black87),
             decoration: InputDecoration(
               labelText: 'Password'.tr,
-              labelStyle: TextStyle(
-                color: isDark ? Colors.grey[300] : Colors.grey[700],
-              ),
               hintText: 'Enter your password'.tr,
-              hintStyle: TextStyle(
-                color: isDark ? Colors.grey[500] : Colors.grey[500],
-              ),
-              filled: true,
-              fillColor: isDark ? const Color(0xFF18181B) : Colors.grey[100],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
               suffixIcon: IconButton(
                 icon: Icon(
                   controller.showPassword.value
                       ? Icons.visibility_off
                       : Icons.visibility,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                 ),
                 onPressed: controller.toggleShowPassword,
               ),
@@ -614,8 +593,8 @@ class _EmailForm extends StatelessWidget {
             child: ElevatedButton(
               onPressed: controller.isLoading.value ? null : controller.login,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
+                  backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
+                foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -653,7 +632,7 @@ class _EmailForm extends StatelessWidget {
 
 class _PhoneForm extends StatelessWidget {
   final bool isDark;
-  const _PhoneForm({required this.isDark});
+  const _PhoneForm({super.key, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -671,21 +650,7 @@ class _PhoneForm extends StatelessWidget {
                   ),
                   decoration: InputDecoration(
                     labelText: 'Phone Number'.tr,
-                    labelStyle: TextStyle(
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                    ),
                     hintText: 'Enter your phone number'.tr,
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[500],
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF18181B)
-                        : Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
                   ),
                   keyboardType: TextInputType.phone,
                 ),
@@ -698,8 +663,8 @@ class _PhoneForm extends StatelessWidget {
                           ? null
                           : controller.sendOTP,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
+                        foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -742,21 +707,7 @@ class _PhoneForm extends StatelessWidget {
                   ),
                   decoration: InputDecoration(
                     labelText: 'Verification Code'.tr,
-                    labelStyle: TextStyle(
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                    ),
                     hintText: 'Enter verification code'.tr,
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[500],
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF18181B)
-                        : Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
                   ),
                   keyboardType: TextInputType.number,
                 ),
@@ -769,8 +720,8 @@ class _PhoneForm extends StatelessWidget {
                           ? null
                           : controller.verifyOTPAndLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
+                        foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

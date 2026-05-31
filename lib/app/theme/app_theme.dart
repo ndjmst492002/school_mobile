@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Light mode - matching shadcn/ui React palette (gray/slate)
-  static const Color primary = Color(0xFF1E293B);
-  static const Color primaryForeground = Color(0xFFF8FAFC);
-  static const Color secondary = Color(0xFFF1F5F9);
-  static const Color secondaryForeground = Color(0xFF1E293B);
+  // Light mode - matching web shadcn/ui gray palette
+  static const Color primary = Color(0xFF111827);
+  static const Color primaryForeground = Color(0xFFF9FAFB);
+  static const Color secondary = Color(0xFFF3F4F6);
+  static const Color secondaryForeground = Color(0xFF111827);
   static const Color background = Color(0xFFFFFFFF);
-  static const Color foreground = Color(0xFF1A1F36);
+  static const Color foreground = Color(0xFF111827);
   static const Color card = Color(0xFFFFFFFF);
-  static const Color cardForeground = Color(0xFF1A1F36);
+  static const Color cardForeground = Color(0xFF111827);
   static const Color popover = Color(0xFFFFFFFF);
-  static const Color popoverForeground = Color(0xFF1A1F36);
-  static const Color muted = Color(0xFFF1F5F9);
-  static const Color mutedForeground = Color(0xFF64748B);
-  static const Color accent = Color(0xFFF1F5F9);
-  static const Color accentForeground = Color(0xFF1E293B);
+  static const Color popoverForeground = Color(0xFF111827);
+  static const Color muted = Color(0xFFF3F4F6);
+  static const Color mutedForeground = Color(0xFF6B7280);
+  static const Color accent = Color(0xFFF3F4F6);
+  static const Color accentForeground = Color(0xFF111827);
   static const Color destructive = Color(0xFFDC2626);
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color input = Color(0xFFE2E8F0);
-  static const Color ring = Color(0xFF94A3B8);
+  static const Color border = Color(0xFFE5E7EB);
+  static const Color input = Color(0xFFE5E7EB);
+  static const Color ring = Color(0xFF9CA3AF);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -34,7 +34,7 @@ class AppTheme {
         error: destructive,
         outline: border,
       ),
-      scaffoldBackgroundColor: const Color(0xFFF9FAFB),
+      scaffoldBackgroundColor: Colors.white,
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         foregroundColor: foreground,
@@ -96,16 +96,29 @@ class AppTheme {
     );
   }
 
-  // Dark mode - matching shadcn/ui React dark palette (zinc)
-  static const Color darkPrimary = Color(0xFFE2E8F0);
-  static const Color darkPrimaryForeground = Color(0xFF27272A);
-  static const Color darkBackground = Color(0xFF27272A);
-  static const Color darkSurface = Color(0xFF3F3F46);
+  // Dark mode - matching web shadcn/ui zinc palette
+  static const Color darkPrimary = Color(0xFFE5E7EB);
+  static const Color darkPrimaryForeground = Color(0xFF18181B);
+  static const Color darkBackground = Color(0xFF18181B);
+  static const Color darkSurface = Color(0xFF27272A);
   static const Color darkForeground = Color(0xFFF8FAFC);
-  static const Color darkCard = Color(0xFF3F3F46);
+  static const Color darkCard = Color(0xFF27272A);
   static const Color darkBorder = Color(0x14FFFFFF);
   static const Color darkMutedForeground = Color(0xFFA1A1AA);
   static const Color darkDestructive = Color(0xFFEF4444);
+  static const Color darkInputBg = Color(0x1AFFFFFF);
+  static const Color darkAccent = Color(0xFF3F3F46);
+  static const Color darkAccentForeground = Color(0xFFF8FAFC);
+
+  // Dark mode badge colors - matching web dark:bg-*-900/35 and dark:text-*-200/300
+  static const Color darkBadgeBlueBg = Color(0x591E3A8A);
+  static const Color darkBadgeBlueText = Color(0xFFBFDBFE);
+  static const Color darkBadgeGreenBg = Color(0x5914532D);
+  static const Color darkBadgeGreenText = Color(0xFF86EFAC);
+  static const Color darkBadgeRedBg = Color(0x597F1D1D);
+  static const Color darkBadgeRedText = Color(0xFFFCA5A5);
+  static const Color darkBadgeOrangeBg = Color(0x597C2D12);
+  static const Color darkBadgeOrangeText = Color(0xFFFDBA74);
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -121,8 +134,8 @@ class AppTheme {
         outline: darkBorder,
       ),
       scaffoldBackgroundColor: darkBackground,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF3F3F46),
+      appBarTheme: AppBarTheme(
+        backgroundColor: darkSurface,
         foregroundColor: darkForeground,
         elevation: 1,
         titleTextStyle: TextStyle(
@@ -137,18 +150,18 @@ class AppTheme {
         shadowColor: Colors.black.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0x14FFFFFF)),
+          side: const BorderSide(color: darkBorder),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: false,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0x14FFFFFF)),
+          borderSide: const BorderSide(color: darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0x14FFFFFF)),
+          borderSide: const BorderSide(color: darkBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -172,13 +185,32 @@ class AppTheme {
           foregroundColor: darkForeground,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          side: const BorderSide(color: Color(0x14FFFFFF)),
+          side: const BorderSide(color: darkBorder),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(foregroundColor: darkPrimary),
       ),
       dividerTheme: const DividerThemeData(color: Color(0x14FFFFFF), thickness: 1),
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(color: darkForeground),
+        headlineMedium: TextStyle(color: darkForeground),
+        headlineSmall: TextStyle(color: darkForeground),
+        titleLarge: TextStyle(color: darkForeground),
+        titleMedium: TextStyle(color: darkForeground),
+        titleSmall: TextStyle(color: darkForeground),
+        bodyLarge: TextStyle(color: darkForeground),
+        bodyMedium: TextStyle(color: darkForeground),
+        bodySmall: TextStyle(color: darkForeground),
+        labelLarge: TextStyle(color: darkForeground),
+        labelMedium: TextStyle(color: darkForeground),
+        labelSmall: TextStyle(color: darkForeground),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: darkPrimary,
+        selectionColor: darkPrimary.withValues(alpha: 0.3),
+        selectionHandleColor: darkPrimary,
+      ),
     );
   }
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../data/models/models.dart';
+import '../../data/models/parent_models.dart';
 import '../../data/providers/api_provider.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -14,6 +17,7 @@ class ParentView extends GetView<ParentController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final isDark = Get.find<ThemeService>().isDarkMode;
       if (controller.isLoading.value) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
@@ -26,10 +30,10 @@ class ParentView extends GetView<ParentController> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.person_outline,
                     size: 80,
-                    color: Colors.blue,
+                    color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -40,7 +44,7 @@ class ParentView extends GetView<ParentController> {
                   Text(
                     'You need to complete your parent profile before accessing the dashboard.'.tr,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
@@ -65,29 +69,37 @@ class ParentView extends GetView<ParentController> {
       }
 
       return Scaffold(
+        backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.background,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: null,
+          centerTitle: false,
+          titleSpacing: 0,
+          title: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Row(
+              children: [
+                const Spacer(),
+                if (!controller.showChat.value) ...[
+                  _buildNotificationBell(),
+                  _buildChatButton(),
+                  _buildLanguageToggle(),
+                  _buildProfileMenu(),
+                ] else ...[
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      Get.delete<ChatController>();
+                      controller.toggleChat();
+                      controller.updateUnreadMessageCount(0);
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
           toolbarHeight: controller.showChat.value ? 60 : 80,
-          actions: [
-            if (!controller.showChat.value) ...[
-              _buildNotificationBell(),
-              _buildChatButton(),
-              _buildLanguageToggle(),
-              _buildProfileMenu(),
-            ] else ...[
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () {
-                  Get.delete<ChatController>();
-                  controller.toggleChat();
-                  controller.updateUnreadMessageCount(0);
-                },
-              ),
-            ],
-          ],
           bottom: controller.showChat.value
-              ? null // No bottom content when chat is open
+              ? null
               : PreferredSize(
                   preferredSize: const Size.fromHeight(50),
                   child: Padding(
@@ -111,9 +123,9 @@ class ParentView extends GetView<ParentController> {
                           const SizedBox(height: 4),
                           Text(
                             '${"Welcome".tr}, ${controller.userName}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: Colors.blueGrey,
+                              color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -157,9 +169,10 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildTabs() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
     return Container(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+        border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border)),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -170,6 +183,8 @@ class ParentView extends GetView<ParentController> {
             _buildTabButton('announcements', 'Announcements'),
             _buildTabButton('attendance-records', 'Attendance Records'),
             _buildTabButton('predictions', 'Predictions'),
+            _buildTabButton('assign-exercise', 'Assign Exercise'),
+            _buildTabButton('child-submissions', 'Submissions'),
           ],
         ),
       ),
@@ -179,6 +194,7 @@ class ParentView extends GetView<ParentController> {
   Widget _buildTabButton(String tabId, String label) {
     return Obx(() {
       final isActive = controller.activeTab.value == tabId;
+      final isDark = controller.isDarkMode;
       return GestureDetector(
         onTap: () => controller.setActiveTab(tabId),
         child: Container(
@@ -196,7 +212,7 @@ class ParentView extends GetView<ParentController> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-              color: isActive ? AppTheme.primary : Colors.grey[600],
+              color: isActive ? AppTheme.primary : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
             ),
           ),
         ),
@@ -215,6 +231,10 @@ class ParentView extends GetView<ParentController> {
           return _buildAttendanceTab();
         case 'predictions':
           return _buildPredictionsTab();
+        case 'assign-exercise':
+          return _buildAssignExerciseTab();
+        case 'child-submissions':
+          return _buildSubmissionsTab();
         default:
           return _buildMyChildrenTab();
       }
@@ -243,13 +263,30 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildAttendanceTab() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: _buildAttendanceCard(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Attendance Records'.tr,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Attendance for your children'.tr,
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          _buildAttendanceCard(),
+        ],
+      ),
     );
   }
 
   Widget _buildPredictionsTab() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -257,12 +294,12 @@ class ParentView extends GetView<ParentController> {
         children: [
           Text(
             'AI Predictions'.tr,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             'Predict student dropout/graduation outcomes'.tr,
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
           ),
           const SizedBox(height: 16),
           _buildPredictionsCard(),
@@ -271,7 +308,570 @@ class ParentView extends GetView<ParentController> {
     );
   }
 
+  Widget _buildAssignExerciseTab() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Assign Exercise'.tr,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Search and assign exercises for your children'.tr,
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.children.isEmpty) {
+              return Center(child: Text('No children found', style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)));
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Select Child:'.tr,
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: controller.children.map((child) {
+                            final selected = controller.selectedChildForExercises.value == child.id;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: GestureDetector(
+                                onTap: () => controller.setSelectedChildForExercises(child.id),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? (isDark ? Colors.blue[700] : Colors.blue)
+                                        : (isDark ? const Color(0xFF3F3F46) : Colors.grey[100]),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    child.fullName,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: selected ? Colors.white : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (controller.selectedChildForExercises.value != null) ...[
+                  Row(
+                    children: [
+                      Expanded(child: _buildLevelDropdown(isDark)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildSkillsDropdown(isDark)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          height: 36,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: TextField(
+                            onChanged: controller.setExerciseClassFilter,
+                            decoration: InputDecoration(
+                              hintText: 'Search by class name',
+                              hintStyle: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : Colors.grey[400]),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                              border: InputBorder.none,
+                            ),
+                            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Obx(() {
+                    if (controller.isSearchingExercises.value) {
+                      return const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    if (controller.searchedExercises.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Center(
+                          child: Text(
+                            'No assignable exercises',
+                            style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                          ),
+                        ),
+                      );
+                    }
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: controller.searchedExercises.length,
+                      itemBuilder: (context, index) {
+                        final exercise = controller.searchedExercises[index];
+                        return _buildExerciseCard(exercise, isDark);
+                      },
+                    );
+                  }),
+                ] else
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Select a child to browse exercises',
+                        style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : Colors.grey[400]),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLevelDropdown(bool isDark) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: controller.exerciseLevelFilter.value,
+          isExpanded: true,
+          hint: Text('Level', style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : Colors.grey[400])),
+          items: [
+            DropdownMenuItem(value: null, child: Text('All Levels', style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground))),
+            ...controller.levels.map((l) => DropdownMenuItem(
+              value: l.name,
+              child: Text(l.name, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground)),
+            )),
+          ],
+          onChanged: controller.setExerciseLevelFilter,
+          dropdownColor: isDark ? AppTheme.darkCard : AppTheme.card,
+          style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkillsDropdown(bool isDark) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          hint: Text(
+            controller.exerciseSkillFilter.isNotEmpty
+                ? '${controller.exerciseSkillFilter.length} skill(s)'
+                : 'Filter by skills',
+            style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : Colors.grey[400]),
+          ),
+          items: controller.exerciseSkills.map((s) => DropdownMenuItem(
+            value: s.id.toString(),
+            child: Row(
+              children: [
+                Icon(
+                  controller.exerciseSkillFilter.contains(s.id)
+                      ? Icons.check_box
+                      : Icons.check_box_outline_blank,
+                  size: 16,
+                  color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(s.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground)),
+                ),
+              ],
+            ),
+          )).toList(),
+          onChanged: (val) {
+            if (val != null) controller.toggleExerciseSkillFilter(int.parse(val));
+          },
+          dropdownColor: isDark ? AppTheme.darkCard : AppTheme.card,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExerciseCard(Exercise exercise, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  exercise.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                ),
+              ),
+              if (exercise.level != null)
+                Container(
+                  margin: const EdgeInsets.only(left: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                    child: Text(
+                      exercise.level!,
+                      style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue[800]),
+                    ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: Text(
+              exercise.description,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Teacher: ${exercise.teacherName ?? ""}',
+            style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          if (exercise.className != null)
+            Text(
+              'Class: ${exercise.className}',
+              style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            ),
+          if (exercise.dueDate != null && exercise.dueDate!.isNotEmpty)
+            Text(
+              'Due: ${exercise.dueDate}',
+              style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            ),
+          if (exercise.skills.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            SizedBox(
+              height: 20,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: exercise.skills.map((s) => Container(
+                  margin: const EdgeInsets.only(right: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0x59433FA7) : Colors.purple[50],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    s.name,
+                    style: TextStyle(fontSize: 9, color: isDark ? const Color(0xFFC4B5FD) : Colors.purple[800]),
+                  ),
+                )).toList(),
+              ),
+            ),
+          ],
+          const Spacer(),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Obx(() {
+              final assigned = controller.assignedExerciseIds.contains(exercise.id);
+              final assigning = controller.assigningExerciseId.value == exercise.id;
+              return GestureDetector(
+                onTap: assigned || assigning ? null : () => controller.assignExerciseToChild(exercise.id),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: assigned
+                        ? (isDark ? const Color(0xFF3F3F46) : Colors.grey[300])
+                        : (isDark ? Colors.blue[700] : Colors.blue),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    assigning ? 'Assigning...'.tr : (assigned ? 'Assigned'.tr : 'Assign'.tr),
+                    style: TextStyle(fontSize: 11, color: assigned ? (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground) : Colors.white),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmissionsTab() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Submissions'.tr,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Review submissions your children made on exercises you assigned'.tr,
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.isLoadingSubmissions.value && controller.childSubmissions.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (controller.childSubmissions.isEmpty) {
+              return Center(
+                child: Text(
+                  'No submissions yet'.tr,
+                  style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                ),
+              );
+            }
+            final childNames = controller.childSubmissions
+                .map((s) => s.studentName ?? '')
+                .where((n) => n.isNotEmpty)
+                .toSet()
+                .toList();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 36,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _buildSubmissionFilterTab('All', controller.selectedChildForSubmissions.value.isEmpty, () => controller.setSelectedChildForSubmissions(''), isDark),
+                      ...childNames.map((name) {
+                        return _buildSubmissionFilterTab(
+                          name,
+                          controller.selectedChildForSubmissions.value == name,
+                          () => controller.setSelectedChildForSubmissions(name),
+                          isDark,
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Obx(() {
+                  final filtered = controller.selectedChildForSubmissions.value.isNotEmpty
+                      ? controller.childSubmissions.where((s) => s.studentName == controller.selectedChildForSubmissions.value).toList()
+                      : controller.childSubmissions.toList();
+                  if (filtered.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No submissions for this child',
+                        style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final submission = filtered[index];
+                      return _buildSubmissionCard(submission, isDark);
+                    },
+                  );
+                }),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmissionFilterTab(String label, bool isSelected, VoidCallback onTap, bool isDark) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? AppTheme.darkBadgeBlueBg : Colors.blue.withValues(alpha: 0.1))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected
+                ? (isDark ? Colors.white : Colors.blue[700])
+                : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubmissionCard(Submission submission, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  submission.studentName ?? '',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Assigned Exercise',
+                  style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue[800]),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Exercise: ${submission.exerciseTitle}',
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Submitted: ${submission.submittedAt}',
+            style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (submission.grade != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkBadgeGreenBg : Colors.green[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Grade: ${submission.grade!.toStringAsFixed(submission.grade! == submission.grade!.truncateToDouble() ? 0 : 1)}/20',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? AppTheme.darkBadgeGreenText : Colors.green[700]),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF3F3F46) : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Not graded yet'.tr,
+                    style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                  ),
+                ),
+              const Spacer(),
+              if (submission.submissionFileUrl != null && submission.submissionFileUrl!.isNotEmpty)
+                GestureDetector(
+                  onTap: () async {
+                    final url = submission.submissionFileUrl!;
+                    final uri = Uri.tryParse(url);
+                    if (uri != null) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.download, size: 14, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Download'.tr,
+                          style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (submission.feedback.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.only(left: 8),
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border, width: 2)),
+              ),
+              child: Text(
+                '"${submission.feedback}"',
+                style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: isDark ? Colors.grey[300] : AppTheme.mutedForeground),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatsCards() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
     return Obx(
       () => SizedBox(
         height: 120,
@@ -287,6 +887,7 @@ class ParentView extends GetView<ParentController> {
                 'Enrolled students'.tr,
                 Colors.blue,
                 Icons.group,
+                isDark,
               ),
             ),
             const SizedBox(width: 12),
@@ -298,6 +899,7 @@ class ParentView extends GetView<ParentController> {
                 'Overall status'.tr,
                 Colors.green,
                 Icons.trending_up,
+                isDark,
               ),
             ),
             const SizedBox(width: 12),
@@ -309,6 +911,7 @@ class ParentView extends GetView<ParentController> {
                 'Class status'.tr,
                 Colors.purple,
                 Icons.menu_book,
+                isDark,
               ),
             ),
             const SizedBox(width: 12),
@@ -320,6 +923,7 @@ class ParentView extends GetView<ParentController> {
                 'Children linked'.tr,
                 Colors.orange,
                 Icons.notifications,
+                isDark,
               ),
             ),
           ],
@@ -334,97 +938,112 @@ class ParentView extends GetView<ParentController> {
     String subtitle,
     Color color,
     IconData icon,
+    bool isDark,
   ) {
-    return Card(
-      child: Container(
-        width: 160,
-        constraints: const BoxConstraints(minHeight: 110),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+    return Container(
+      width: 160,
+      constraints: const BoxConstraints(minHeight: 110),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      title.tr,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                  ),
-                  Icon(icon, size: 14, color: Colors.grey),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Flexible(
+              Expanded(
                 child: Text(
-                  subtitle.tr,
-                  maxLines: 2,
+                  title.tr,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
                 ),
               ),
+              Icon(icon, size: 14, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
             ],
           ),
-        ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Flexible(
+            child: Text(
+              subtitle.tr,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildAnnouncementsCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final isDark = Get.find<ThemeService>().isDarkMode;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Announcements'.tr,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 16,
+                color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
+            Text(
+              'Announcements for your children'.tr,
+              style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            ),
+            const SizedBox(height: 12),
             Obx(() {
               if (controller.children.isEmpty) return const SizedBox.shrink();
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(8),
+                  border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border)),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildChildFilterChip(
+                      _buildFilterTab(
                         'All',
                         controller.selectedChildForAnnouncements.value.isEmpty,
                         () => controller.selectChildForAnnouncements(''),
+                        isDark,
                       ),
                       ...controller.children.map(
-                        (child) => _buildChildFilterChip(
+                        (child) => _buildFilterTab(
                           child.fullName,
                           controller.selectedChildForAnnouncements.value ==
                               child.fullName,
                           () => controller.selectChildForAnnouncements(
                             child.fullName,
                           ),
+                          isDark,
                         ),
                       ),
                     ],
@@ -435,157 +1054,172 @@ class ParentView extends GetView<ParentController> {
             const SizedBox(height: 12),
             Obx(() {
               if (controller.filteredAnnouncements.isEmpty) {
-                return const Text('No announcements');
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'No announcements'.tr,
+                      style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                    ),
+                  ),
+                );
               }
 
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.filteredAnnouncements.length > 5
-                    ? 5
-                    : controller.filteredAnnouncements.length,
-                itemBuilder: (context, index) {
-                  final childAnn = controller.filteredAnnouncements[index];
-                  final ann = childAnn.announcement;
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
+              // Group by child name, then by teacher name (matching web)
+              final announcements = controller.filteredAnnouncements;
+              final groupedByChild = <String, Map<String, List<ChildAnnouncement>>>{};
+              for (final ca in announcements) {
+                final childName = ca.childName;
+                final teacherName = ca.announcement.teacherName ?? 'Teacher';
+                groupedByChild.putIfAbsent(childName, () => {});
+                groupedByChild[childName]!.putIfAbsent(teacherName, () => []);
+                groupedByChild[childName]![teacherName]!.add(ca);
+              }
+
+              return ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 500),
+                child: ListView(
+                  shrinkWrap: true,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: groupedByChild.entries.map((childEntry) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                        borderRadius: BorderRadius.circular(8),
+                        color: isDark ? AppTheme.darkCard : AppTheme.card,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'From: ${ann.teacherName ?? "Teacher"}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            childEntry.key,
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.blue,
+                              fontSize: 15,
+                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Child: ${childAnn.childName}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ann.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ann.content,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13),
                           ),
                           const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            children: [
-                              if (ann.className != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue[50],
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    'Class: ${ann.className}',
+                          ...childEntry.value.entries.map((teacherEntry) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isDark ? AppTheme.darkBackground : AppTheme.muted,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'From: ${teacherEntry.key}'.tr,
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.blue[700],
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                                     ),
                                   ),
-                                ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  _formatDateTime(ann.createdAt),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+                                  const SizedBox(height: 6),
+                                  ...teacherEntry.value.map((ca) {
+                                    final ann = ca.announcement;
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 6),
+                                      padding: const EdgeInsets.only(left: 8),
+                                      decoration: BoxDecoration(
+                                        border: Border(left: BorderSide(color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue[300]!, width: 2)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            ann.title,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13,
+                                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                                            ),
+                                          ),
+                                          Text(
+                                            ann.content,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              if (ann.className != null)
+                                                Text(
+                                                  'Class: ${ann.className}  |  ',
+                                                  style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                                ),
+                                              Text(
+                                                _formatDateTime(ann.createdAt),
+                                                style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          }),
                         ],
                       ),
-                    ),
-                  );
-                },
+                    );
+                  }).toList(),
+                ),
               );
             }),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildAttendanceCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Attendance Records',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
+    final isDark = Get.find<ThemeService>().isDarkMode;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
             Obx(() {
               if (controller.children.isEmpty) return const SizedBox.shrink();
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(8),
+                  border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border)),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildChildFilterChip(
+                      _buildFilterTab(
                         'All',
                         controller.selectedChildForAttendance.value.isEmpty,
                         () => controller.selectChildForAttendance(''),
+                        isDark,
                       ),
                       ...controller.children.map(
-                        (child) => _buildChildFilterChip(
+                        (child) => _buildFilterTab(
                           child.fullName,
                           controller.selectedChildForAttendance.value ==
                               child.fullName,
                           () => controller.selectChildForAttendance(
                             child.fullName,
                           ),
+                          isDark,
                         ),
                       ),
                     ],
@@ -606,139 +1240,109 @@ class ParentView extends GetView<ParentController> {
                   final absentCount = childAtt.attendance
                       .where((a) => a.status == 'ABSENT')
                       .length;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          childAtt.childName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  childAtt.childName,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isDark ? AppTheme.darkBadgeGreenBg : Colors.green[100],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '$presentCount Present',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkBadgeGreenText : Colors.green[800]),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isDark ? AppTheme.darkBadgeRedBg : Colors.red[100],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '$absentCount Absent',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkBadgeRedText : Colors.red[800]),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      '$presentCount',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green[700],
-                                      ),
-                                    ),
-                                    Text(
-                                      'Present',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.green[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.red[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      '$absentCount',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red[700],
-                                      ),
-                                    ),
-                                    Text(
-                                      'Absent',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.red[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
+                          const SizedBox(height: 12),
                         if (childAtt.attendance.isNotEmpty)
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: childAtt.attendance.length > 10
-                                ? 10
-                                : childAtt.attendance.length,
-                            itemBuilder: (context, index) {
-                              final record = childAtt.attendance[index];
-                              return ListTile(
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  record.className ?? 'Class',
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _formatDate(record.date),
-                                      style: const TextStyle(fontSize: 11),
-                                    ),
-                                    if (record.teacherName != null)
-                                      Text(
-                                        'Teacher: ${record.teacherName}',
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.grey,
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: childAtt.attendance.length > 10
+                                  ? 10
+                                  : childAtt.attendance.length,
+                              itemBuilder: (context, index) {
+                                final record = childAtt.attendance[index];
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? AppTheme.darkBackground : AppTheme.muted,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              record.className ?? 'Class',
+                                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${_formatDate(record.date)}${record.teacherName != null ? " - Teacher: ${record.teacherName}" : ""}',
+                                              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                  ],
-                                ),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: record.status == 'PRESENT'
+                                              ? (isDark ? AppTheme.darkBadgeGreenBg : Colors.green[100])
+                                              : (isDark ? AppTheme.darkBadgeRedBg : Colors.red[100]),
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          record.status,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: record.status == 'PRESENT'
+                                                ? (isDark ? AppTheme.darkBadgeGreenText : Colors.green[800])
+                                                : (isDark ? AppTheme.darkBadgeRedText : Colors.red[800]),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: record.status == 'PRESENT'
-                                        ? Colors.green[100]
-                                        : Colors.red[100],
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    record.status,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: record.status == 'PRESENT'
-                                          ? Colors.green[700]
-                                          : Colors.red[700],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                                );
+                              },
+                            ),
                         const Divider(),
                       ],
                     ),
@@ -748,121 +1352,135 @@ class ParentView extends GetView<ParentController> {
             }),
           ],
         ),
-      ),
     );
   }
 
   Widget _buildChildrenCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'My Children'.tr,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.children.isEmpty) {
-                return Text('No children linked'.tr);
-              }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.children.length,
-                itemBuilder: (context, index) {
-                  final child = controller.children[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
+    final isDark = Get.find<ThemeService>().isDarkMode;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'My Children'.tr,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Overview of your children\'s information'.tr,
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.children.isEmpty) {
+              return Text('No children linked'.tr, style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground));
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.children.length,
+              itemBuilder: (context, index) {
+                final child = controller.children[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                    borderRadius: BorderRadius.circular(8),
+                    color: isDark ? AppTheme.darkBackground : AppTheme.muted,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  child.fullName,
-                                  softWrap: true,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[100],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Active'.tr,
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (child.enrollmentDate != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              'Enrolled: ${_formatDate(child.enrollmentDate!)}',
+                          Expanded(
+                            child: Text(
+                              child.fullName,
                               softWrap: true,
-                              style: const TextStyle(fontSize: 12),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                              ),
                             ),
-                          ],
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 16,
-                            runSpacing: 8,
-                            children: [
-                              if (child.phoneNumber != null)
-                                _buildInfoChip('Phone', child.phoneNumber!),
-                              if (child.address != null)
-                                _buildInfoChip('Address', child.address!),
-                              if (child.parentOccupation != null)
-                                _buildInfoChip(
-                                  'Parent Occupation',
-                                  child.parentOccupation!,
-                                ),
-                              if (child.dateOfBirth != null)
-                                _buildInfoChip(
-                                  'Date of Birth',
-                                  _formatDate(child.dateOfBirth!),
-                                ),
-                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppTheme.darkBadgeGreenBg : Colors.green[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Active'.tr,
+                              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkBadgeGreenText : Colors.green[800]),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  );
-                },
-              );
-            }),
-          ],
-        ),
+                      if (child.enrollmentDate != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Enrolled: ${_formatDate(child.enrollmentDate!)}',
+                          softWrap: true,
+                          style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.foreground),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 8,
+                        children: [
+                          if (child.phoneNumber != null)
+                            _buildInfoChip('Phone', child.phoneNumber!, isDark),
+                          if (child.address != null)
+                            _buildInfoChip('Address', child.address!, isDark),
+                          if (child.dateOfBirth != null)
+                            _buildInfoChip(
+                              'Date of Birth',
+                              _formatDate(child.dateOfBirth!),
+                              isDark,
+                            ),
+                          if (child.enrollmentAge != null)
+                            _buildInfoChip(
+                              'Enrollment Age',
+                              '${child.enrollmentAge}',
+                              isDark,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }),
+        ],
       ),
     );
   }
 
-  Widget _buildInfoChip(String label, String value) {
+  Widget _buildInfoChip(String label, String value, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label.tr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        Text(label.tr, style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
         SizedBox(
-          width: 120,
+          width: 140,
           child: Text(
             value,
             softWrap: true,
@@ -874,78 +1492,95 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildImportantInfoCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Important Information'.tr,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.children.isEmpty) {
-                return Text(
-                  'Contact the school administration to link your children to your account.'.tr,
-                );
-              }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.children.length,
-                itemBuilder: (context, index) {
-                  final child = controller.children[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            child.fullName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          _buildInfoRow(
-                            Icons.notifications,
-                            Colors.blue,
-                            'You are linked as the parent of this student'.tr,
-                          ),
-                          if (child.phoneNumber != null)
-                            _buildInfoRow(
-                              Icons.phone,
-                              Colors.green,
-                              'Contact number'.tr + ': ${child.phoneNumber}',
-                            ),
-                          _buildInfoRow(
-                            Icons.book,
-                            Colors.purple,
-                            'Check their exercises and assignments regularly'.tr,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+    final isDark = Get.find<ThemeService>().isDarkMode;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Important Information'.tr,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Details about your linked children'.tr,
+            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.children.isEmpty) {
+              return Text(
+                'Contact the school administration to link your children to your account.'.tr,
+                style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
               );
-            }),
-          ],
-        ),
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.children.length,
+              itemBuilder: (context, index) {
+                final child = controller.children[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                    borderRadius: BorderRadius.circular(8),
+                    color: isDark ? AppTheme.darkBackground : AppTheme.muted,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        child.fullName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        Icons.notifications,
+                        Colors.blue,
+                        'You are linked as the parent of this student'.tr,
+                        isDark,
+                      ),
+                      if (child.phoneNumber != null)
+                        _buildInfoRow(
+                          Icons.phone,
+                          Colors.green,
+                          'Contact number'.tr + ': ${child.phoneNumber}',
+                          isDark,
+                        ),
+                      _buildInfoRow(
+                        Icons.book,
+                        Colors.purple,
+                        'Check their exercises and assignments regularly'.tr,
+                        isDark,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }),
+        ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, Color color, String text) {
+  Widget _buildInfoRow(IconData icon, Color color, String text, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
@@ -957,10 +1592,39 @@ class ParentView extends GetView<ParentController> {
             child: Text(
               text,
               softWrap: true,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(String label, bool isSelected, VoidCallback onTap, bool isDark) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected
+                  ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                  : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Text(
+          label.tr,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected
+                ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+        ),
       ),
     );
   }
@@ -1137,15 +1801,15 @@ class ParentView extends GetView<ParentController> {
         child: Container(
           width: 350,
           height: double.infinity,
-          color: isDark ? const Color(0xFF262638) : Colors.white,
+          color: isDark ? AppTheme.darkCard : Colors.white,
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF262638) : Colors.white,
+                  color: isDark ? AppTheme.darkCard : Colors.white,
                   border: Border(
-                    bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+                    bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border, width: 1),
                   ),
                 ),
                 child: Row(
@@ -1156,7 +1820,7 @@ class ParentView extends GetView<ParentController> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
                       ),
                     ),
                     IconButton(
@@ -1174,7 +1838,7 @@ class ParentView extends GetView<ParentController> {
                     return Center(
                       child: Text(
                         'No notifications'.tr,
-                        style: const TextStyle(color: Colors.grey),
+                        style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
                       ),
                     );
                   }
@@ -1185,7 +1849,7 @@ class ParentView extends GetView<ParentController> {
                       final notification = controller.notifications[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        color: notification.isRead ? null : Colors.blue[50],
+                        color: notification.isRead ? null : (isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50]),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
@@ -1207,8 +1871,8 @@ class ParentView extends GetView<ParentController> {
                                     Container(
                                       width: 8,
                                       height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.blue,
+                                      decoration: BoxDecoration(
+                                        color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -1222,9 +1886,9 @@ class ParentView extends GetView<ParentController> {
                               const SizedBox(height: 8),
                               Text(
                                 _getTimeAgo(notification.createdAt),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.grey,
+                                  color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                                 ),
                               ),
                             ],
@@ -1244,6 +1908,7 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildPredictionsCard() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
     return Obx(() {
       if (controller.children.isEmpty)
         return Text('No children linked to your account yet'.tr);
@@ -1273,8 +1938,9 @@ class ParentView extends GetView<ParentController> {
             return Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
                 borderRadius: BorderRadius.circular(8),
+                color: isDark ? AppTheme.darkCard : AppTheme.card,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1283,27 +1949,22 @@ class ParentView extends GetView<ParentController> {
                     child.fullName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
+                      color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
                     ),
                   ),
                   const SizedBox(height: 8),
                   if (prediction == null)
                     Expanded(
                       child: Center(
-                        child: ElevatedButton(
+                        child: OutlinedButton(
                           onPressed: isPredicting
                               ? null
                               : () => controller.predictStudent(child.id),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                          ),
-                            child: Text(
-                              isPredicting ? '...' : 'Predict'.tr,
+                          child: Text(
+                            isPredicting ? '...' : 'Predict'.tr,
                             style: const TextStyle(fontSize: 12),
                           ),
                         ),
@@ -1318,8 +1979,8 @@ class ParentView extends GetView<ParentController> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: prediction.prediction == 'Dropout'
-                            ? Colors.red[50]
-                            : Colors.green[50],
+                            ? (isDark ? AppTheme.darkBadgeRedBg : Colors.red[50])
+                            : (isDark ? AppTheme.darkBadgeGreenBg : Colors.green[50]),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Column(
@@ -1330,16 +1991,17 @@ class ParentView extends GetView<ParentController> {
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: prediction.prediction == 'Dropout'
-                                  ? Colors.red[700]
-                                  : Colors.green[700],
+                                  ? (isDark ? AppTheme.darkBadgeRedText : Colors.red[600])
+                                  : (isDark ? AppTheme.darkBadgeGreenText : Colors.green[600]),
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${(prediction.confidence * 100).toStringAsFixed(0)}%',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
+                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
                             ),
                           ),
                         ],
@@ -1354,19 +2016,35 @@ class ParentView extends GetView<ParentController> {
                             _buildFeatureRow(
                               'Absences'.tr,
                               '${prediction.featuresUsed['total_absences'] ?? 0}',
+                              isDark,
                             ),
                             _buildFeatureRow(
                               'Absence Rate'.tr,
                               '${((prediction.featuresUsed['absence_rate'] ?? 0.0) * 100).toStringAsFixed(0)}%',
+                              isDark,
                             ),
                             _buildFeatureRow(
                               'Exercises'.tr,
                               '${prediction.featuresUsed['exercises_completed'] ?? 0}',
+                              isDark,
                             ),
                             _buildFeatureRow(
                               'Completion'.tr,
                               '${((prediction.featuresUsed['exercise_completion_rate'] ?? 0.0) * 100).toStringAsFixed(0)}%',
+                              isDark,
                             ),
+                            if (prediction.featuresUsed.containsKey('critical_skill_completion_rate') || prediction.featuresUsed.containsKey('critical_skills_completion'))
+                              _buildFeatureRow(
+                                'Critical Skills Completion'.tr,
+                                '${((prediction.featuresUsed['critical_skill_completion_rate'] ?? prediction.featuresUsed['critical_skills_completion'] ?? 0.0) * 100).toStringAsFixed(0)}%',
+                                isDark,
+                              ),
+                            if (prediction.featuresUsed.containsKey('total_critical_skills_missed') || prediction.featuresUsed.containsKey('critical_skills_missed'))
+                              _buildFeatureRow(
+                                'Critical Skills Missed'.tr,
+                                '${prediction.featuresUsed['total_critical_skills_missed'] ?? prediction.featuresUsed['critical_skills_missed'] ?? 0}',
+                                isDark,
+                              ),
                           ],
                         ),
                       ),
@@ -1381,16 +2059,16 @@ class ParentView extends GetView<ParentController> {
     });
   }
 
-  Widget _buildFeatureRow(String label, String value) {
+  Widget _buildFeatureRow(String label, String value, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(label, style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground, fontSize: 12)),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
           ),
         ],
       ),
@@ -1401,22 +2079,22 @@ class ParentView extends GetView<ParentController> {
     final auth = Get.find<AuthService>();
     return Obx(
       () => PopupMenuButton<String>(
-        icon: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppTheme.border),
-          ),
-          child: Center(
-            child: Text(
-              controller.userName.isNotEmpty
-                  ? controller.userName[0].toUpperCase()
-                  : 'U',
-              style: const TextStyle(
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+        offset: const Offset(0, 48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Container(
+            width: 40, height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.border),
+            ),
+            child: Center(
+              child: Text(
+                controller.userName.isNotEmpty
+                    ? controller.userName[0].toUpperCase()
+                    : 'U',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
             ),
           ),
@@ -1424,198 +2102,95 @@ class ParentView extends GetView<ParentController> {
         onSelected: (v) {
           if (v == 'logout')
             controller.logout();
-          else if (v == 'teacher')
-            controller.switchToRole('TEACHER');
-          else if (v == 'student')
-            controller.switchToRole('STUDENT');
-          else if (v.startsWith('student_'))
-            controller.switchToRole(v);
-          else if (v == 'admin')
-            controller.switchToRole('ADMIN');
           else if (v == 'dark_mode')
             controller.toggleDarkMode();
-          else if (v == 'language')
-            controller.toggleLanguage();
-          else if (v.startsWith('child_')) {
-            final childId = int.tryParse(v.replaceFirst('child_', ''));
-            if (childId != null) {
-              final child = controller.children.firstWhereOrNull(
-                (c) => c.id == childId,
-              );
-              if (child != null) {
-                controller.selectChildForProfile(child.fullName);
-              }
-            }
-          }
+          else if (v.startsWith('switch_'))
+            controller.switchToRole(v.replaceFirst('switch_', ''));
+          else if (v.startsWith('student_'))
+            controller.switchToRole(v);
         },
         itemBuilder: (ctx) => [
-          PopupMenuItem(
-            enabled: false,
-            child: Text(
-              controller.userName,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          const PopupMenuDivider(),
           PopupMenuItem(
             value: 'dark_mode',
             child: Row(
               children: [
                 Icon(
                   controller.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  size: 20,
+                  size: 18,
                 ),
                 const SizedBox(width: 8),
-                Text(controller.isDarkMode ? 'Light Mode'.tr : 'Dark Mode'.tr),
+                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
               ],
             ),
           ),
           if (auth.hasMultipleRoles) ...[
             const PopupMenuDivider(),
-            if (auth.roles.contains('TEACHER'))
-              PopupMenuItem(
-                value: 'teacher',
+            const PopupMenuItem(
+              enabled: false,
+              child: Text('Switch Role', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            ),
+            ...auth.roles.where((r) {
+              if (auth.role == 'PARENT' && r == 'STUDENT') return false;
+              if (auth.role == 'TEACHER' && r == 'STUDENT') return false;
+              return true;
+            }).map((role) {
+              IconData icon;
+              Color iconColor;
+              String label;
+              switch (role) {
+                case 'ADMIN':
+                  icon = Icons.shield;
+                  iconColor = controller.isDarkMode ? AppTheme.darkDestructive : Colors.red;
+                  label = 'Administrator';
+                  break;
+                case 'TEACHER':
+                  icon = Icons.school;
+                  iconColor = controller.isDarkMode ? AppTheme.darkPrimary : Colors.blue;
+                  label = 'Teacher';
+                  break;
+                case 'STUDENT':
+                  icon = Icons.people;
+                  iconColor = controller.isDarkMode ? AppTheme.darkBadgeGreenText : Colors.green;
+                  label = 'Student';
+                  break;
+                case 'PARENT':
+                  icon = Icons.child_care;
+                  iconColor = controller.isDarkMode ? AppTheme.darkMutedForeground : Colors.purple;
+                  label = 'Parent';
+                  break;
+                default:
+                  icon = Icons.person;
+                  iconColor = controller.isDarkMode ? AppTheme.darkMutedForeground : AppTheme.mutedForeground;
+                  label = role;
+              }
+              final isActive = role == auth.role;
+              return PopupMenuItem(
+                value: 'switch_$role',
+                enabled: !isActive,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.school, size: 20),
-                        const SizedBox(width: 8),
-                        Text('Switch to Teacher'.tr),
-                      ],
-                    ),
-                    if (auth.role == 'TEACHER')
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'ACTIVE'.tr,
-                          style: const TextStyle(fontSize: 10, color: Colors.green),
-                        ),
-                      ),
+                    Icon(icon, size: 18, color: iconColor),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(label)),
+                    if (isActive)
+                      Text('ACTIVE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1, color: controller.isDarkMode ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
                   ],
                 ),
-              ),
-            if (auth.roles.contains('STUDENT') && auth.role != 'PARENT')
-              PopupMenuItem(
-                value: 'student',
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.person, size: 20),
-                        const SizedBox(width: 8),
-                        Text('Switch to Student'.tr),
-                      ],
-                    ),
-                    if (auth.role == 'STUDENT')
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'ACTIVE'.tr,
-                          style: const TextStyle(fontSize: 10, color: Colors.green),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            if (auth.roles.contains('ADMIN'))
-              PopupMenuItem(
-                value: 'admin',
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.admin_panel_settings, size: 20),
-                        const SizedBox(width: 8),
-                        Text('Switch to Admin'.tr),
-                      ],
-                    ),
-                    if (auth.role == 'ADMIN')
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'ACTIVE'.tr,
-                          style: const TextStyle(fontSize: 10, color: Colors.green),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            if (auth.roles.contains('ADMIN'))
-              PopupMenuItem(
-                value: 'admin',
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.admin_panel_settings, size: 20),
-                        const SizedBox(width: 8),
-                        Text('Switch to Admin'.tr),
-                      ],
-                    ),
-                    if (auth.role == 'ADMIN')
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'ACTIVE'.tr,
-                          style: const TextStyle(fontSize: 10, color: Colors.green),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+              );
+            }),
           ],
           if (controller.children.isNotEmpty) ...[
             const PopupMenuDivider(),
-            PopupMenuItem(
+            const PopupMenuItem(
               enabled: false,
-              child: Text(
-                'Select Child'.tr,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
+              child: Text('Select Child', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             ),
             ...controller.children.map(
               (child) => PopupMenuItem(
                 value: 'student_${child.id}',
                 child: Row(
                   children: [
-                    const Icon(Icons.visibility, size: 20),
+                    const Icon(Icons.visibility, size: 18),
                     const SizedBox(width: 8),
                     Expanded(child: Text(child.fullName)),
                   ],
@@ -1628,9 +2203,9 @@ class ParentView extends GetView<ParentController> {
             value: 'logout',
             child: Row(
               children: [
-                const Icon(Icons.logout, size: 20, color: Colors.red),
+                Icon(Icons.logout, size: 18, color: controller.isDarkMode ? AppTheme.darkDestructive : Colors.red),
                 const SizedBox(width: 8),
-                Text('Logout'.tr, style: const TextStyle(color: Colors.red)),
+                Text('Logout', style: TextStyle(color: controller.isDarkMode ? AppTheme.darkDestructive : Colors.red)),
               ],
             ),
           ),

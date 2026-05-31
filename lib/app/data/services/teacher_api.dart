@@ -72,6 +72,7 @@ class TeacherApi {
     Uint8List? fileBytes,
     String? fileName,
     String? dueDate,
+    List<int>? skillIds,
   }) async {
     dio_pkg.MultipartFile file;
 
@@ -92,6 +93,8 @@ class TeacherApi {
       'related_class': classId,
       'file_path': file,
       if (dueDate != null && dueDate.isNotEmpty) 'due_date': dueDate,
+      if (skillIds != null && skillIds.isNotEmpty)
+        'skills': skillIds.join(','),
     });
 
     final response = await _api.uploadFile(

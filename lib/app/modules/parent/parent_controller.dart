@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/parent_api.dart';
+import '../../data/services/student_api.dart';
+import '../../data/services/admin_api.dart';
 import '../../data/services/websocket_service.dart';
 import '../../data/models/parent_models.dart';
 import '../../data/models/models.dart';
@@ -15,6 +19,7 @@ import '../../data/exceptions.dart';
 class ParentController extends GetxController {
   final AuthApi _authApi = AuthApi();
   final ParentApi _parentApi = ParentApi();
+  final StudentApi _studentApi = StudentApi();
 
   final children = <StudentChild>[].obs;
   final announcements = <ChildAnnouncement>[].obs;
@@ -31,6 +36,33 @@ class ParentController extends GetxController {
   final selectedChildForProfile = ''.obs;
   final predictions = <int, PredictionResult>{}.obs;
   final predicting = Rxn<int>();
+
+  // Exercise search & assign
+  final searchedExercises = <Exercise>[].obs;
+  final isSearchingExercises = false.obs;
+  final selectedChildForExercises = Rxn<int>();
+  final exerciseLevelFilter = Rxn<String>();
+  final exerciseClassFilter = ''.obs;
+  final exerciseSkillFilter = <int>[].obs;
+  final exerciseSkills = <Skill>[].obs;
+  final assignedExerciseIds = <int>{}.obs;
+  final assigningExerciseId = Rxn<int>();
+  final childSubmissions = <Submission>[].obs;
+  final isLoadingSubmissions = false.obs;
+  final selectedChildForSubmissions = ''.obs;
+
+  // Levels for parent exercise filter
+  static const List<Map<String, dynamic>> _allLevelsData = [
+    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
+    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
+    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
+    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
+    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
+    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
+  ];
+
+  List<Level> get levels =>
+      _allLevelsData.map((e) => Level(id: e['id'] as int, name: e['name'] as String)).toList();
 
   List<ChildAnnouncement> get filteredAnnouncements {
     if (selectedChildForAnnouncements.value.isEmpty) {
@@ -160,6 +192,11 @@ class ParentController extends GetxController {
       }
       debugPrint('=== END DEBUG ===');
 
+      // Auto-select first child for exercises if none selected (matching web behavior)
+      if (childrenData.isNotEmpty && selectedChildForExercises.value == null) {
+        setSelectedChildForExercises(childrenData.first.id);
+      }
+
       // Load other data
       final announcementsData = await _parentApi.getAnnouncements().catchError((
         e,
@@ -183,6 +220,12 @@ class ParentController extends GetxController {
       });
       attendance.value = attendanceData;
 
+      final submissionsData = await _parentApi.getSubmissions().catchError((e) {
+        debugPrint('Error loading submissions: $e');
+        return <Submission>[];
+      });
+      childSubmissions.value = submissionsData;
+
       final notificationsData = await _parentApi.getNotifications().catchError((
         e,
       ) {
@@ -190,6 +233,7 @@ class ParentController extends GetxController {
         return <AppNotification>[];
       });
       notifications.value = notificationsData;
+      loadExerciseSkills();
     } catch (e) {
       debugPrint('Error loading data: $e');
     } finally {
@@ -288,6 +332,152 @@ class ParentController extends GetxController {
   }
 
   List<String> get childNames => children.map((c) => c.fullName).toList();
+
+  // --- Exercise Search & Assign ---
+  void setSelectedChildForExercises(int? childId) {
+    selectedChildForExercises.value = childId;
+    if (childId != null) searchExercises();
+  }
+
+  void setExerciseLevelFilter(String? level) {
+    exerciseLevelFilter.value = level;
+    if (selectedChildForExercises.value != null) searchExercises();
+  }
+
+  void setExerciseClassFilter(String query) {
+    exerciseClassFilter.value = query;
+    if (selectedChildForExercises.value != null) searchExercises();
+  }
+
+  void toggleExerciseSkillFilter(int skillId) {
+    if (exerciseSkillFilter.contains(skillId)) {
+      exerciseSkillFilter.remove(skillId);
+    } else {
+      exerciseSkillFilter.add(skillId);
+    }
+    if (selectedChildForExercises.value != null) searchExercises();
+  }
+
+  Future<void> loadExerciseSkills() async {
+    try {
+      final result = await AdminApi().getSkills();
+      exerciseSkills.value = result;
+    } catch (e) {
+      debugPrint('Error loading exercise skills: $e');
+    }
+  }
+
+  Future<void> searchExercises() async {
+    final childId = selectedChildForExercises.value;
+    if (childId == null) return;
+
+    isSearchingExercises.value = true;
+    try {
+      final results = await _parentApi.searchExercises(
+        studentId: childId,
+        level: exerciseLevelFilter.value,
+        className: exerciseClassFilter.value.isNotEmpty ? exerciseClassFilter.value : null,
+        skillIds: exerciseSkillFilter.isNotEmpty ? exerciseSkillFilter.join(',') : null,
+      );
+      searchedExercises.value = results;
+      assignedExerciseIds.value = results
+          .where((e) => e.isAssigned)
+          .map((e) => e.id)
+          .toSet();
+    } catch (e) {
+      debugPrint('Error searching exercises: $e');
+    } finally {
+      isSearchingExercises.value = false;
+    }
+  }
+
+  Future<void> assignExerciseToChild(int exerciseId) async {
+    final childId = selectedChildForExercises.value;
+    if (childId == null) return;
+
+    assigningExerciseId.value = exerciseId;
+    try {
+      await _parentApi.assignExercise(childId, exerciseId);
+      assignedExerciseIds.add(exerciseId);
+      Get.snackbar('Success'.tr, 'Exercise assigned successfully'.tr);
+    } catch (e) {
+      debugPrint('Error assigning exercise: $e');
+      Get.snackbar('Error'.tr, 'Failed to assign exercise'.tr);
+    } finally {
+      assigningExerciseId.value = null;
+    }
+  }
+
+  // --- Submissions ---
+  void setSelectedChildForSubmissions(String? childName) {
+    selectedChildForSubmissions.value = childName ?? '';
+  }
+
+  Future<void> loadSubmissions() async {
+    isLoadingSubmissions.value = true;
+    try {
+      final results = await _parentApi.getSubmissions();
+      childSubmissions.value = results;
+    } catch (e) {
+      debugPrint('Error loading submissions: $e');
+    } finally {
+      isLoadingSubmissions.value = false;
+    }
+  }
+
+  // Parent submits file on behalf of child
+  final selectedSubmitFile = Rxn<PlatformFile>();
+  final selectedSubmitExerciseId = Rxn<int>();
+  final isSubmitting = false.obs;
+
+  Future<void> pickSubmitFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.isNotEmpty) {
+        selectedSubmitFile.value = result.files.first;
+      }
+    } catch (e) {
+      debugPrint('Error picking file: $e');
+    }
+  }
+
+  void clearSubmitFile() {
+    selectedSubmitFile.value = null;
+  }
+
+  Future<void> submitForChild(int exerciseId, int studentId) async {
+    if (selectedSubmitFile.value == null) return;
+
+    isSubmitting.value = true;
+    try {
+      final file = selectedSubmitFile.value!;
+      String? filePath;
+      Uint8List? fileBytes;
+      String? fileName;
+
+      if (kIsWeb) {
+        fileBytes = file.bytes;
+        fileName = file.name;
+      } else {
+        filePath = file.path;
+      }
+
+      await _studentApi.submitExercise(
+        exerciseId: exerciseId,
+        filePath: filePath,
+        fileBytes: fileBytes,
+        fileName: fileName,
+        studentId: studentId,
+      );
+      selectedSubmitFile.value = null;
+      Get.snackbar('Success'.tr, 'Exercise submitted successfully'.tr);
+      loadSubmissions();
+    } catch (e) {
+      Get.snackbar('Error'.tr, 'Failed to submit exercise'.tr);
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
 
   Future<void> logout() async {
     try {

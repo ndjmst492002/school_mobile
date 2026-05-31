@@ -40,26 +40,62 @@ class ProfileCompletionView extends GetView<ProfileCompletionController> {
               ),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: controller.classNameController,
-              decoration: InputDecoration(
-                labelText: 'Class Name *'.tr,
-                hintText: 'e.g., Grade 5-A'.tr,
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.school),
-              ),
-            ),
+            Obx(() {
+              return DropdownButtonFormField<int>(
+                value: controller.selectedLevelId.value,
+                decoration: InputDecoration(
+                  labelText: 'Level *'.tr,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.grade),
+                ),
+                isExpanded: true,
+                items: controller.levels.map((level) {
+                  return DropdownMenuItem<int>(
+                    value: level.id,
+                    child: Text(level.name),
+                  );
+                }).toList(),
+                onChanged: controller.onLevelChanged,
+              );
+            }),
             const SizedBox(height: 16),
-            TextField(
-              controller: controller.classDescriptionController,
-              decoration: InputDecoration(
-                labelText: 'Class Description'.tr,
-                hintText: 'Optional description for your class'.tr,
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.description),
-              ),
-              maxLines: 3,
-            ),
+            Obx(() {
+              return DropdownButtonFormField<int>(
+                value: controller.selectedClassId.value,
+                decoration: InputDecoration(
+                  labelText: 'Class *'.tr,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.class_),
+                ),
+                isExpanded: true,
+                items: controller.classes.map((cls) {
+                  return DropdownMenuItem<int>(
+                    value: cls.id,
+                    child: Text(cls.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  controller.selectedClassId.value = value;
+                },
+              );
+            }),
+            const SizedBox(height: 16),
+            Obx(() {
+              return TextField(
+                controller: controller.hireDateController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Hire Date'.tr,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.calendar_today),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.date_range),
+                    onPressed: () => controller.selectDate(context),
+                  ),
+                ),
+                onTap: () => controller.selectDate(context),
+              );
+            }),
             const SizedBox(height: 16),
             Obx(() {
               if (controller.errorMessage.value != null) {

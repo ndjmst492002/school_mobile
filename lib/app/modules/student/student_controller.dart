@@ -30,7 +30,10 @@ class StudentController extends GetxController {
   final activeTab = 'class-enrollment'.obs;
   final profileNotFound = false.obs;
   final searchQuery = ''.obs;
+  final searchTextController = TextEditingController();
   final enrollmentFilter = 'all'.obs; // 'all', 'enrolled', 'not_enrolled'
+  final levelFilter = Rxn<int>();
+  final levels = <Level>[].obs;
 
   int? childId;
   String? viewingAsChildName;
@@ -38,7 +41,31 @@ class StudentController extends GetxController {
   bool get isViewingAsChild => childId != null;
 
   List<ClassModel> get filteredClasses {
-    var result = classes.toList();
+    // Flatten: expand each class into one entry per teacher
+    var result = classes.expand((cls) {
+      if (cls.teachers == null || cls.teachers!.isEmpty) {
+        return [cls];
+      }
+      return cls.teachers!.map((t) => ClassModel(
+        id: cls.id,
+        name: cls.name,
+        description: cls.description,
+        teacher: cls.teacher,
+        teacherName: t.name,
+        students: cls.students,
+        studentCount: cls.studentCount,
+        enrollmentStatus: cls.enrollmentStatus,
+        teachers: [t],
+        levelName: t.levelName ?? cls.levelName,
+      ));
+    }).toList();
+
+    // Apply level filter
+    if (levelFilter.value != null) {
+      result = result.where((cls) {
+        return cls.teachers?.any((t) => t.levelId == levelFilter.value) ?? false;
+      }).toList();
+    }
 
     // Apply search filter
     if (searchQuery.value.isNotEmpty) {
@@ -61,6 +88,10 @@ class StudentController extends GetxController {
     }
 
     return result;
+  }
+
+  void setLevelFilter(int? levelId) {
+    levelFilter.value = levelId;
   }
 
   void setSearchQuery(String query) {
@@ -129,28 +160,64 @@ class StudentController extends GetxController {
     loadData();
   }
 
+  @override
+  void onClose() {
+    searchTextController.dispose();
+    super.onClose();
+  }
+
   Future<void> loadData() async {
     isLoading.value = true;
     profileNotFound.value = false;
     try {
       debugPrint('Loading student data...');
-      final results = await Future.wait([
-        _studentApi.getAllClasses(studentId: childId),
-        _studentApi.getExercises(studentId: childId),
-        _studentApi.getSubmissions(studentId: childId),
-        _studentApi.getAnnouncements(studentId: childId),
-        _studentApi.getAttendance(studentId: childId),
-        _studentApi.getNotifications(),
-      ]);
-      classes.value = results[0] as List<ClassModel>;
-      exercises.value = results[1] as List<Exercise>;
-      submissions.value = results[2] as List<Submission>;
-      announcements.value = results[3] as List<Announcement>;
-      attendance.value = results[4] as List<AttendanceRecord>;
-      notifications.value = results[5] as List<AppNotification>;
-      debugPrint(
-        'Loaded ${attendance.length} attendance records, ${notifications.length} notifications',
-      );
+
+      try {
+        final classesData = await _studentApi.getAllClasses(studentId: childId);
+        classes.value = classesData;
+        debugPrint('Loaded ${classes.length} classes');
+      } on ProfileNotFoundException {
+        rethrow;
+      } catch (e) {
+        debugPrint('Error loading classes: $e');
+      }
+
+      try {
+        final exercisesData = await _studentApi.getExercises(studentId: childId);
+        exercises.value = exercisesData;
+      } catch (e) {
+        debugPrint('Error loading exercises: $e');
+      }
+
+      try {
+        final submissionsData = await _studentApi.getSubmissions(studentId: childId);
+        submissions.value = submissionsData;
+      } catch (e) {
+        debugPrint('Error loading submissions: $e');
+      }
+
+      try {
+        final announcementsData = await _studentApi.getAnnouncements(studentId: childId);
+        announcements.value = announcementsData;
+      } catch (e) {
+        debugPrint('Error loading announcements: $e');
+      }
+
+      try {
+        final attendanceData = await _studentApi.getAttendance(studentId: childId);
+        attendance.value = attendanceData;
+        debugPrint('Loaded ${attendance.length} attendance records');
+      } catch (e) {
+        debugPrint('Error loading attendance: $e');
+      }
+
+      try {
+        final notificationsData = await _studentApi.getNotifications();
+        notifications.value = notificationsData;
+        debugPrint('Loaded ${notifications.length} notifications');
+      } catch (e) {
+        debugPrint('Error loading notifications: $e');
+      }
     } on ProfileNotFoundException catch (e) {
       debugPrint('Profile not found: ${e.message}');
       profileNotFound.value = true;
@@ -171,7 +238,7 @@ class StudentController extends GetxController {
     if (cls?.enrollmentStatus != null) {
       return cls!.enrollmentStatus!.status == 'APPROVED';
     }
-    return cls?.students?.any((s) => s.id == userId) ?? false;
+    return cls?.students?.any((s) => s.userId == userId) ?? false;
   }
 
   String getEnrollmentStatus(int classId) {
@@ -191,14 +258,15 @@ class StudentController extends GetxController {
     return getEnrollmentStatus(classId) == 'REJECTED';
   }
 
-  Future<void> enrollInClass(int classId) async {
-    enrolling.value = classId;
+  Future<void> enrollInClass(int classTeacherId) async {
+    enrolling.value = classTeacherId;
     try {
-      await _studentApi.enrollInClass(classId, studentId: childId);
-      loadData();
-      Get.snackbar('Success', 'Enrolled in class successfully');
+      await _studentApi.enrollInClass(classTeacherId, studentId: childId);
+      await loadData();
+      Get.snackbar('Success'.tr, 'Enrolled in class successfully'.tr);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to enroll in class');
+      debugPrint('Enroll error: $e');
+      Get.snackbar('Error'.tr, 'Failed to enroll. Please try again.'.tr);
     } finally {
       enrolling.value = null;
     }
@@ -261,21 +329,22 @@ class StudentController extends GetxController {
   }
 
   Future<void> submitExercise() async {
-    if (selectedExercise.value == null || selectedSubmitFile.value == null)
-      return;
+    if (selectedExercise.value == null) return;
 
     isSubmitting.value = true;
     try {
-      final file = selectedSubmitFile.value!;
       String? filePath;
       Uint8List? fileBytes;
       String? fileName;
 
-      if (kIsWeb) {
-        fileBytes = file.bytes;
-        fileName = file.name;
-      } else {
-        filePath = file.path;
+      if (selectedSubmitFile.value != null) {
+        final file = selectedSubmitFile.value!;
+        if (kIsWeb) {
+          fileBytes = file.bytes;
+          fileName = file.name;
+        } else {
+          filePath = file.path;
+        }
       }
 
       await _studentApi.submitExercise(
@@ -287,9 +356,25 @@ class StudentController extends GetxController {
       );
       closeSubmitDialog();
       loadData();
-      Get.snackbar('Success', 'Exercise submitted successfully');
+      Get.snackbar('Success'.tr, 'Exercise submitted successfully'.tr);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit exercise');
+      Get.snackbar('Error'.tr, 'Failed to submit exercise'.tr);
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  Future<void> markAsDone(int exerciseId) async {
+    isSubmitting.value = true;
+    try {
+      await _studentApi.submitExercise(
+        exerciseId: exerciseId,
+        studentId: childId,
+      );
+      loadData();
+      Get.snackbar('Success'.tr, 'Marked as done'.tr);
+    } catch (e) {
+      Get.snackbar('Error'.tr, 'Failed to mark as done'.tr);
     } finally {
       isSubmitting.value = false;
     }

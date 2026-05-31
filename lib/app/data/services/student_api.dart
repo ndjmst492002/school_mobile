@@ -20,10 +20,18 @@ class StudentApi {
     return false;
   }
 
-  Future<List<ClassModel>> getAllClasses({int? studentId}) async {
-    final params = <String, dynamic>{};
+  Future<List<ClassModel>> getAllClasses({int? studentId, int? levelId}) async {
+    final params = <String, dynamic>{
+      '_t': DateTime.now().millisecondsSinceEpoch,
+    };
     if (studentId != null) params['student_id'] = studentId;
+    if (levelId != null) params['level_id'] = levelId;
     final response = await _api.get('/users/classes/', queryParameters: params);
+    debugPrint('getAllClasses status: ${response.statusCode}, data type: ${response.data.runtimeType}');
+    if (response.statusCode != 200) {
+      debugPrint('getAllClasses error response: ${response.data}');
+      return [];
+    }
     if (response.data is! List) {
       debugPrint('getAllClasses response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
@@ -34,11 +42,33 @@ class StudentApi {
       return [];
     }
     final List<dynamic> data = response.data;
+    debugPrint('getAllClasses returned ${data.length} classes: [${data.map((c) => '${c['id']}:${c['name']}').join(', ')}]');
+    final parsed = <ClassModel>[];
+    for (final json in data) {
+      try {
+        parsed.add(ClassModel.fromJson(json as Map<String, dynamic>));
+      } catch (e) {
+        debugPrint('SKIPPED class ${json['id']} due to parse error: $e');
+      }
+    }
+    debugPrint('Successfully parsed ${parsed.length}/${data.length} classes');
+    return parsed;
+  }
+
+  Future<List<ClassModel>> getAllClassesPublic({int? levelId}) async {
+    final params = <String, dynamic>{};
+    if (levelId != null) params['level_id'] = levelId;
+    final response = await _api.get('/users/classes/public/', queryParameters: params);
+    if (response.data is! List) {
+      debugPrint('getAllClassesPublic response is not a list: ${response.data}');
+      return [];
+    }
+    final List<dynamic> data = response.data;
     return data.map((json) => ClassModel.fromJson(json)).toList();
   }
 
-  Future<void> enrollInClass(int classId, {int? studentId}) async {
-    final data = <String, dynamic>{'class_id': classId};
+  Future<void> enrollInClass(int classTeacherId, {int? studentId}) async {
+    final data = <String, dynamic>{'class_teacher_id': classTeacherId};
     if (studentId != null) data['student_id'] = studentId;
     await _api.post('/users/student/enroll/', data: data);
   }

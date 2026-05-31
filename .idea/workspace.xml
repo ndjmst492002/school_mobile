@@ -6,6 +6,30 @@
   <component name="ChangeListManager">
     <list default="true" id="5a3a1f1c-366a-4de0-956b-000d29ce0209" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/models/models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/models/models.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/models/parent_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/models/parent_models.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/services/auth_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/services/auth_api.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/services/parent_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/services/parent_api.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/services/student_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/services/student_api.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/services/teacher_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/services/teacher_api.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/data/services/translations_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/services/translations_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/admin/admin_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/admin/admin_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/admin/admin_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/admin/admin_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/chat/chat_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/chat/chat_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/login/login_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/login/login_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/login/login_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/login/login_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/parent/parent_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/parent/parent_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/parent/parent_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/parent/parent_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/profile_completion/profile_completion_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/profile_completion/profile_completion_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/profile_completion/profile_completion_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/profile_completion/profile_completion_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/signup/signup_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/signup/signup_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/signup/signup_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/signup/signup_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/student/student_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/student/student_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/student/student_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/student/student_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/subscription/subscription_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/subscription/subscription_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/theme/app_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/theme/app_theme.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +71,7 @@
 }</component>
   <component name="RunManager">
     <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
+      <option name="additionalArgs" value="-d chrome --web-port 5000" />
       <option name="filePath" value="$PROJECT_DIR$/lib/main.dart" />
       <method v="2" />
     </configuration>

@@ -15,7 +15,7 @@ class SignupView extends GetView<SignupController> {
       return Scaffold(
         backgroundColor: isDark
             ? const Color(0xFF18181B)
-            : const Color(0xFFF9FAFB),
+            : const Color(0xFFFFFFFF),
         body: Stack(
           children: [
             const _AnimatedBackground(),
@@ -47,6 +47,7 @@ class SignupView extends GetView<SignupController> {
     return Padding(
       padding: const EdgeInsets.only(top: 8, right: 8),
       child: Row(
+        textDirection: TextDirection.ltr,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           _buildIconButton(
@@ -54,6 +55,7 @@ class SignupView extends GetView<SignupController> {
               final theme = Get.find<ThemeService>();
               return Text(
                 theme.locale.languageCode == 'en' ? 'ع' : 'EN',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -70,7 +72,7 @@ class SignupView extends GetView<SignupController> {
             icon: Obx(() {
               final theme = Get.find<ThemeService>();
               return Icon(
-                theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                theme.isDarkMode ? Icons.wb_sunny_outlined : Icons.dark_mode,
                 color: isDark ? Colors.white : Colors.black87,
               );
             }),
@@ -89,16 +91,27 @@ class SignupView extends GetView<SignupController> {
   }) {
     final theme = Get.find<ThemeService>();
     return Obx(
-      () => Container(
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? Colors.black : Colors.white,
+      () => Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: theme.isDarkMode ? Colors.white : Colors.black,
-            width: 1,
+          onTap: onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: theme.isDarkMode ? Colors.transparent : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: theme.isDarkMode ? Colors.white38 : Colors.black26,
+                width: 1,
+              ),
+            ),
+            child: icon,
           ),
         ),
-        child: IconButton(icon: icon, onPressed: onPressed),
       ),
     );
   }
@@ -134,7 +147,7 @@ class SignupView extends GetView<SignupController> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary,
+                  color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: const Icon(Icons.school, size: 32, color: Colors.white),
@@ -154,7 +167,7 @@ class SignupView extends GetView<SignupController> {
             Text(
               'Create your account'.tr,
               style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -231,30 +244,13 @@ class SignupView extends GetView<SignupController> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: controller.isLoading.value
-                    ? null
-                    : controller.goToPhoneStep,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text('Continue to Phone Verification'.tr),
-              ),
-            ),
             const SizedBox(height: 16),
             GestureDetector(
               onTap: () => Get.offAllNamed(AppRoutes.login),
               child: Text(
                 'Already have an account? Login',
                 style: TextStyle(
-                  color: AppTheme.primary,
+                  color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -282,7 +278,7 @@ class SignupView extends GetView<SignupController> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary,
+                  color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: const Icon(
@@ -309,7 +305,7 @@ class SignupView extends GetView<SignupController> {
                     ? 'Enter the code sent to your phone'
                     : 'Enter your phone number',
                 style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -349,7 +345,7 @@ class SignupView extends GetView<SignupController> {
                             ? controller.verifyOTP
                             : controller.sendOTP),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -427,7 +423,7 @@ class SignupView extends GetView<SignupController> {
             Text(
               'Choose one or both roles'.tr,
               style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -471,7 +467,7 @@ class SignupView extends GetView<SignupController> {
                   child: Text(
                     'You\'ll fill in teacher details first, then add your children.'.tr,
                     style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                       fontSize: 13,
                     ),
                     textAlign: TextAlign.center,
@@ -491,7 +487,7 @@ class SignupView extends GetView<SignupController> {
                       ? null
                       : controller.continueFromRole,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -526,7 +522,7 @@ class SignupView extends GetView<SignupController> {
                 return Text(
                   'Step 1 of 2'.tr,
                   style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                     fontSize: 12,
                   ),
                   textAlign: TextAlign.center,
@@ -547,7 +543,7 @@ class SignupView extends GetView<SignupController> {
             Text(
               'Enter your teaching details'.tr,
               style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -586,19 +582,45 @@ class SignupView extends GetView<SignupController> {
               isDark: isDark,
             ),
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: controller.classNameController,
-              label: 'Class Name *',
-              hint: 'e.g., Grade 10-A',
-              isDark: isDark,
-            ),
+            Obx(() {
+              return DropdownButtonFormField<int>(
+                value: controller.selectedLevelId.value,
+                decoration: InputDecoration(
+                  labelText: 'Level *'.tr,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF18181B) : AppTheme.muted,
+                ),
+                isExpanded: true,
+                hint: Text('Select Level'.tr),
+                items: controller.levels.map((l) => DropdownMenuItem<int>(
+                  value: l.id,
+                  child: Text(l.name),
+                )).toList(),
+                onChanged: (v) => controller.onLevelChanged(v),
+              );
+            }),
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: controller.classDescriptionController,
-              label: 'Class Description',
-              hint: 'Class description',
-              isDark: isDark,
-            ),
+            Obx(() {
+              return DropdownButtonFormField<int>(
+                value: controller.selectedClassId.value,
+                decoration: InputDecoration(
+                  labelText: 'Class *'.tr,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF18181B) : AppTheme.muted,
+                ),
+                isExpanded: true,
+                hint: Text('Select Class'.tr),
+                items: controller.levelClasses.map((c) => DropdownMenuItem<int>(
+                  value: c.id,
+                  child: Text(c.name),
+                )).toList(),
+                onChanged: (v) => controller.selectedClassId.value = v,
+              );
+            }),
             const SizedBox(height: 24),
             Obx(
               () => SizedBox(
@@ -608,7 +630,7 @@ class SignupView extends GetView<SignupController> {
                       ? null
                       : controller.submitTeacherProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -664,7 +686,7 @@ class SignupView extends GetView<SignupController> {
                 return Text(
                   'Step 2 of 2'.tr,
                   style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                     fontSize: 12,
                   ),
                   textAlign: TextAlign.center,
@@ -685,7 +707,7 @@ class SignupView extends GetView<SignupController> {
             Text(
               'Enter your occupation and add your children'.tr,
               style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -711,7 +733,7 @@ class SignupView extends GetView<SignupController> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                    color: isDark ? AppTheme.border : AppTheme.mutedForeground,
                   ),
                 ),
               ],
@@ -748,7 +770,7 @@ class SignupView extends GetView<SignupController> {
                       ? null
                       : controller.submitParentProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -793,10 +815,10 @@ class SignupView extends GetView<SignupController> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF18181B) : Colors.grey[50],
+            color: isDark ? const Color(0xFF27272A) : AppTheme.muted,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+              color: isDark ? const Color(0xFF3F3F46) : AppTheme.border,
             ),
           ),
           child: Column(
@@ -810,7 +832,7 @@ class SignupView extends GetView<SignupController> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                     ),
                   ),
                   if (controller.students.length > 1)
@@ -836,7 +858,7 @@ class SignupView extends GetView<SignupController> {
                       decoration: InputDecoration(
                         hintText: 'First Name *',
                         hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
                         ),
                         filled: true,
@@ -852,7 +874,7 @@ class SignupView extends GetView<SignupController> {
                           borderSide: BorderSide(
                             color: isDark
                                 ? const Color(0xFF3F3F46)
-                                : Colors.grey[300]!,
+                                : AppTheme.border,
                           ),
                         ),
                       ),
@@ -869,7 +891,7 @@ class SignupView extends GetView<SignupController> {
                       decoration: InputDecoration(
                         hintText: 'Last Name *',
                         hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
                         ),
                         filled: true,
@@ -885,7 +907,7 @@ class SignupView extends GetView<SignupController> {
                           borderSide: BorderSide(
                             color: isDark
                                 ? const Color(0xFF3F3F46)
-                                : Colors.grey[300]!,
+                                : AppTheme.border,
                           ),
                         ),
                       ),
@@ -920,7 +942,7 @@ class SignupView extends GetView<SignupController> {
                       decoration: InputDecoration(
                         hintText: 'Enrollment Date *',
                         hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
                         ),
                         filled: true,
@@ -936,7 +958,7 @@ class SignupView extends GetView<SignupController> {
                           borderSide: BorderSide(
                             color: isDark
                                 ? const Color(0xFF3F3F46)
-                                : Colors.grey[300]!,
+                                : AppTheme.border,
                           ),
                         ),
                       ),
@@ -969,7 +991,7 @@ class SignupView extends GetView<SignupController> {
                       decoration: InputDecoration(
                         hintText: 'Date of Birth',
                         hintStyle: TextStyle(
-                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
                         ),
                         filled: true,
@@ -985,7 +1007,7 @@ class SignupView extends GetView<SignupController> {
                           borderSide: BorderSide(
                             color: isDark
                                 ? const Color(0xFF3F3F46)
-                                : Colors.grey[300]!,
+                                : AppTheme.border,
                           ),
                         ),
                       ),
@@ -999,7 +1021,7 @@ class SignupView extends GetView<SignupController> {
                   color: isDark ? const Color(0xFF27272A) : Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+                    color: isDark ? const Color(0xFF3F3F46) : AppTheme.border,
                   ),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -1053,14 +1075,14 @@ class SignupView extends GetView<SignupController> {
       decoration: InputDecoration(
         labelText: label.tr,
         labelStyle: TextStyle(
-          color: isDark ? Colors.grey[300] : Colors.grey[700],
+          color: isDark ? AppTheme.border : AppTheme.mutedForeground,
         ),
         hintText: hint,
         hintStyle: TextStyle(
-          color: isDark ? Colors.grey[500] : Colors.grey[500],
+          color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
         ),
         filled: true,
-        fillColor: isDark ? const Color(0xFF18181B) : Colors.grey[100],
+        fillColor: isDark ? const Color(0xFF18181B) : AppTheme.muted,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
@@ -1090,7 +1112,7 @@ class SignupView extends GetView<SignupController> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(
-          color: isDark ? Colors.grey[500] : Colors.grey[400],
+          color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
           fontSize: 13,
         ),
         filled: true,
@@ -1099,7 +1121,7 @@ class SignupView extends GetView<SignupController> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
-            color: isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!,
+            color: isDark ? const Color(0xFF3F3F46) : AppTheme.border,
           ),
         ),
       ),
@@ -1120,13 +1142,13 @@ class SignupView extends GetView<SignupController> {
         height: 80,
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primary
-              : (isDark ? const Color(0xFF18181B) : Colors.grey[100]),
+              ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+              : (isDark ? const Color(0xFF27272A) : AppTheme.muted),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primary
-                : (isDark ? const Color(0xFF3F3F46) : Colors.grey[300]!),
+                ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                : (isDark ? const Color(0xFF3F3F46) : AppTheme.border),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -1137,7 +1159,7 @@ class SignupView extends GetView<SignupController> {
               icon,
               color: isSelected
                   ? Colors.white
-                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                  : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
               size: 28,
             ),
             const SizedBox(height: 4),
@@ -1146,7 +1168,7 @@ class SignupView extends GetView<SignupController> {
               style: TextStyle(
                 color: isSelected
                     ? Colors.white
-                    : (isDark ? Colors.grey[300] : Colors.grey[700]),
+                    : (isDark ? AppTheme.border : AppTheme.mutedForeground),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),

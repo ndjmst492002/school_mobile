@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
+import '../../data/services/student_api.dart';
+import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -38,6 +40,18 @@ class StudentData {
 
 class SignupController extends GetxController {
   final AuthApi _authApi = AuthApi();
+  final StudentApi _studentApi = StudentApi();
+  final levels = <Level>[].obs;
+  final levelClasses = <ClassModel>[].obs;
+
+  static const List<Map<String, dynamic>> _allLevelsData = [
+    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
+    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
+    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
+    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
+    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
+    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
+  ];
   static const String _serverClientId =
       '719247317672-32jg242u60iic2hjkvg2selclsb4ebrb.apps.googleusercontent.com';
   late GoogleSignIn googleSignIn;
@@ -75,6 +89,9 @@ class SignupController extends GetxController {
   final specializationController = TextEditingController();
   final classNameController = TextEditingController();
   final classDescriptionController = TextEditingController();
+  // New Level/Class fields (will be used after signup UI update)
+  final selectedLevelId = Rxn<int>();
+  final selectedClassId = Rxn<int>();
 
   final occupationController = TextEditingController();
   final students = <StudentData>[StudentData()].obs;
@@ -190,16 +207,39 @@ class SignupController extends GetxController {
     }
     error.value = null;
     if (isTeacherSelected) {
+      levels.value = _allLevelsData
+          .map((e) => Level(id: e['id'] as int, name: e['name'] as String))
+          .toList();
       currentStep.value = SignupStep.teacher;
     } else {
       currentStep.value = SignupStep.parent;
     }
   }
 
+  void onLevelChanged(int? levelId) {
+    selectedLevelId.value = levelId;
+    selectedClassId.value = null;
+    if (levelId != null) {
+      _loadClassesForLevel(levelId);
+    } else {
+      levelClasses.clear();
+    }
+  }
+
+  Future<void> _loadClassesForLevel(int levelId) async {
+    try {
+      final result = await _studentApi.getAllClassesPublic(levelId: levelId);
+      levelClasses.value = result;
+    } catch (e) {
+      debugPrint('Error loading classes: $e');
+    }
+  }
+
   Future<void> submitTeacherProfile() async {
     if (hireDateController.text.isEmpty ||
         specializationController.text.isEmpty ||
-        classNameController.text.isEmpty) {
+        selectedLevelId.value == null ||
+        selectedClassId.value == null) {
       error.value = 'Please fill in all required fields';
       return;
     }
@@ -210,10 +250,8 @@ class SignupController extends GetxController {
       final result = await _authApi.createTeacherProfile(
         hireDate: hireDateController.text,
         specialization: specializationController.text,
-        className: classNameController.text,
-        classDescription: classDescriptionController.text.isNotEmpty
-            ? classDescriptionController.text
-            : null,
+        levelId: selectedLevelId.value!,
+        classId: selectedClassId.value!,
       );
       debugPrint('Teacher profile result: $result');
       if (isParentSelected) {

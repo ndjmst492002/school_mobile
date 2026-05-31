@@ -139,16 +139,16 @@ class AuthApi {
   Future<Map<String, dynamic>> createTeacherProfile({
     required String hireDate,
     required String specialization,
-    required String className,
-    String? classDescription,
+    required int levelId,
+    required int classId,
   }) async {
     final response = await _api.post(
       '/users/profile/teacher/',
       data: {
         'hire_date': hireDate,
         'specialization': specialization,
-        'class_name': className,
-        'class_description': classDescription ?? '',
+        'level_id': levelId,
+        'class_id': classId,
       },
     );
     if (response.data is Map) {

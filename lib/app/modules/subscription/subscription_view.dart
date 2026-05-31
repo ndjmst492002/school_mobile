@@ -15,7 +15,7 @@ class SubscriptionView extends GetView<SubscriptionController> {
       final isDark = theme.isDarkMode;
       
       return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF18181B) : const Color(0xFFF9FAFB),
+        backgroundColor: isDark ? const Color(0xFF18181B) : const Color(0xFFFFFFFF),
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
