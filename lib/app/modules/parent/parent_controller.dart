@@ -40,6 +40,7 @@ class ParentController extends GetxController {
   // Exercise search & assign
   final searchedExercises = <Exercise>[].obs;
   final isSearchingExercises = false.obs;
+  final exerciseSearchError = ''.obs;
   final selectedChildForExercises = Rxn<int>();
   final exerciseLevelFilter = Rxn<String>();
   final exerciseClassFilter = ''.obs;
@@ -320,6 +321,7 @@ class ParentController extends GetxController {
       debugPrint('Prediction result: $result');
       debugPrint('Prediction prediction: ${result.prediction}');
       debugPrint('Prediction confidence: ${result.confidence}');
+      debugPrint('Prediction features: ${result.featuresUsed}');
       setPrediction(studentId, result);
       debugPrint('Predictions map now: $predictions');
       Get.snackbar('Success', 'Prediction completed for ${result.studentName}');
@@ -372,6 +374,7 @@ class ParentController extends GetxController {
     if (childId == null) return;
 
     isSearchingExercises.value = true;
+    exerciseSearchError.value = '';
     try {
       final results = await _parentApi.searchExercises(
         studentId: childId,
@@ -385,6 +388,7 @@ class ParentController extends GetxController {
           .map((e) => e.id)
           .toSet();
     } catch (e) {
+      exerciseSearchError.value = 'Failed to load exercises: $e';
       debugPrint('Error searching exercises: $e');
     } finally {
       isSearchingExercises.value = false;

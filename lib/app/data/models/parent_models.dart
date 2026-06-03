@@ -124,4 +124,8 @@ class PredictionResult {
       featuresUsed: json['features_used'] ?? {},
     );
   }
+
+  @override
+  String toString() => 'PredictionResult(studentId: $studentId, studentName: $studentName, '
+      'prediction: $prediction, confidence: $confidence, featuresUsed: $featuresUsed)';
 }

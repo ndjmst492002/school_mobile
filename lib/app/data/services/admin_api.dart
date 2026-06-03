@@ -35,10 +35,14 @@ class AdminApi {
       if (dueDate != null && dueDate.isNotEmpty) 'due_date': dueDate,
       if (levelId != null) 'level_id': levelId,
       if (classIds != null && classIds.isNotEmpty)
-        'class_ids': classIds.join(','),
-      if (skillIds != null && skillIds.isNotEmpty)
-        'skill_ids': skillIds.join(','),
+        'related_class': classIds.first,
     });
+
+    if (skillIds != null && skillIds.isNotEmpty) {
+      for (final id in skillIds) {
+        formData.fields.add(MapEntry('skills', id.toString()));
+      }
+    }
 
     if (kIsWeb && fileBytes != null) {
       formData.files.add(MapEntry(

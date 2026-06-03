@@ -150,7 +150,7 @@ class SignupView extends GetView<SignupController> {
                   color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   borderRadius: BorderRadius.circular(50),
                 ),
-                child: const Icon(Icons.school, size: 32, color: Colors.white),
+                child: Icon(Icons.school_outlined, size: 40, color: isDark ? AppTheme.darkPrimaryForeground : Colors.white),
               ),
             ),
             const SizedBox(height: 16),
@@ -281,11 +281,7 @@ class SignupView extends GetView<SignupController> {
                   color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   borderRadius: BorderRadius.circular(50),
                 ),
-                child: const Icon(
-                  Icons.phone_android,
-                  size: 32,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.school_outlined, size: 40, color: isDark ? AppTheme.darkPrimaryForeground : Colors.white),
               ),
             ),
             const SizedBox(height: 16),
@@ -346,7 +342,7 @@ class SignupView extends GetView<SignupController> {
                             : controller.sendOTP),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -355,12 +351,12 @@ class SignupView extends GetView<SignupController> {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const SizedBox(
+                            SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -441,7 +437,7 @@ class SignupView extends GetView<SignupController> {
                   Expanded(
                     child: _buildRoleButton(
                       label: 'Teacher'.tr,
-                      icon: Icons.person,
+                      emoji: '👨‍🏫',
                       isSelected: controller.isTeacherSelected,
                       isDark: isDark,
                       onTap: () => controller.toggleRole('teacher'),
@@ -451,7 +447,7 @@ class SignupView extends GetView<SignupController> {
                   Expanded(
                     child: _buildRoleButton(
                       label: 'Parent'.tr,
-                      icon: Icons.family_restroom,
+                      emoji: '👨‍👩‍👧',
                       isSelected: controller.isParentSelected,
                       isDark: isDark,
                       onTap: () => controller.toggleRole('parent'),
@@ -488,7 +484,7 @@ class SignupView extends GetView<SignupController> {
                       : controller.continueFromRole,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -631,7 +627,7 @@ class SignupView extends GetView<SignupController> {
                       : controller.submitTeacherProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -640,12 +636,12 @@ class SignupView extends GetView<SignupController> {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const SizedBox(
+                            SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -656,6 +652,7 @@ class SignupView extends GetView<SignupController> {
                           controller.isParentSelected
                               ? 'Save & Continue to Parent Info'.tr
                               : 'Complete Registration'.tr,
+                          textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -749,11 +746,11 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 40,
+              height: 48,
               child: OutlinedButton.icon(
                 onPressed: controller.addStudent,
                 icon: const Icon(Icons.add, size: 18),
-                label: Text('Add Another Student'.tr),
+                label: Text('Add Another Child'.tr),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -771,7 +768,7 @@ class SignupView extends GetView<SignupController> {
                       : controller.submitParentProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -780,12 +777,12 @@ class SignupView extends GetView<SignupController> {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const SizedBox(
+                            SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -1130,7 +1127,7 @@ class SignupView extends GetView<SignupController> {
 
   Widget _buildRoleButton({
     required String label,
-    required IconData icon,
+    required String emoji,
     required bool isSelected,
     required bool isDark,
     required VoidCallback onTap,
@@ -1155,19 +1152,21 @@ class SignupView extends GetView<SignupController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? Colors.white
-                  : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-              size: 28,
+            Text(
+              emoji,
+              style: TextStyle(
+                fontSize: 28,
+                  color: isSelected
+                      ? (isDark ? AppTheme.darkPrimaryForeground : Colors.white)
+                      : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 color: isSelected
-                    ? Colors.white
+                    ? (isDark ? AppTheme.darkPrimaryForeground : Colors.white)
                     : (isDark ? AppTheme.border : AppTheme.mutedForeground),
                 fontWeight: FontWeight.w600,
                 fontSize: 14,

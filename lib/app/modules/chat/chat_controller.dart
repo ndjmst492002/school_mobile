@@ -315,7 +315,7 @@ class ChatController extends GetxController {
 
   String formatTime(String dateStr) {
     try {
-      final date = DateTime.parse(dateStr);
+      final date = DateTime.parse(dateStr).toLocal();
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final messageDate = DateTime(date.year, date.month, date.day);

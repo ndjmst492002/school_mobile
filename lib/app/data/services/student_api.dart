@@ -114,24 +114,27 @@ class StudentApi {
     String? fileName,
     int? studentId,
   }) async {
-    dio_pkg.MultipartFile file;
-
-    if (kIsWeb && fileBytes != null) {
-      file = dio_pkg.MultipartFile.fromBytes(
-        fileBytes,
-        filename: fileName ?? 'submission.txt',
-      );
-    } else if (filePath != null) {
-      file = await dio_pkg.MultipartFile.fromFile(filePath);
-    } else {
-      throw Exception('No file provided');
-    }
-
     final formData = dio_pkg.FormData.fromMap({
       'exercise': exerciseId,
-      'submission_file': file,
       if (studentId != null) 'student_id': studentId,
     });
+
+    if (filePath != null || (kIsWeb && fileBytes != null)) {
+      if (kIsWeb && fileBytes != null) {
+        formData.files.add(MapEntry(
+          'submission_file',
+          dio_pkg.MultipartFile.fromBytes(
+            fileBytes,
+            filename: fileName ?? 'submission.txt',
+          ),
+        ));
+      } else if (filePath != null) {
+        formData.files.add(MapEntry(
+          'submission_file',
+          await dio_pkg.MultipartFile.fromFile(filePath),
+        ));
+      }
+    }
 
     final response = await _api.uploadFile(
       '/users/student/submissions/',

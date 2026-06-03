@@ -28,6 +28,7 @@ class AdminController extends GetxController {
   // Exercise upload form
   final uploadTitle = ''.obs;
   final uploadDescription = ''.obs;
+  final uploadDueDate = ''.obs;
   final selectedLevelId = Rxn<int>();
   final selectedClassId = Rxn<int>();
   final selectedFile = Rxn<PlatformFile>();
@@ -158,6 +159,7 @@ class AdminController extends GetxController {
       await _adminApi.createExercise(
         title: uploadTitle.value,
         description: uploadDescription.value,
+        dueDate: uploadDueDate.value.isNotEmpty ? uploadDueDate.value : null,
         fileBytes: selectedFile.value?.bytes,
         fileName: selectedFile.value?.name,
         filePath: selectedFile.value?.path,
@@ -168,6 +170,7 @@ class AdminController extends GetxController {
       Get.snackbar('Success'.tr, 'Exercise uploaded successfully'.tr);
       uploadTitle.value = '';
       uploadDescription.value = '';
+      uploadDueDate.value = '';
       selectedLevelId.value = null;
       selectedFile.value = null;
       await loadData();

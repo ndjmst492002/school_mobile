@@ -324,9 +324,9 @@ class TeacherController extends GetxController {
           }
         }
       }
-      showLoadStudentsButton.value = false;
     } catch (e) {
       debugPrint('Error loading attendance: $e');
+      Get.snackbar('Error', 'Failed to load attendance. Please try again.');
     } finally {
       isLoadingAttendance.value = false;
     }
@@ -433,6 +433,12 @@ class TeacherController extends GetxController {
     feedbackController.clear();
   }
 
+  void adjustGrade(double delta) {
+    final current = double.tryParse(gradeController.text) ?? 0;
+    final newGrade = (current + delta).clamp(0.0, 20.0);
+    gradeController.text = newGrade.toStringAsFixed(1);
+  }
+
   Future<void> gradeSubmission() async {
     if (gradingSubmission.value == null || gradeController.text.isEmpty) return;
 
@@ -453,7 +459,8 @@ class TeacherController extends GetxController {
       loadData();
       Get.snackbar('Success', 'Grade saved successfully');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to grade submission');
+      debugPrint('Error grading submission: $e');
+      Get.snackbar('Error', 'Failed to grade submission: $e');
     } finally {
       isGrading.value = false;
     }
@@ -462,7 +469,18 @@ class TeacherController extends GetxController {
   void updateUploadClassId(String value) => uploadClassId.value = value;
   void updateAnnouncementClassId(String value) =>
       announcementClassId.value = value;
-  void updateAttendanceClassId(String value) => attendanceClassId.value = value;
+  void updateAttendanceClassId(String value) {
+    attendanceClassId.value = value;
+    attendanceRecords.clear();
+    if (value.isNotEmpty) {
+      final cls = classes.firstWhereOrNull((c) => c.id.toString() == value);
+      if (cls?.students != null) {
+        for (var student in cls!.students!) {
+          attendanceRecords[student.id] = 'PRESENT';
+        }
+      }
+    }
+  }
 
   Future<void> createAnnouncement() async {
     if (announcementTitleController.text.isEmpty ||

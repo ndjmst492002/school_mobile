@@ -33,12 +33,23 @@ class StudentController extends GetxController {
   final searchTextController = TextEditingController();
   final enrollmentFilter = 'all'.obs; // 'all', 'enrolled', 'not_enrolled'
   final levelFilter = Rxn<int>();
-  final levels = <Level>[].obs;
 
   int? childId;
   String? viewingAsChildName;
 
   bool get isViewingAsChild => childId != null;
+
+  static const List<Map<String, dynamic>> _allLevelsData = [
+    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
+    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
+    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
+    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
+    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
+    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
+  ];
+
+  List<Level> get levels =>
+      _allLevelsData.map((e) => Level(id: e['id'] as int, name: e['name'] as String)).toList();
 
   List<ClassModel> get filteredClasses {
     // Flatten: expand each class into one entry per teacher
@@ -60,11 +71,15 @@ class StudentController extends GetxController {
       ));
     }).toList();
 
-    // Apply level filter
+    // Apply level filter (match by level name, like the web)
     if (levelFilter.value != null) {
-      result = result.where((cls) {
-        return cls.teachers?.any((t) => t.levelId == levelFilter.value) ?? false;
-      }).toList();
+      final levelName = _allLevelsData
+          .firstWhereOrNull((l) => l['id'] == levelFilter.value)?['name'] as String?;
+      if (levelName != null) {
+        result = result.where((cls) =>
+          cls.teachers?.any((t) => t.levelName == levelName) ?? false
+        ).toList();
+      }
     }
 
     // Apply search filter
@@ -113,9 +128,18 @@ class StudentController extends GetxController {
   int get unreadNotificationCount =>
       notifications.where((n) => !n.isRead).length;
 
-  int get enrolledCount => classes
-      .where((c) => c.students?.any((s) => s.id == userId) ?? false)
-      .length;
+  int get enrolledCount {
+    int count = 0;
+    for (final cls in classes) {
+      if (!isEnrolled(cls.id)) continue;
+      if (cls.teachers == null || cls.teachers!.isEmpty) {
+        count++;
+      } else {
+        count += cls.teachers!.length;
+      }
+    }
+    return count;
+  }
 
   int get presentCount => attendance.where((a) => a.status == 'PRESENT').length;
   int get absentCount => attendance.where((a) => a.status == 'ABSENT').length;
@@ -235,10 +259,8 @@ class StudentController extends GetxController {
 
   bool isEnrolled(int classId) {
     final cls = classes.firstWhereOrNull((c) => c.id == classId);
-    if (cls?.enrollmentStatus != null) {
-      return cls!.enrollmentStatus!.status == 'APPROVED';
-    }
-    return cls?.students?.any((s) => s.userId == userId) ?? false;
+    return cls?.enrollmentStatus?.status == 'APPROVED' ||
+           (cls?.students?.any((s) => s.userId == userId) ?? false);
   }
 
   String getEnrollmentStatus(int classId) {

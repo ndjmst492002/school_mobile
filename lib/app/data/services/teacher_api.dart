@@ -93,9 +93,13 @@ class TeacherApi {
       'related_class': classId,
       'file_path': file,
       if (dueDate != null && dueDate.isNotEmpty) 'due_date': dueDate,
-      if (skillIds != null && skillIds.isNotEmpty)
-        'skills': skillIds.join(','),
     });
+
+    if (skillIds != null && skillIds.isNotEmpty) {
+      for (final id in skillIds) {
+        formData.fields.add(MapEntry('skills', id.toString()));
+      }
+    }
 
     final response = await _api.uploadFile(
       '/users/teacher/exercises/',
@@ -126,7 +130,19 @@ class TeacherApi {
       '/users/submissions/$submissionId/grade/',
       data: {'grade': grade, 'feedback': feedback},
     );
-    return Submission.fromJson(response.data);
+    if (response.data is Map<String, dynamic>) {
+      return Submission.fromJson(response.data);
+    }
+    return Submission(
+      id: submissionId,
+      exerciseId: 0,
+      studentId: 0,
+      submissionFile: null,
+      submissionText: null,
+      grade: grade,
+      feedback: feedback,
+      submittedAt: '',
+    );
   }
 
   Future<List<Announcement>> getAnnouncements() async {
@@ -171,6 +187,10 @@ class TeacherApi {
       '/users/teacher/attendance/',
       queryParameters: {'class_id': classId, 'date': date},
     );
+    if (response.data is! List) {
+      debugPrint('getAttendance response is not a list: ${response.data}');
+      throw Exception('Unexpected response from server');
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => AttendanceRecord.fromJson(json)).toList();
   }
@@ -182,6 +202,10 @@ class TeacherApi {
       '/users/teacher/attendance/',
       data: {'records': records},
     );
+    if (response.data is! List) {
+      debugPrint('markAttendance response is not a list: ${response.data}');
+      throw Exception('Unexpected response from server');
+    }
     final List<dynamic> data = response.data;
     return data.map((json) => AttendanceRecord.fromJson(json)).toList();
   }

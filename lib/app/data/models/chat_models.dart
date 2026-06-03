@@ -19,7 +19,7 @@ class Contact {
       id: json['id'] ?? 0,
       userId: user?['id'] ?? json['id'] ?? 0,
       fullName: json['full_name'] ?? user?['full_name'] ?? '',
-      role: user?['role'] ?? '',
+      role: json['role'] ?? user?['role'] ?? '',
       unreadCount: json['unread_count'] ?? 0,
     );
   }

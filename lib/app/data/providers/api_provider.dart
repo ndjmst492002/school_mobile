@@ -9,9 +9,9 @@ class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
   String? _webToken;
 
-  static const String baseUrl = 'http://192.168.1.4:8000/api';
-  //static const String baseUrl = 'http://localhost:8000/api';
 
+  static const String baseUrl = 'http://192.168.1.3:8000/api';
+  //static const String baseUrl = 'http://localhost:8000/api';
   Future<ApiProvider> init() async {
     _dio = dio_pkg.Dio(
       dio_pkg.BaseOptions(
@@ -31,7 +31,6 @@ class ApiProvider extends GetxService {
       final prefs = await SharedPreferences.getInstance();
       _webToken = prefs.getString('web_token');
     }
-
     _dio.interceptors.add(
       dio_pkg.InterceptorsWrapper(
         onRequest: (options, handler) {
@@ -49,12 +48,10 @@ class ApiProvider extends GetxService {
         },
       ),
     );
-
     return this;
   }
 
   dio_pkg.Dio get dio => _dio;
-
   Future<dio_pkg.Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,

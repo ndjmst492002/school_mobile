@@ -16,21 +16,19 @@ class AdminView extends GetView<AdminController> {
     return Obx(() {
       if (controller.isLoading.value) {
         return Scaffold(
-          backgroundColor: controller.isDarkMode ? const Color(0xFF18181B) : const Color(0xFFFFFFFF),
+          backgroundColor: controller.isDarkMode ? AppTheme.darkBackground : AppTheme.background,
           body: const Center(child: CircularProgressIndicator()),
         );
       }
 
       final isDark = controller.isDarkMode;
-      final bgColor = isDark ? const Color(0xFF18181B) : const Color(0xFFFFFFFF);
-      final cardColor = isDark ? const Color(0xFF27272A) : Colors.white;
-      final textColor = isDark ? Colors.white : const Color(0xFF111827);
-      final mutedColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
-      final borderColor = isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB);
+      final bgColor = isDark ? AppTheme.darkBackground : AppTheme.background;
+      final cardColor = isDark ? AppTheme.darkCard : AppTheme.card;
+      final textColor = isDark ? AppTheme.darkForeground : AppTheme.foreground;
+      final mutedColor = isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground;
+      final borderColor = isDark ? AppTheme.darkBorder : AppTheme.border;
 
       final activeTab = controller.activeTab.value;
-      final exerciseCount = controller.exerciseCount.value;
-      final classCount = controller.classCount.value;
       final skillsCount = controller.skills.length;
       final exercises = controller.exercises;
       final exerciseRequests = controller.exerciseRequests;
@@ -53,10 +51,11 @@ class AdminView extends GetView<AdminController> {
           title: Directionality(
             textDirection: TextDirection.ltr,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Spacer(),
                 _buildNotificationBell(isDark),
-                _buildProfileMenu(isDark),
+
+                _buildProfileMenu(isDark, borderColor),
               ],
             ),
           ),
@@ -70,13 +69,13 @@ class AdminView extends GetView<AdminController> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Admin Dashboard',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+                    'Admin Dashboard'.tr,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Welcome, ${controller.userName}',
-                    style: TextStyle(fontSize: 13, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                    'Welcome'.tr + ', ${controller.userName}',
+                    style: TextStyle(fontSize: 13, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -91,9 +90,9 @@ class AdminView extends GetView<AdminController> {
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                _buildStatsRow(exerciseCount, classCount, skillsCount, isDark, cardColor, textColor, mutedColor),
+                _buildStatsRow(isDark),
                 const SizedBox(height: 16),
-                _buildTabsRow(activeTab, isDark),
+                _buildTabsRow(activeTab, isDark, borderColor, mutedColor),
                 const SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -129,7 +128,7 @@ class AdminView extends GetView<AdminController> {
               right: 6, top: 6,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: isDark ? AppTheme.darkDestructive : AppTheme.destructive, shape: BoxShape.circle),
                 constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                 child: Text(
                   '${controller.unreadNotificationCount}',
@@ -159,21 +158,21 @@ class AdminView extends GetView<AdminController> {
         child: Container(
           width: 350,
           height: double.infinity,
-          color: isDark ? const Color(0xFF262638) : Colors.white,
+          color: isDark ? AppTheme.darkCard : AppTheme.card,
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF262638) : Colors.white,
-                  border: Border(bottom: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[200]!, width: 1)),
+                  color: isDark ? AppTheme.darkCard : AppTheme.card,
+                  border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border, width: 1)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Notifications', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                    Text('Notifications', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? AppTheme.darkForeground : AppTheme.foreground)),
                     IconButton(
-                      icon: Icon(Icons.close, color: isDark ? Colors.white : null),
+                      icon: Icon(Icons.close, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
                       onPressed: () => Get.back(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -185,7 +184,7 @@ class AdminView extends GetView<AdminController> {
                 child: Obx(() {
                   if (controller.notifications.isEmpty) {
                     return Center(
-                      child: Text('No notifications', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                      child: Text('No notifications', style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
                     );
                   }
                   return ListView.builder(
@@ -195,25 +194,33 @@ class AdminView extends GetView<AdminController> {
                       final notification = controller.notifications[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        color: notification.isRead ? null : (isDark ? Colors.blue[900]!.withValues(alpha: 0.3) : Colors.blue[50]),
+                        color: notification.isRead ? null : (isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50]),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
-                          child: Column(
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(notification.title, style: TextStyle(
-                                      fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
-                                      color: isDark ? Colors.white : Colors.black87,
-                                    )),
-                                  ),
-                                  Text(notification.createdAt, style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600])),
-                                ],
+                              Padding(
+                                padding: const EdgeInsets.only(right: 12, top: 2),
+                                child: _getNotificationIcon(notification.type),
                               ),
-                              const SizedBox(height: 4),
-                              Text(notification.message, style: TextStyle(fontSize: 13, color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (notification.title.isNotEmpty) ...[
+                                      Text(notification.title, style: TextStyle(
+                                        fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                                        color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                                      )),
+                                      const SizedBox(height: 4),
+                                    ],
+                                    Text(notification.message, style: TextStyle(fontSize: 13, color: isDark ? AppTheme.darkForeground : AppTheme.foreground)),
+                                    const SizedBox(height: 4),
+                                    Text(notification.createdAt, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -229,11 +236,24 @@ class AdminView extends GetView<AdminController> {
     );
   }
 
-  // --- Language Toggle ---
+  Widget _getNotificationIcon(String type) {
+    switch (type) {
+      case 'EXERCISE':
+        return const Icon(Icons.book_outlined, color: Colors.blue, size: 20);
+      case 'ABSENCE':
+        return const Icon(Icons.person_remove_outlined, color: Colors.red, size: 20);
+      case 'ANNOUNCEMENT':
+        return const Icon(Icons.campaign_outlined, color: Colors.purple, size: 20);
+      case 'GRADE':
+        return const Icon(Icons.emoji_events_outlined, color: Colors.green, size: 20);
+      default:
+        return const Icon(Icons.notifications_outlined, color: Colors.grey, size: 20);
+    }
+  }
 
   // --- Profile Menu ---
 
-  Widget _buildProfileMenu(bool isDark) {
+  Widget _buildProfileMenu(bool isDark, Color borderColor) {
     final roles = controller.roles;
     final activeRole = controller.currentRole;
     return PopupMenuButton<String>(
@@ -245,12 +265,12 @@ class AdminView extends GetView<AdminController> {
           width: 40, height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB)),
+            border: Border.all(color: borderColor),
           ),
           child: Center(
             child: Text(
               (controller.userName.isNotEmpty ? controller.userName[0] : 'A').toUpperCase(),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : const Color(0xFF111827)),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
             ),
           ),
         ),
@@ -293,23 +313,23 @@ class AdminView extends GetView<AdminController> {
             switch (role) {
               case 'ADMIN':
                 icon = Icons.shield;
-                iconColor = Colors.red;
+                iconColor = isDark ? AppTheme.darkDestructive : Colors.red;
                 break;
               case 'TEACHER':
                 icon = Icons.school;
-                iconColor = Colors.blue;
+                iconColor = isDark ? AppTheme.darkPrimary : Colors.blue;
                 break;
               case 'STUDENT':
                 icon = Icons.people;
-                iconColor = Colors.green;
+                iconColor = isDark ? AppTheme.darkBadgeGreenText : Colors.green;
                 break;
               case 'PARENT':
                 icon = Icons.child_care;
-                iconColor = Colors.purple;
+                iconColor = isDark ? AppTheme.darkMutedForeground : Colors.purple;
                 break;
               default:
                 icon = Icons.person;
-                iconColor = Colors.grey;
+                iconColor = isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground;
             }
             final isActive = role == activeRole;
             return PopupMenuItem(
@@ -321,7 +341,7 @@ class AdminView extends GetView<AdminController> {
                   const SizedBox(width: 8),
                   Expanded(child: Text(_roleLabel(role))),
                   if (isActive)
-                    Text('ACTIVE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.grey[500])),
+                    Text('ACTIVE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
                 ],
               ),
             );
@@ -332,9 +352,9 @@ class AdminView extends GetView<AdminController> {
           value: 'logout',
           child: Row(
             children: [
-              const Icon(Icons.logout, size: 18, color: Colors.red),
+              Icon(Icons.logout, size: 18, color: isDark ? AppTheme.darkDestructive : AppTheme.destructive),
               const SizedBox(width: 8),
-              Text('Logout', style: const TextStyle(color: Colors.red)),
+              Text('Logout', style: TextStyle(color: isDark ? AppTheme.darkDestructive : AppTheme.destructive)),
             ],
           ),
         ),
@@ -354,35 +374,57 @@ class AdminView extends GetView<AdminController> {
 
   // --- Stats Row ---
 
-  Widget _buildStatsRow(int exerciseCount, int classCount, int skillsCount, bool isDark, Color cardColor, Color textColor, Color mutedColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final cardWidth = (constraints.maxWidth - 12) / 2;
-          return Wrap(
-            spacing: 12, runSpacing: 12,
-            children: [
-              _statCard(cardWidth, 'Exercises', '$exerciseCount', 'Total uploaded', Icons.assignment, Colors.blue, cardColor, textColor, mutedColor),
-              _statCard(cardWidth, 'Classes', '$classCount', 'Active classes', Icons.book, Colors.indigo, cardColor, textColor, mutedColor),
-              _statCard(cardWidth, 'Skills', '$skillsCount', 'Available skills', Icons.auto_awesome, Colors.purple, cardColor, textColor, mutedColor),
-              _statCard(cardWidth, 'System Status', 'Active', 'All systems operational', Icons.check_circle, Colors.green, cardColor, textColor, mutedColor),
-            ],
-          );
-        },
+  Widget _buildStatsRow(bool isDark) {
+    return SizedBox(
+      height: 125,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          SizedBox(
+            width: 170,
+            child: _statCard(
+              'Exercises', '${controller.exercises.length}',
+              'Total uploaded', Icons.description, isDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 170,
+            child: _statCard(
+              'Classes', '${controller.classCount}',
+              'Active classes', Icons.book, isDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 170,
+            child: _statCard(
+              'Skills', '${controller.skills.length}',
+              'Available skills', Icons.auto_awesome, isDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 170,
+            child: _statCard(
+              'System Status', 'Active',
+              'All systems operational', Icons.check_circle, isDark,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _statCard(double width, String title, String value, String subtitle, IconData icon, Color color, Color cardColor, Color textColor, Color mutedColor) {
+  Widget _statCard(String title, String value, String subtitle, IconData icon, bool isDark) {
     return Container(
-      width: width,
-      padding: const EdgeInsets.all(16),
+      width: 170,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cardColor),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 1))],
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,14 +433,26 @@ class AdminView extends GetView<AdminController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(fontSize: 13, color: mutedColor, fontWeight: FontWeight.w500)),
-              Icon(icon, size: 18, color: color),
+              Expanded(
+                child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                ),
+              ),
+              Icon(icon, size: 16, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: value == 'Active' ? Colors.green : textColor)),
-          const SizedBox(height: 2),
-          Text(subtitle, style: TextStyle(fontSize: 11, color: mutedColor)),
+          const SizedBox(height: 6),
+          Text(value, maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,
+              color: value == 'Active' ? const Color(0xFF16A34A) : (isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Flexible(
+            child: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            ),
+          ),
         ],
       ),
     );
@@ -406,16 +460,14 @@ class AdminView extends GetView<AdminController> {
 
   // --- Tabs Row ---
 
-  Widget _buildTabsRow(String activeTab, bool isDark) {
+  Widget _buildTabsRow(String activeTab, bool isDark, Color borderColor, Color mutedColor) {
     final tabs = ['overview', 'exercises', 'exercise-requests'];
-    final labels = ['Overview', 'Exercises', 'Exercise Requests'];
-    final primary = AppTheme.primary;
-    final mutedColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final labels = ['Overview'.tr, 'Exercises'.tr, 'Exercise Requests'.tr];
 
     return Container(
-      height: 44,
+      height: 56,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB))),
+        border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -426,11 +478,11 @@ class AdminView extends GetView<AdminController> {
           return GestureDetector(
             onTap: () => controller.setActiveTab(tabs[index]),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: isSelected ? primary : Colors.transparent, width: 2)),
+                border: Border(bottom: BorderSide(color: isSelected ? (isDark ? AppTheme.darkPrimary : AppTheme.primary) : Colors.transparent, width: 2)),
               ),
-              child: Text(labels[index], style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? primary : mutedColor)),
+              child: Text(labels[index], style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? (isDark ? AppTheme.darkForeground : AppTheme.primary) : (isDark ? AppTheme.darkMutedForeground : mutedColor))),
             ),
           );
         },
@@ -448,7 +500,7 @@ class AdminView extends GetView<AdminController> {
   ) {
     switch (activeTab) {
       case 'overview':
-        return _buildOverviewTab(isDark, cardColor, textColor);
+        return _buildOverviewTab(isDark, cardColor, textColor, mutedColor, borderColor);
       case 'exercises':
         return _buildExercisesTab(isDark, cardColor, textColor, mutedColor, borderColor, exercises, skills, selectedLevelId, selectedClassId, selectedSkills, isUploading, levelClasses, selectedFile, levels);
       case 'exercise-requests':
@@ -460,11 +512,11 @@ class AdminView extends GetView<AdminController> {
 
   // --- Overview Tab ---
 
-  Widget _buildOverviewTab(bool isDark, Color cardColor, Color textColor) {
+  Widget _buildOverviewTab(bool isDark, Color cardColor, Color textColor, Color mutedColor, Color borderColor) {
     return Card(
       color: cardColor,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: borderColor)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -473,16 +525,16 @@ class AdminView extends GetView<AdminController> {
           children: [
             Text('Overview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
             const SizedBox(height: 4),
-            Text('Admin system overview', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+            Text('Admin system overview'.tr, style: TextStyle(fontSize: 13, color: mutedColor)),
             const SizedBox(height: 16),
             Container(
               width: double.infinity, padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E3A5F) : const Color(0xFFEFF6FF),
+                color: isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50],
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: isDark ? const Color(0xFF1E40AF) : const Color(0xFFBFDBFE)),
+                border: Border.all(color: AppTheme.primary),
               ),
-              child: Text('Admin Only: You have full system access', style: TextStyle(fontWeight: FontWeight.w500, color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF))),
+              child: Text('Admin Only: You have full system access', style: TextStyle(fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue[800])),
             ),
           ],
         ),
@@ -524,9 +576,9 @@ class AdminView extends GetView<AdminController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Upload New Exercise', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
+            Text('Upload New Exercise'.tr, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
             const SizedBox(height: 4),
-            Text('Upload an exercise file for students', style: TextStyle(fontSize: 13, color: mutedColor)),
+            Text('Upload an exercise file for students'.tr, style: TextStyle(fontSize: 13, color: mutedColor)),
             const SizedBox(height: 16),
             TextField(
               decoration: InputDecoration(labelText: 'Exercise Title', border: const OutlineInputBorder(), isDense: true),
@@ -537,6 +589,18 @@ class AdminView extends GetView<AdminController> {
               decoration: InputDecoration(labelText: 'Description', border: const OutlineInputBorder(), isDense: true),
               maxLines: 2,
               onChanged: (v) => controller.uploadDescription.value = v,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Due Date (Optional)',
+                hintText: 'YYYY-MM-DD',
+                border: const OutlineInputBorder(),
+                isDense: true,
+                suffixIcon: Icon(Icons.calendar_today, size: 18, color: mutedColor),
+              ),
+              onChanged: (v) => controller.uploadDueDate.value = v,
+              keyboardType: TextInputType.datetime,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<int>(
@@ -569,17 +633,19 @@ class AdminView extends GetView<AdminController> {
                   Text('Skills (Optional)', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: textColor)),
                   const SizedBox(height: 4),
                   Container(
-                    width: double.infinity, padding: const EdgeInsets.all(8),
+                    width: double.infinity, height: 120, padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(border: Border.all(color: borderColor), borderRadius: BorderRadius.circular(6)),
-                    child: Wrap(
-                      spacing: 8, runSpacing: 4,
-                      children: skills.map((skill) => FilterChip(
-                        label: Text(skill.name, style: const TextStyle(fontSize: 12)),
-                        selected: selectedSkills.contains(skill.id),
-                        onSelected: (_) => controller.toggleSkill(skill.id),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      )).toList(),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8, runSpacing: 4,
+                        children: skills.map((skill) => FilterChip(
+                          label: Text(skill.name, style: const TextStyle(fontSize: 12)),
+                          selected: selectedSkills.contains(skill.id),
+                          onSelected: (_) => controller.toggleSkill(skill.id),
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
+                        )).toList(),
+                      ),
                     ),
                   ),
                 ],
@@ -618,9 +684,9 @@ class AdminView extends GetView<AdminController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Uploaded Exercises', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
+            Text('Uploaded Exercises'.tr, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
             const SizedBox(height: 4),
-            Text("Exercises you've shared with students", style: TextStyle(fontSize: 13, color: mutedColor)),
+            Text("Exercises you've shared with students".tr, style: TextStyle(fontSize: 13, color: mutedColor)),
             const SizedBox(height: 16),
             if (exercises.isEmpty)
               Padding(padding: const EdgeInsets.all(24), child: Center(child: Text('No exercises uploaded yet', style: TextStyle(color: mutedColor))))
@@ -648,13 +714,32 @@ class AdminView extends GetView<AdminController> {
                                   if (ex.level != null)
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(color: isDark ? const Color(0xFF1E3A5F) : const Color(0xFFDBEAFE), borderRadius: BorderRadius.circular(12)),
-                                      child: Text(ex.level!, style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF))),
+                                      decoration: BoxDecoration(color: isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50], borderRadius: BorderRadius.circular(12)),
+                                      child: Text(ex.level!, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue[800])),
                                     ),
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Text(ex.description, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: mutedColor)),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Class: ${ex.className ?? ""}${ex.dueDate != null ? " | Due: ${ex.dueDate}" : ""}',
+                                style: TextStyle(fontSize: 11, color: mutedColor),
+                              ),
+                              if (ex.skills.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Wrap(
+                                  spacing: 6, runSpacing: 2,
+                                  children: ex.skills.map((s) => Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0x33433FA7) : Colors.purple[50],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(s.name, style: TextStyle(fontSize: 11, color: AppTheme.primary)),
+                                  )).toList(),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -690,9 +775,9 @@ class AdminView extends GetView<AdminController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Exercise Requests', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
+            Text('Exercise Requests'.tr, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
             const SizedBox(height: 4),
-            Text('Pending exercises from teachers awaiting your approval', style: TextStyle(fontSize: 13, color: mutedColor)),
+            Text('Pending exercises from teachers awaiting your approval'.tr, style: TextStyle(fontSize: 13, color: mutedColor)),
             const SizedBox(height: 16),
             if (exerciseRequests.isEmpty)
               Padding(padding: const EdgeInsets.all(24), child: Center(child: Text('No pending exercise requests', style: TextStyle(color: mutedColor))))
@@ -730,7 +815,7 @@ class AdminView extends GetView<AdminController> {
                           children: [
                             ElevatedButton(
                               onPressed: isResponding ? null : () => controller.approveExercise(ex.id),
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                               child: isResponding
                                   ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                                   : Text('Approve', style: const TextStyle(fontSize: 12)),
@@ -738,7 +823,7 @@ class AdminView extends GetView<AdminController> {
                             const SizedBox(height: 4),
                             OutlinedButton(
                               onPressed: isResponding ? null : () => controller.rejectExercise(ex.id),
-                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap, side: const BorderSide(color: Colors.red)),
+                              style: OutlinedButton.styleFrom(foregroundColor: isDark ? AppTheme.darkDestructive : AppTheme.destructive, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap, side: BorderSide(color: isDark ? AppTheme.darkDestructive : AppTheme.destructive)),
                               child: Text('Reject', style: const TextStyle(fontSize: 12)),
                             ),
                           ],

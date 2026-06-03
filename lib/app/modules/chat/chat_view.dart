@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../theme/app_theme.dart';
 import 'chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
@@ -15,7 +16,7 @@ class ChatView extends GetView<ChatController> {
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
           // Sidebar width
-          final sidebarWidth = screenWidth < 400 ? 160.0 : 162.0;
+          final sidebarWidth = screenWidth < 400 ? 165.0 : 175.0;
 
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +34,7 @@ class ChatView extends GetView<ChatController> {
                 ),
                 child: Column(
                   children: [
-                    // Sidebar header with "Chat" text
+                    // Sidebar header with "Messages" text
                     Container(
                       width: sidebarWidth,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -48,7 +49,7 @@ class ChatView extends GetView<ChatController> {
                         children: [
                           Flexible(
                             child: Text(
-                              'Chat'.tr,
+                              'Messages'.tr,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -56,24 +57,13 @@ class ChatView extends GetView<ChatController> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.refresh, size: 18),
-                                onPressed: controller.loadContacts,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                              ),
-                              if (onClose != null)
-                                IconButton(
-                                  icon: const Icon(Icons.close, size: 18),
-                                  onPressed: onClose,
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                ),
-                            ],
-                          ),
+                          if (onClose != null)
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 18),
+                              onPressed: onClose,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            ),
                         ],
                       ),
                     ),
@@ -87,7 +77,7 @@ class ChatView extends GetView<ChatController> {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text('No contacts'.tr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11)),
+                              child: Text('No contacts'.tr, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
                             ),
                           );
                         }
@@ -101,9 +91,9 @@ class ChatView extends GetView<ChatController> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? (isDark ? const Color(0xFF3F3F46) : Colors.blue[50]) : Colors.transparent,
+                                      color: isSelected ? (isDark ? AppTheme.darkAccent : AppTheme.muted) : Colors.transparent,
                                       border: isSelected ? null : Border(
-                                        bottom: BorderSide(color: isDark ? const Color(0x1AFFFFFF) : Colors.grey[200]!, width: 0.5),
+                                        bottom: BorderSide(color: isDark ? AppTheme.darkBorder.withValues(alpha: 0.5) : AppTheme.border.withValues(alpha: 0.5), width: 0.5),
                                       ),
                                     ),
                                     child: Row(
@@ -111,7 +101,7 @@ class ChatView extends GetView<ChatController> {
                                   children: [
                                     CircleAvatar(
                                       radius: 18,
-                                      backgroundColor: Colors.blue,
+                                      backgroundColor: AppTheme.primary,
                                       child: Text(
                                         contact.fullName.isNotEmpty
                                             ? contact.fullName[0].toUpperCase()
@@ -132,9 +122,10 @@ class ChatView extends GetView<ChatController> {
                                             contact.fullName,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
+                                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
@@ -144,7 +135,7 @@ class ChatView extends GetView<ChatController> {
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: isDark ? const Color(0xFFA1A1AA) : Colors.grey,
+                                              color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                                             ),
                                           ),
                                         ],
@@ -186,9 +177,9 @@ class ChatView extends GetView<ChatController> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF27272A) : Colors.white,
+                          color: isDark ? AppTheme.darkCard : AppTheme.card,
                           border: Border(
-                            bottom: BorderSide(color: isDark ? const Color(0x1AFFFFFF) : Colors.grey[300]!),
+                            bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border),
                           ),
                         ),
                         child: Row(
@@ -196,7 +187,7 @@ class ChatView extends GetView<ChatController> {
                           children: [
                             CircleAvatar(
                               radius: 20,
-                              backgroundColor: Colors.blue,
+                              backgroundColor: AppTheme.primary,
                               child: Text(
                                 controller.selectedContact.value!.fullName[0]
                                     .toUpperCase(),
@@ -216,12 +207,22 @@ class ChatView extends GetView<ChatController> {
                                     controller.selectedContact.value!.fullName,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
+                                      color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
                                     ),
                                   ),
-                                  // Connection status
+                                  Text(
+                                    controller.selectedContact.value!.role,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
                                   Obx(
                                         () => Row(
                                       children: [
@@ -254,16 +255,6 @@ class ChatView extends GetView<ChatController> {
                                   ),
                                 ],
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.refresh, size: 18),
-                              onPressed: () {
-                                if (controller.selectedContact.value != null) {
-                                  controller.loadMessages(controller.selectedContact.value!.userId);
-                                }
-                              },
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                             ),
                           ],
                         ),

@@ -24,7 +24,7 @@ class LoginView extends GetView<LoginController> {
             _AnimatedBackground(isDark: isDark),
             Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Card(
@@ -49,8 +49,8 @@ class LoginView extends GetView<LoginController> {
                                 borderRadius: BorderRadius.circular(50),
                               ),
                               child: Icon(
-                                Icons.school,
-                                size: 40,
+                                Icons.school_outlined,
+                                size: 48,
                                 color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
                               ),
                             ),
@@ -261,7 +261,7 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
             Positioned(
-              top: 16,
+              top: 40,
               right: 16,
               child: Row(
                 children: [
