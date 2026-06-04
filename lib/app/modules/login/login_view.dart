@@ -57,7 +57,7 @@ class LoginView extends GetView<LoginController> {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'School Portal'.tr,
+                            'Mouktassab'.tr,
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,

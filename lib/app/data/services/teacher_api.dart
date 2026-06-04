@@ -135,10 +135,9 @@ class TeacherApi {
     }
     return Submission(
       id: submissionId,
-      exerciseId: 0,
-      studentId: 0,
-      submissionFile: null,
-      submissionText: null,
+      exercise: 0,
+      student: 0,
+      exerciseTitle: '',
       grade: grade,
       feedback: feedback,
       submittedAt: '',
