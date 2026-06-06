@@ -89,7 +89,7 @@ class ParentApi {
 
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    return response.data['count'] ?? 0;
+    return response.data['total_unread'] ?? 0;
   }
 
   Future<PredictionResult> predictStudent(int studentId) async {
@@ -105,7 +105,8 @@ class ParentApi {
   }) async {
     final params = <String, dynamic>{'student_id': studentId};
     if (level != null && level.isNotEmpty) params['level'] = level;
-    if (className != null && className.isNotEmpty) params['class_name'] = className;
+    if (className != null && className.isNotEmpty)
+      params['class_name'] = className;
     if (skillIds != null && skillIds.isNotEmpty) params['skill_ids'] = skillIds;
     final response = await _api.get(
       '/users/parent/exercises/search/',

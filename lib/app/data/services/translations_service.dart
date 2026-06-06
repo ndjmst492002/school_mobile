@@ -4,6 +4,7 @@ class TranslationsService extends Translations {
   static final Map<String, String> _en = {
     // Login
     'School Portal': 'School Portal',
+    'Mouktassab': 'Mouktassab',
     'Sign in to your account': 'Sign in to your account',
     'Sign in with Google': 'Sign in with Google',
     'Don\'t have an account? Sign Up': 'Don\'t have an account? Sign Up',
@@ -62,7 +63,8 @@ class TranslationsService extends Translations {
     'Overall status': 'Overall status',
     'Class status': 'Class status',
     'Children linked': 'Children linked',
-    'Overview of your children\'s information': 'Overview of your children\'s information',
+    'Overview of your children\'s information':
+        'Overview of your children\'s information',
     'Overview of your linked children': 'Overview of your linked children',
     'No children linked': 'No children linked',
     'Enrolled': 'Enrolled',
@@ -88,12 +90,15 @@ class TranslationsService extends Translations {
     'any child': 'any child',
     'From:': 'From:',
     'Class:': 'Class:',
-    'Search and assign exercises for your children': 'Search and assign exercises for your children',
-    'Review submissions your children made on exercises you assigned': 'Review submissions your children made on exercises you assigned',
+    'Search and assign exercises for your children':
+        'Search and assign exercises for your children',
+    'Review submissions your children made on exercises you assigned':
+        'Review submissions your children made on exercises you assigned',
     'Attendance for your children': 'Attendance for your children',
     'No attendance records': 'No attendance records',
     'Present': 'Present',
     'Absent': 'Absent',
+    'Just now': 'Just now',
     'Unknown Class': 'Unknown Class',
     'Teacher:': 'Teacher:',
     'No children linked to your account yet':
@@ -270,6 +275,13 @@ class TranslationsService extends Translations {
     'Manage Classes': 'Manage Classes',
     'View Reports': 'View Reports',
     'Settings': 'Settings',
+    // Admin additional keys
+    'Overview': 'Overview',
+    'Exercise Requests': 'Exercise Requests',
+    'Active classes': 'Active classes',
+    'Available skills': 'Available skills',
+    'Select a level': 'Select a level',
+    'No pending exercise requests': 'No pending exercise requests',
     // Signup
     'First Name *': 'First Name *',
     'Last Name *': 'Last Name *',
@@ -298,6 +310,13 @@ class TranslationsService extends Translations {
     'Your Occupation *': 'Your Occupation *',
     'Children (at least 1) *': 'Children (at least 1) *',
     'Enrollment Date *': 'Enrollment Date *',
+    'Enter the code sent to your phone': 'Enter the code sent to your phone',
+    'First Name': 'First Name',
+    'Last Name': 'Last Name',
+    'Select date': 'Select date',
+    'e.g., Mathematics': 'e.g., Mathematics',
+    'e.g., Engineer': 'e.g., Engineer',
+    'Child @n': 'Child @n',
     // Profile Completion
     'Complete Your Profile': 'Complete Your Profile',
     'Create Your Teacher Profile': 'Create Your Teacher Profile',
@@ -305,14 +324,16 @@ class TranslationsService extends Translations {
         'Fill in your details to start teaching',
     'e.g., Mathematics, Science': 'e.g., Mathematics, Science',
     'e.g., Grade 5-A': 'e.g., Grade 5-A',
-    'Optional description for your class': 'Optional description for your class',
+    'Optional description for your class':
+        'Optional description for your class',
     'Create Profile': 'Create Profile',
     'Logout and try again': 'Logout and try again',
     // Subscription
     'Subscription Required': 'Subscription Required',
     'You need an active subscription to access your dashboard':
         'You need an active subscription to access your dashboard',
-    'Get unlimited access to all features': 'Get unlimited access to all features',
+    'Get unlimited access to all features':
+        'Get unlimited access to all features',
     'Subscribe Now': 'Subscribe Now',
     // Student Dashboard
     'Student Dashboard': 'Student Dashboard',
@@ -324,12 +345,18 @@ class TranslationsService extends Translations {
     'Request Enrollment': 'Request Enrollment',
     'Rejected': 'Rejected',
     'Resend Request': 'Resend Request',
+    's': 's',
+    'm': 'm',
+    'h': 'h',
+    'd': 'd',
+    ' ago': ' ago',
     'My Attendance': 'My Attendance',
     'Available Exercises': 'Available Exercises',
     'Download and submit': 'Download and submit',
     'Mark as Done': 'Mark as Done',
     'Marked as done': 'Marked as done',
-    'File is optional. Submit without a file to mark as done.': 'File is optional. Submit without a file to mark as done.',
+    'File is optional. Submit without a file to mark as done.':
+        'File is optional. Submit without a file to mark as done.',
     'Submit Solution': 'Submit Solution',
     'Due Date Passed': 'Due Date Passed',
     'Overdue': 'Overdue',
@@ -347,6 +374,11 @@ class TranslationsService extends Translations {
     'Classes to access exercises': 'Classes to access exercises',
     'Download and view exercises': 'Download and view exercises',
     'Your attendance record': 'Your attendance record',
+    'From enrolled classes': 'From enrolled classes',
+    'Exercises completed': 'Exercises completed',
+    'Announcements from your teachers': 'Announcements from your teachers',
+    'Profile Required': 'Profile Required',
+    'Cannot open download link': 'Cannot open download link',
     // Added missing keys
     'ALL EXERCISES': 'ALL EXERCISES',
     'All Levels': 'All Levels',
@@ -364,7 +396,8 @@ class TranslationsService extends Translations {
     'Exercise submitted successfully': 'Exercise submitted successfully',
     'Exercise uploaded successfully': 'Exercise uploaded successfully',
     'Failed to assign exercise': 'Failed to assign exercise',
-    'Failed to enroll. Please try again.': 'Failed to enroll. Please try again.',
+    'Failed to enroll. Please try again.':
+        'Failed to enroll. Please try again.',
     'Failed to submit exercise': 'Failed to submit exercise',
     'Failed to upload exercise': 'Failed to upload exercise',
     'Failed to mark as done': 'Failed to mark as done',
@@ -384,11 +417,52 @@ class TranslationsService extends Translations {
     'Total Exercises': 'Total Exercises',
     'Upload New Exercise': 'Upload New Exercise',
     'Level filter': 'Level filter',
+    // Teacher additional keys
+    'Switch Role': 'Switch Role',
+    'Administrator': 'Administrator',
+    'Classes you teach': 'Classes you teach',
+    'Mark students as present or absent for today':
+        'Mark students as present or absent for today',
+    'Post an announcement for your students and their parents':
+        'Post an announcement for your students and their parents',
+    'Upload an exercise file for your students':
+        'Upload an exercise file for your students',
+    'Review and grade work from your students':
+        'Review and grade work from your students',
+    'Pending Review': 'Pending Review',
+    'Exercise Title': 'Exercise Title',
+    'e.g., Math Homework Chapter 5': 'e.g., Math Homework Chapter 5',
+    'Exercise description': 'Exercise description',
+    'Select a class': 'Select a class',
+    'Announcement title': 'Announcement title',
+    'Write your announcement here...': 'Write your announcement here...',
+    "Announcements you've posted": "Announcements you've posted",
+    "Files you've shared with students": "Files you've shared with students",
+    'Re-grade': 'Re-grade',
+    'Provide a grade and feedback for the student':
+        'Provide a grade and feedback for the student',
+    'Attendance Summary for': 'Attendance Summary for',
+    'students enrolled': 'students enrolled',
+    'Exercise:': 'Exercise:',
+    'Submitted:': 'Submitted:',
+    'Grade:': 'Grade:',
+    'Due:': 'Due:',
+    'N/A': 'N/A',
+    'Good': 'Good',
+    'Predicting...': 'Predicting...',
+    'No assignable exercises available for this child':
+        'No assignable exercises available for this child',
+    'Select a child to browse exercises': 'Select a child to browse exercises',
+    'No submissions for this child': 'No submissions for this child',
+    'Assigned Exercise': 'Assigned Exercise',
+    'Upload your solution file for this exercise':
+        'Upload your solution file for this exercise',
   };
 
   static final Map<String, String> _ar = {
     // Login
     'School Portal': 'بوابة المدرسة',
+    'Mouktassab': 'مكتسب',
     'Enter your credentials to access your dashboard':
         'أدخل بياناتك للوصول إلى لوحة التحكم',
     'Sign in with Google': 'تسجيل الدخول عبر Google',
@@ -476,12 +550,15 @@ class TranslationsService extends Translations {
     'any child': 'أي طفل',
     'From:': 'من:',
     'Class:': 'الفصل:',
-    'Search and assign exercises for your children': 'ابحث عن التمارين وخصصها لأطفالك',
-    'Review submissions your children made on exercises you assigned': 'مراجعة الواجبات التي قدمها أطفالك',
+    'Search and assign exercises for your children':
+        'ابحث عن التمارين وخصصها لأطفالك',
+    'Review submissions your children made on exercises you assigned':
+        'مراجعة الواجبات التي قدمها أطفالك',
     'Attendance for your children': 'حضور أطفالك',
     'No attendance records': 'لا توجد سجلات حضور',
     'Present': 'حاضر',
     'Absent': 'غائب',
+    'Just now': 'الآن',
     'Unknown Class': 'فصل غير معروف',
     'Teacher:': 'المعلم:',
     'No children linked to your account yet':
@@ -658,6 +735,13 @@ class TranslationsService extends Translations {
     'Manage Classes': 'إدارة الفصول',
     'View Reports': 'عرض التقارير',
     'Settings': 'الإعدادات',
+    // Admin additional keys
+    'Overview': 'نظرة عامة',
+    'Exercise Requests': 'طلبات التمارين',
+    'Active classes': 'فصول نشطة',
+    'Available skills': 'مهارات متاحة',
+    'Select a level': 'اختر مستوى',
+    'No pending exercise requests': 'لا توجد طلبات تمارين معلقة',
     // Signup
     'First Name *': 'الاسم الأول *',
     'Last Name *': 'اسم العائلة *',
@@ -681,11 +765,17 @@ class TranslationsService extends Translations {
     'Complete Registration': 'إكمال التسجيل',
     'Step 2 of 2': 'الخطوة 2 من 2',
     'Parent & Children Information': 'معلومات الوالد والأطفال',
-    'Enter your occupation and add your children':
-        'أدخل مهنتك وأضف أطفالك',
+    'Enter your occupation and add your children': 'أدخل مهنتك وأضف أطفالك',
     'Your Occupation *': 'مهنتك *',
     'Children (at least 1) *': 'الأطفال (واحد على الأقل) *',
     'Enrollment Date *': 'تاريخ التسجيل *',
+    'Enter the code sent to your phone': 'أدخل الرمز المرسل إلى هاتفك',
+    'First Name': 'الاسم الأول',
+    'Last Name': 'اسم العائلة',
+    'Select date': 'اختر تاريخاً',
+    'e.g., Mathematics': 'مثال: الرياضيات',
+    'e.g., Engineer': 'مثال: مهندس',
+    'Child @n': 'الطفل @n',
     // Profile Completion
     'Complete Your Profile': 'أكمل ملفك الشخصي',
     'Create Your Teacher Profile': 'أنشئ ملفك الشخصي كمعلم',
@@ -712,12 +802,18 @@ class TranslationsService extends Translations {
     'Request Enrollment': 'طلب التسجيل',
     'Rejected': 'مرفوض',
     'Resend Request': 'إعادة إرسال الطلب',
+    's': 'ث',
+    'm': 'د',
+    'h': 'س',
+    'd': 'ي',
+    ' ago': ' ',
     'My Attendance': 'حضوري',
     'Available Exercises': 'التمارين المتاحة',
     'Download and submit': 'تحميل وتقديم',
     'Mark as Done': 'وضع علامة مكتمل',
     'Marked as done': 'تم وضع علامة مكتمل',
-    'File is optional. Submit without a file to mark as done.': 'الملف اختياري. قدم بدون ملف لوضع علامة مكتمل.',
+    'File is optional. Submit without a file to mark as done.':
+        'الملف اختياري. قدم بدون ملف لوضع علامة مكتمل.',
     'Submit Solution': 'قدم الحل',
     'Due Date Passed': 'انتهى موعد التسليم',
     'Overdue': 'متأخر',
@@ -735,6 +831,11 @@ class TranslationsService extends Translations {
     'Classes to access exercises': 'الفصول للوصول للتمارين',
     'Download and view exercises': 'تحميل وعرض التمارين',
     'Your attendance record': 'سجل حضورك',
+    'From enrolled classes': 'من الفصول المسجلة',
+    'Exercises completed': 'التمارين المكتملة',
+    'Announcements from your teachers': 'إعلانات من معلميك',
+    'Profile Required': 'الملف الشخصي مطلوب',
+    'Cannot open download link': 'لا يمكن فتح رابط التحميل',
     // Added missing keys
     'ALL EXERCISES': 'جميع التمارين',
     'All Levels': 'جميع المستويات',
@@ -772,6 +873,44 @@ class TranslationsService extends Translations {
     'Total Exercises': 'إجمالي التمارين',
     'Upload New Exercise': 'رفع تمرين جديد',
     'Level filter': 'تصفية المستوى',
+    // Teacher additional keys
+    'Switch Role': 'تبديل الدور',
+    'Administrator': 'مدير',
+    'Classes you teach': 'الفصول التي تدرسها',
+    'Mark students as present or absent for today':
+        'تسجيل الطلاب كحاضر أو غائب لليوم',
+    'Post an announcement for your students and their parents':
+        'انشر إعلاناً لطلابك وأولياء أمورهم',
+    'Upload an exercise file for your students': 'رفع ملف تمرين لطلابك',
+    'Review and grade work from your students': 'مراجعة وتقييم أعمال طلابك',
+    'Pending Review': 'قيد المراجعة',
+    'Exercise Title': 'عنوان التمرين',
+    'e.g., Math Homework Chapter 5': 'مثال: واجب رياضيات الفصل 5',
+    'Exercise description': 'وصف التمرين',
+    'Select a class': 'اختر فصلاً',
+    'Announcement title': 'عنوان الإعلان',
+    'Write your announcement here...': 'اكتب إعلانك هنا...',
+    "Announcements you've posted": 'الإعلانات التي نشرتها',
+    "Files you've shared with students": 'الملفات التي شاركتها مع الطلاب',
+    'Re-grade': 'إعادة تقييم',
+    'Provide a grade and feedback for the student':
+        'قدم تقييماً وملاحظات للطالب',
+    'Attendance Summary for': 'ملخص الحضور لـ',
+    'students enrolled': 'طالب مسجل',
+    'Exercise:': 'التمرين:',
+    'Submitted:': 'مقدم:',
+    'Grade:': 'التقييم:',
+    'Due:': 'تاريخ التسليم:',
+    'N/A': 'غير متوفر',
+    'Good': 'جيد',
+    'Predicting...': 'جارٍ التنبؤ...',
+    'No assignable exercises available for this child':
+        'لا توجد تمارين متاحة لهذا الطفل',
+    'Select a child to browse exercises': 'اختر طفلاً لتصفح التمارين',
+    'No submissions for this child': 'لا توجد تسليمات لهذا الطفل',
+    'Assigned Exercise': 'تمرين مخصص',
+    'Upload your solution file for this exercise':
+        'قم بتحميل ملف الحل لهذا التمرين',
   };
 
   @override

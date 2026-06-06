@@ -246,8 +246,8 @@ class StudentController extends GetxController {
       debugPrint('Profile not found: ${e.message}');
       profileNotFound.value = true;
       Get.snackbar(
-        'Profile Required',
-        e.message,
+        'Profile Required'.tr,
+        e.message?.tr ?? '',
         duration: const Duration(seconds: 5),
       );
     } catch (e) {
@@ -325,7 +325,7 @@ class StudentController extends GetxController {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Get.snackbar('Error', 'Cannot open download link');
+      Get.snackbar('Error'.tr, 'Cannot open download link'.tr);
     }
   }
 

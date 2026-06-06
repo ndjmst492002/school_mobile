@@ -28,7 +28,9 @@ class ChatView extends GetView<ChatController> {
                   color: isDark ? const Color(0xFF27272A) : Colors.grey[50],
                   border: Border(
                     right: BorderSide(
-                      color: isDark ? const Color(0x1AFFFFFF) : Colors.grey[300]!,
+                      color: isDark
+                          ? const Color(0x1AFFFFFF)
+                          : Colors.grey[300]!,
                     ),
                   ),
                 ),
@@ -37,11 +39,18 @@ class ChatView extends GetView<ChatController> {
                     // Sidebar header with "Messages" text
                     Container(
                       width: sidebarWidth,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF3F3F46) : Colors.white,
                         border: Border(
-                          bottom: BorderSide(color: isDark ? const Color(0x1AFFFFFF) : Colors.grey[300]!),
+                          bottom: BorderSide(
+                            color: isDark
+                                ? const Color(0x1AFFFFFF)
+                                : Colors.grey[300]!,
+                          ),
                         ),
                       ),
                       child: Row(
@@ -57,13 +66,6 @@ class ChatView extends GetView<ChatController> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (onClose != null)
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 18),
-                              onPressed: onClose,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                            ),
                         ],
                       ),
                     ),
@@ -71,13 +73,24 @@ class ChatView extends GetView<ChatController> {
                     Expanded(
                       child: Obx(() {
                         if (controller.isLoading.value) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
                         if (controller.contacts.isEmpty) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text('No contacts'.tr, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+                              child: Text(
+                                'No contacts available'.tr,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
+                                ),
+                              ),
                             ),
                           );
                         }
@@ -85,18 +98,37 @@ class ChatView extends GetView<ChatController> {
                           itemCount: controller.contacts.length,
                           itemBuilder: (context, index) {
                             final contact = controller.contacts[index];
-                            final isSelected = controller.selectedContact.value?.userId == contact.userId;
-                                return InkWell(
-                                  onTap: () => controller.selectContact(contact),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? (isDark ? AppTheme.darkAccent : AppTheme.muted) : Colors.transparent,
-                                      border: isSelected ? null : Border(
-                                        bottom: BorderSide(color: isDark ? AppTheme.darkBorder.withValues(alpha: 0.5) : AppTheme.border.withValues(alpha: 0.5), width: 0.5),
-                                      ),
-                                    ),
-                                    child: Row(
+                            final isSelected =
+                                controller.selectedContact.value?.userId ==
+                                contact.userId;
+                            return InkWell(
+                              onTap: () => controller.selectContact(contact),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? (isDark
+                                            ? AppTheme.darkAccent
+                                            : AppTheme.muted)
+                                      : Colors.transparent,
+                                  border: isSelected
+                                      ? null
+                                      : Border(
+                                          bottom: BorderSide(
+                                            color: isDark
+                                                ? AppTheme.darkBorder
+                                                      .withValues(alpha: 0.5)
+                                                : AppTheme.border.withValues(
+                                                    alpha: 0.5,
+                                                  ),
+                                            width: 0.5,
+                                          ),
+                                        ),
+                                ),
+                                child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     CircleAvatar(
@@ -115,7 +147,8 @@ class ChatView extends GetView<ChatController> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
@@ -125,7 +158,9 @@ class ChatView extends GetView<ChatController> {
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
-                                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                                              color: isDark
+                                                  ? AppTheme.darkForeground
+                                                  : AppTheme.foreground,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
@@ -135,12 +170,42 @@ class ChatView extends GetView<ChatController> {
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
+                                              color: isDark
+                                                  ? AppTheme.darkMutedForeground
+                                                  : AppTheme.mutedForeground,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
+                                    if ((contact.unreadCount ?? 0) > 0)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 22,
+                                          minHeight: 22,
+                                        ),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            (contact.unreadCount ?? 0) > 9
+                                                ? '9+'
+                                                : '${contact.unreadCount}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -166,7 +231,11 @@ class ChatView extends GetView<ChatController> {
                             color: Colors.grey[300],
                           ),
                           const SizedBox(height: 12),
-                          Text('Select a contact'.tr, style: const TextStyle(fontSize: 12)),
+                          Text(
+                            'Select a contact to start chatting'.tr,
+                            style: const TextStyle(fontSize: 12),
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                     );
@@ -175,11 +244,18 @@ class ChatView extends GetView<ChatController> {
                     children: [
                       // Chat header
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: isDark ? AppTheme.darkCard : AppTheme.card,
                           border: Border(
-                            bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                            bottom: BorderSide(
+                              color: isDark
+                                  ? AppTheme.darkBorder
+                                  : AppTheme.border,
+                            ),
                           ),
                         ),
                         child: Row(
@@ -210,7 +286,9 @@ class ChatView extends GetView<ChatController> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
-                                      color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                                      color: isDark
+                                          ? AppTheme.darkForeground
+                                          : AppTheme.foreground,
                                     ),
                                   ),
                                   Text(
@@ -219,19 +297,22 @@ class ChatView extends GetView<ChatController> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
+                                      color: isDark
+                                          ? AppTheme.darkMutedForeground
+                                          : AppTheme.mutedForeground,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Obx(
-                                        () => Row(
+                                    () => Row(
                                       children: [
                                         Container(
                                           width: 8,
                                           height: 8,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: controller.isWsConnected.value
+                                            color:
+                                                controller.isWsConnected.value
                                                 ? Colors.green
                                                 : Colors.orange,
                                           ),
@@ -240,12 +321,18 @@ class ChatView extends GetView<ChatController> {
                                         Text(
                                           controller.isWsConnected.value
                                               ? 'Connected'.tr
-                                              : controller.connectionStatus.value.isNotEmpty
-                                              ? controller.connectionStatus.value
+                                              : controller
+                                                    .connectionStatus
+                                                    .value
+                                                    .isNotEmpty
+                                              ? controller
+                                                    .connectionStatus
+                                                    .value
                                               : 'Connecting...'.tr,
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: controller.isWsConnected.value
+                                            color:
+                                                controller.isWsConnected.value
                                                 ? Colors.green
                                                 : Colors.orange,
                                           ),
@@ -262,9 +349,11 @@ class ChatView extends GetView<ChatController> {
                       // Messages list
                       Expanded(
                         child: Container(
-                          color: isDark ? const Color(0xFF18181B) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF18181B)
+                              : Colors.white,
                           child: Obx(
-                                () => ListView.builder(
+                            () => ListView.builder(
                               reverse: true,
                               padding: const EdgeInsets.all(16),
                               itemCount: controller.messages.length,
@@ -282,22 +371,33 @@ class ChatView extends GetView<ChatController> {
                                       vertical: 10,
                                     ),
                                     constraints: BoxConstraints(
-                                      maxWidth: MediaQuery.of(context).size.width * 0.85,
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width *
+                                          0.85,
                                       minWidth: 60,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: isOwn ? Colors.blue : (isDark ? const Color(0xFF3F3F46) : Colors.grey[200]),
+                                      color: isOwn
+                                          ? Colors.blue
+                                          : (isDark
+                                                ? const Color(0xFF3F3F46)
+                                                : Colors.grey[200]),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
                                           msg.content,
                                           softWrap: true,
                                           style: TextStyle(
-                                            color: isOwn ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                                            color: isOwn
+                                                ? Colors.white
+                                                : (isDark
+                                                      ? Colors.white
+                                                      : Colors.black87),
                                             fontSize: 14,
                                             height: 1.3,
                                           ),
@@ -307,7 +407,11 @@ class ChatView extends GetView<ChatController> {
                                           controller.formatTime(msg.createdAt),
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: isOwn ? Colors.white70 : (isDark ? const Color(0xFFA1A1AA) : Colors.grey[600]),
+                                            color: isOwn
+                                                ? Colors.white70
+                                                : (isDark
+                                                      ? const Color(0xFFA1A1AA)
+                                                      : Colors.grey[600]),
                                           ),
                                         ),
                                       ],
@@ -323,8 +427,16 @@ class ChatView extends GetView<ChatController> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF27272A) : Colors.white,
-                          border: Border(top: BorderSide(color: isDark ? const Color(0x1AFFFFFF) : Colors.grey[300]!)),
+                          color: isDark
+                              ? const Color(0xFF27272A)
+                              : Colors.white,
+                          border: Border(
+                            top: BorderSide(
+                              color: isDark
+                                  ? const Color(0x1AFFFFFF)
+                                  : Colors.grey[300]!,
+                            ),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -346,9 +458,10 @@ class ChatView extends GetView<ChatController> {
                             ),
                             const SizedBox(width: 8),
                             Obx(
-                                  () => ElevatedButton(
-                                onPressed: controller.isSending.value ||
-                                    controller.newMessage.value.isEmpty
+                              () => ElevatedButton(
+                                onPressed:
+                                    controller.isSending.value ||
+                                        controller.newMessage.value.isEmpty
                                     ? null
                                     : controller.sendMessage,
                                 style: ElevatedButton.styleFrom(

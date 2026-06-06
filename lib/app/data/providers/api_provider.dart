@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart' as dio_pkg;
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:cookie_jar/cookie_jar.dart';
@@ -8,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
   String? _webToken;
-
 
   static const String baseUrl = 'http://192.168.1.3:8000/api';
   //static const String baseUrl = 'http://localhost:8000/api';
@@ -163,6 +163,7 @@ class AuthService extends GetxService {
     if (roles != null && roles.isNotEmpty) {
       _roles.value = roles;
     }
+    _saveToStorage();
   }
 
   void setLoading(bool loading) {
@@ -180,16 +181,53 @@ class AuthService extends GetxService {
   void switchRole(String newRole) {
     if (_roles.contains(newRole)) {
       _role.value = newRole;
+      _saveToStorage();
+    }
+  }
+
+  Future<void> _saveToStorage() async {
+    if (_user.value == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setString('auth_user', json.encode(_user.value));
+      await prefs.setString('auth_role', _role.value);
+      await prefs.setStringList('auth_roles', _roles.toList());
+    } catch (_) {}
+  }
+
+  Future<bool> restoreFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedUser = prefs.getString('auth_user');
+      if (savedUser == null) return false;
+      final userData = json.decode(savedUser) as Map<String, dynamic>;
+      final role = prefs.getString('auth_role') ?? '';
+      final roles = prefs.getStringList('auth_roles') ?? [];
+      _user.value = userData;
+      _role.value = role;
+      _roles.value = roles;
+      _isAuthenticated.value = true;
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
   void logout() {
     _user.value = null;
     _isAuthenticated.value = false;
+    _clearStorage();
     // Clear web token
     if (kIsWeb) {
       final apiProvider = Get.find<ApiProvider>();
       apiProvider.clearWebToken();
     }
+  }
+
+  Future<void> _clearStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_user');
+    await prefs.remove('auth_role');
+    await prefs.remove('auth_roles');
   }
 }

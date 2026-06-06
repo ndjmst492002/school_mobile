@@ -38,13 +38,21 @@ class ParentView extends GetView<ParentController> {
                   const SizedBox(height: 24),
                   Text(
                     'Profile Not Found'.tr,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'You need to complete your parent profile before accessing the dashboard.'.tr,
+                    'You need to complete your parent profile before accessing the dashboard.'
+                        .tr,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                    style: TextStyle(
+                      color: isDark
+                          ? AppTheme.darkMutedForeground
+                          : AppTheme.mutedForeground,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
@@ -77,65 +85,53 @@ class ParentView extends GetView<ParentController> {
           title: Directionality(
             textDirection: TextDirection.ltr,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (!controller.showChat.value) ...[
-                  _buildNotificationBell(),
-                  _buildChatButton(),
-                  _buildLanguageToggle(),
-                  _buildProfileMenu(),
-                ] else ...[
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      Get.delete<ChatController>();
-                      controller.toggleChat();
-                      controller.updateUnreadMessageCount(0);
-                    },
-                  ),
-                ],
+                const Spacer(),
+                _buildNotificationBell(),
+                _buildChatButton(),
+                _buildLanguageToggle(),
+                _buildProfileMenu(),
               ],
             ),
           ),
-          toolbarHeight: controller.showChat.value ? 60 : 80,
-          bottom: controller.showChat.value
-              ? null
-              : PreferredSize(
-                  preferredSize: const Size.fromHeight(50),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: 12,
-                    ),
-                    child: Obx(
-                      () => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Parent Dashboard'.tr,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${"Welcome".tr}, ${controller.userName}',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+          toolbarHeight: 56,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: Obx(() {
+              if (controller.showChat.value) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Parent Dashboard'.tr,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${"Welcome".tr}, ${controller.userName}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark
+                            ? AppTheme.darkMutedForeground
+                            : AppTheme.mutedForeground,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-              ),
+              );
+            }),
           ),
-          body: controller.showChat.value
+        ),
+        body: controller.showChat.value
             ? ChatView(
                 onClose: () {
                   Get.delete<ChatController>();
@@ -173,19 +169,23 @@ class ParentView extends GetView<ParentController> {
     final isDark = Get.find<ThemeService>().isDarkMode;
     return Container(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border)),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? AppTheme.darkBorder : AppTheme.border,
+          ),
+        ),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            _buildTabButton('my-children', 'My Children'),
-            _buildTabButton('announcements', 'Announcements'),
-            _buildTabButton('attendance-records', 'Attendance Records'),
-            _buildTabButton('predictions', 'Predictions'),
-            _buildTabButton('assign-exercise', 'Assign Exercise'),
-            _buildTabButton('child-submissions', 'Submissions'),
+            _buildTabButton('my-children', 'My Children'.tr),
+            _buildTabButton('announcements', 'Announcements'.tr),
+            _buildTabButton('attendance-records', 'Attendance Records'.tr),
+            _buildTabButton('predictions', 'Predictions'.tr),
+            _buildTabButton('assign-exercise', 'Assign Exercise'.tr),
+            _buildTabButton('child-submissions', 'Submissions'.tr),
           ],
         ),
       ),
@@ -203,19 +203,25 @@ class ParentView extends GetView<ParentController> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isActive ? (isDark ? AppTheme.darkPrimary : AppTheme.primary) : Colors.transparent,
+                color: isActive
+                    ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
+                    : Colors.transparent,
                 width: 2,
               ),
             ),
           ),
-        child: Text(
-          label.tr,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-            color: isActive ? (isDark ? AppTheme.darkForeground : AppTheme.primary) : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          child: Text(
+            label.tr,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              color: isActive
+                  ? (isDark ? AppTheme.darkForeground : AppTheme.primary)
+                  : (isDark
+                        ? AppTheme.darkMutedForeground
+                        : AppTheme.mutedForeground),
+            ),
           ),
-        ),
         ),
       );
     });
@@ -244,7 +250,7 @@ class ParentView extends GetView<ParentController> {
 
   Widget _buildMyChildrenTab() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -272,12 +278,21 @@ class ParentView extends GetView<ParentController> {
         children: [
           Text(
             'Attendance Records'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Attendance for your children'.tr,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 12),
           _buildAttendanceCard(),
@@ -295,12 +310,21 @@ class ParentView extends GetView<ParentController> {
         children: [
           Text(
             'Predictions'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Predict student dropout/graduation outcomes'.tr,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 16),
           _buildPredictionsCard(),
@@ -319,17 +343,35 @@ class ParentView extends GetView<ParentController> {
         children: [
           Text(
             'Assign Exercise'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Search and assign exercises for your children'.tr,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 12),
           Obx(() {
             if (controller.children.isEmpty) {
-              return Center(child: Text('No children found', style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)));
+              return Center(
+                child: Text(
+                  'No children found'.tr,
+                  style: TextStyle(
+                    color: isDark
+                        ? AppTheme.darkMutedForeground
+                        : AppTheme.mutedForeground,
+                  ),
+                ),
+              );
             }
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,7 +381,13 @@ class ParentView extends GetView<ParentController> {
                   children: [
                     Text(
                       'Select Child:'.tr,
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? AppTheme.darkMutedForeground
+                            : AppTheme.mutedForeground,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -347,24 +395,40 @@ class ParentView extends GetView<ParentController> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: controller.children.map((child) {
-                            final selected = controller.selectedChildForExercises.value == child.id;
+                            final selected =
+                                controller.selectedChildForExercises.value ==
+                                child.id;
                             return Padding(
                               padding: const EdgeInsets.only(right: 6),
                               child: GestureDetector(
-                                onTap: () => controller.setSelectedChildForExercises(child.id),
+                                onTap: () => controller
+                                    .setSelectedChildForExercises(child.id),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: selected
-                                        ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
-                                        : (isDark ? AppTheme.darkCard : AppTheme.muted),
+                                        ? (isDark
+                                              ? AppTheme.darkPrimary
+                                              : AppTheme.primary)
+                                        : (isDark
+                                              ? AppTheme.darkCard
+                                              : AppTheme.muted),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     child.fullName,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: selected ? (isDark ? AppTheme.darkPrimaryForeground : Colors.white) : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                                      color: selected
+                                          ? (isDark
+                                                ? AppTheme.darkPrimaryForeground
+                                                : Colors.white)
+                                          : (isDark
+                                                ? AppTheme.darkMutedForeground
+                                                : AppTheme.mutedForeground),
                                     ),
                                   ),
                                 ),
@@ -381,17 +445,22 @@ class ParentView extends GetView<ParentController> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Filters'.tr,
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                      ),
                       const SizedBox(height: 8),
                       Column(
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Level', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+                              Text(
+                                'Level'.tr,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
+                                ),
+                              ),
                               const SizedBox(height: 4),
                               _buildLevelDropdown(isDark),
                             ],
@@ -400,32 +469,108 @@ class ParentView extends GetView<ParentController> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Skills', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+                              Text(
+                                'Skills'.tr,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              _buildSkillsDropdown(isDark),
+                              Container(
+                                width: double.infinity,
+                                height: 120,
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppTheme.darkBorder
+                                        : AppTheme.border,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: SingleChildScrollView(
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    children: controller.exerciseSkills
+                                        .map(
+                                          (skill) => FilterChip(
+                                            label: Text(
+                                              skill.name,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            selected: controller
+                                                .exerciseSkillFilter
+                                                .contains(skill.id),
+                                            onSelected: (_) => controller
+                                                .toggleExerciseSkillFilter(
+                                                  skill.id,
+                                                ),
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Class Name', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+                              Text(
+                                'Class Name'.tr,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
+                                ),
+                              ),
                               const SizedBox(height: 4),
                               Container(
                                 height: 36,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppTheme.darkBorder
+                                        : AppTheme.border,
+                                  ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: TextField(
                                   onChanged: controller.setExerciseClassFilter,
                                   decoration: InputDecoration(
-                                    hintText: 'Search by class name',
-                                    hintStyle: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                    hintText: 'Search by class name'.tr,
+                                    hintStyle: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? AppTheme.darkMutedForeground
+                                          : AppTheme.mutedForeground,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
                                     border: InputBorder.none,
                                   ),
-                                  style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? AppTheme.darkForeground
+                                        : AppTheme.foreground,
+                                  ),
                                 ),
                               ),
                             ],
@@ -438,63 +583,82 @@ class ParentView extends GetView<ParentController> {
                   ConstrainedBox(
                     constraints: const BoxConstraints(minHeight: 100),
                     child: Obx(() {
-                    if (controller.isSearchingExercises.value) {
-                      return const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-                    if (controller.exerciseSearchError.isNotEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.error_outline, color: isDark ? AppTheme.darkBadgeRedText : Colors.red[600]),
-                              const SizedBox(height: 8),
-                              Text(
-                                controller.exerciseSearchError.value,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: isDark ? AppTheme.darkBadgeRedText : Colors.red[600], fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                    if (controller.searchedExercises.isEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Center(
-                          child: Text(
-                            'No assignable exercises',
-                            style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                          ),
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: controller.searchedExercises.length,
-                      itemBuilder: (context, index) {
-                        final exercise = controller.searchedExercises[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildExerciseCard(exercise, isDark),
+                      if (controller.isSearchingExercises.value) {
+                        return const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(child: CircularProgressIndicator()),
                         );
-                      },
-                    );
-                  }),
+                      }
+                      if (controller.exerciseSearchError.isNotEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: isDark
+                                      ? AppTheme.darkBadgeRedText
+                                      : Colors.red[600],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  controller.exerciseSearchError.value,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? AppTheme.darkBadgeRedText
+                                        : Colors.red[600],
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      if (controller.searchedExercises.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Center(
+                            child: Text(
+                              'No assignable exercises available for this child'
+                                  .tr,
+                              style: TextStyle(
+                                color: isDark
+                                    ? AppTheme.darkMutedForeground
+                                    : AppTheme.mutedForeground,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: controller.searchedExercises.length,
+                        itemBuilder: (context, index) {
+                          final exercise = controller.searchedExercises[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildExerciseCard(exercise, isDark),
+                          );
+                        },
+                      );
+                    }),
                   ),
                 ] else
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        'Select a child to browse exercises',
-                        style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                        'Select a child to browse exercises'.tr,
+                        style: TextStyle(
+                          color: isDark
+                              ? AppTheme.darkMutedForeground
+                              : AppTheme.mutedForeground,
+                        ),
                       ),
                     ),
                   ),
@@ -511,68 +675,56 @@ class ParentView extends GetView<ParentController> {
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(6),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: controller.exerciseLevelFilter.value,
           isExpanded: true,
-          hint: Text('Level', style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+          hint: Text(
+            'Level'.tr,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
+          ),
           items: [
-            DropdownMenuItem(value: null, child: Text('All Levels', style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground))),
-            ...controller.levels.map((l) => DropdownMenuItem(
-              value: l.name,
-              child: Text(l.name, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground)),
-            )),
+            DropdownMenuItem(
+              value: null,
+              child: Text(
+                'All Levels'.tr,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                ),
+              ),
+            ),
+            ...controller.levels.map(
+              (l) => DropdownMenuItem(
+                value: l.name,
+                child: Text(
+                  l.name,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark
+                        ? AppTheme.darkForeground
+                        : AppTheme.foreground,
+                  ),
+                ),
+              ),
+            ),
           ],
           onChanged: controller.setExerciseLevelFilter,
           dropdownColor: isDark ? AppTheme.darkCard : AppTheme.card,
-          style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSkillsDropdown(bool isDark) {
-    return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          hint: Text(
-            controller.exerciseSkillFilter.isNotEmpty
-                ? '${controller.exerciseSkillFilter.length} skill(s)'
-                : 'Filter by skills',
-            style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          style: TextStyle(
+            fontSize: 11,
+            color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
           ),
-          items: controller.exerciseSkills.map((s) => DropdownMenuItem(
-            value: s.id.toString(),
-            child: Row(
-              children: [
-                Icon(
-                  controller.exerciseSkillFilter.contains(s.id)
-                      ? Icons.check_box
-                      : Icons.check_box_outline_blank,
-                  size: 16,
-                  color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(s.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkForeground : AppTheme.foreground)),
-                ),
-              ],
-            ),
-          )).toList(),
-          onChanged: (val) {
-            if (val != null) controller.toggleExerciseSkillFilter(int.parse(val));
-          },
-          dropdownColor: isDark ? AppTheme.darkCard : AppTheme.card,
         ),
       ),
     );
@@ -583,9 +735,19 @@ class ParentView extends GetView<ParentController> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(8),
-        boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))],
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,21 +761,35 @@ class ParentView extends GetView<ParentController> {
                   exercise.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: isDark
+                        ? AppTheme.darkForeground
+                        : AppTheme.foreground,
+                  ),
                 ),
               ),
               if (exercise.level != null)
                 Container(
                   margin: const EdgeInsets.only(left: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0x33433FA7) : Colors.blue[50],
                     borderRadius: BorderRadius.circular(20),
                   ),
-                    child: Text(
-                      exercise.level!,
-                      style: TextStyle(fontSize: 10, color: isDark ? const Color(0xFF93C5FD) : Colors.blue[800]),
+                  child: Text(
+                    exercise.level!,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark
+                          ? const Color(0xFF93C5FD)
+                          : Colors.blue[800],
                     ),
+                  ),
                 ),
             ],
           ),
@@ -622,22 +798,42 @@ class ParentView extends GetView<ParentController> {
             exercise.description,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
-            'Teacher: ${exercise.teacherName ?? ""}',
-            style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            '${'Teacher'.tr}: ${exercise.teacherName ?? ""}',
+            style: TextStyle(
+              fontSize: 10,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           if (exercise.className != null)
             Text(
-              'Class: ${exercise.className}',
-              style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+              '${'Class'.tr}: ${exercise.className}',
+              style: TextStyle(
+                fontSize: 10,
+                color: isDark
+                    ? AppTheme.darkMutedForeground
+                    : AppTheme.mutedForeground,
+              ),
             ),
           if (exercise.dueDate != null && exercise.dueDate!.isNotEmpty)
             Text(
-              'Due: ${exercise.dueDate}',
-              style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+              '${'Due'.tr}: ${_formatDate(exercise.dueDate!)}',
+              style: TextStyle(
+                fontSize: 10,
+                color: isDark
+                    ? AppTheme.darkMutedForeground
+                    : AppTheme.mutedForeground,
+              ),
             ),
           if (exercise.skills.isNotEmpty) ...[
             const SizedBox(height: 4),
@@ -645,40 +841,73 @@ class ParentView extends GetView<ParentController> {
               height: 20,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                children:                 exercise.skills.map((s) => Container(
-                  margin: const EdgeInsets.only(right: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0x33433FA7) : Colors.purple[50],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    s.name,
-                    style: TextStyle(fontSize: 9, color: isDark ? const Color(0xFFC4B5FD) : Colors.purple[800]),
-                  ),
-                )).toList(),
+                children: exercise.skills
+                    .map(
+                      (s) => Container(
+                        margin: const EdgeInsets.only(right: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0x33433FA7)
+                              : Colors.purple[50],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          s.name,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: isDark
+                                ? const Color(0xFFC4B5FD)
+                                : Colors.purple[800],
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
           ],
           Align(
             alignment: Alignment.centerRight,
             child: Obx(() {
-              final assigned = controller.assignedExerciseIds.contains(exercise.id);
-              final assigning = controller.assigningExerciseId.value == exercise.id;
+              final assigned = controller.assignedExerciseIds.contains(
+                exercise.id,
+              );
+              final assigning =
+                  controller.assigningExerciseId.value == exercise.id;
               return GestureDetector(
-                onTap: assigned || assigning ? null : () => controller.assignExerciseToChild(exercise.id),
+                onTap: assigned || assigning
+                    ? null
+                    : () => controller.assignExerciseToChild(exercise.id),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: assigned
-            ? (isDark ? const Color(0xFF27272A) : Colors.grey[200])
-            : (isDark ? AppTheme.darkPrimary : AppTheme.primary),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        assigning ? 'Assigning...'.tr : (assigned ? 'Assigned'.tr : 'Assign'.tr),
-        style: TextStyle(fontSize: 11, color: assigned ? (isDark ? const Color(0xFFD4D4D8) : Colors.grey[700]) : (isDark ? AppTheme.darkPrimaryForeground : Colors.white)),
-      ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: assigned
+                        ? (isDark ? const Color(0xFF27272A) : Colors.grey[200])
+                        : (isDark ? AppTheme.darkPrimary : AppTheme.primary),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    assigning
+                        ? 'Assigning...'.tr
+                        : (assigned ? 'Assigned'.tr : 'Assign'.tr),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: assigned
+                          ? (isDark
+                                ? const Color(0xFFD4D4D8)
+                                : Colors.grey[700])
+                          : (isDark
+                                ? AppTheme.darkPrimaryForeground
+                                : Colors.white),
+                    ),
+                  ),
                 ),
               );
             }),
@@ -696,24 +925,39 @@ class ParentView extends GetView<ParentController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Submissions'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            'Child Submissions'.tr,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Review submissions your children made on exercises you assigned'.tr,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            'Review submissions your children made on exercises you assigned'
+                .tr,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 12),
           Obx(() {
-            if (controller.isLoadingSubmissions.value && controller.childSubmissions.isEmpty) {
+            if (controller.isLoadingSubmissions.value &&
+                controller.childSubmissions.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
             if (controller.childSubmissions.isEmpty) {
               return Center(
                 child: Text(
                   'No submissions yet'.tr,
-                  style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                  style: TextStyle(
+                    color: isDark
+                        ? AppTheme.darkMutedForeground
+                        : AppTheme.mutedForeground,
+                  ),
                 ),
               );
             }
@@ -731,7 +975,12 @@ class ParentView extends GetView<ParentController> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _buildSubmissionFilterTab('All', controller.selectedChildForSubmissions.value.isEmpty, () => controller.setSelectedChildForSubmissions(''), isDark),
+                      _buildSubmissionFilterTab(
+                        'All'.tr,
+                        controller.selectedChildForSubmissions.value.isEmpty,
+                        () => controller.setSelectedChildForSubmissions(''),
+                        isDark,
+                      ),
                       ...childNames.map((name) {
                         return _buildSubmissionFilterTab(
                           name,
@@ -745,14 +994,25 @@ class ParentView extends GetView<ParentController> {
                 ),
                 const SizedBox(height: 12),
                 Obx(() {
-                  final filtered = controller.selectedChildForSubmissions.value.isNotEmpty
-                      ? controller.childSubmissions.where((s) => s.studentName == controller.selectedChildForSubmissions.value).toList()
+                  final filtered =
+                      controller.selectedChildForSubmissions.value.isNotEmpty
+                      ? controller.childSubmissions
+                            .where(
+                              (s) =>
+                                  s.studentName ==
+                                  controller.selectedChildForSubmissions.value,
+                            )
+                            .toList()
                       : controller.childSubmissions.toList();
                   if (filtered.isEmpty) {
                     return Center(
                       child: Text(
-                        'No submissions for this child',
-                        style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                        'No submissions for this child'.tr,
+                        style: TextStyle(
+                          color: isDark
+                              ? AppTheme.darkMutedForeground
+                              : AppTheme.mutedForeground,
+                        ),
                       ),
                     );
                   }
@@ -774,7 +1034,12 @@ class ParentView extends GetView<ParentController> {
     );
   }
 
-  Widget _buildSubmissionFilterTab(String label, bool isSelected, VoidCallback onTap, bool isDark) {
+  Widget _buildSubmissionFilterTab(
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -796,7 +1061,9 @@ class ParentView extends GetView<ParentController> {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
                 ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
-                : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                : (isDark
+                      ? AppTheme.darkMutedForeground
+                      : AppTheme.mutedForeground),
           ),
         ),
       ),
@@ -809,7 +1076,9 @@ class ParentView extends GetView<ParentController> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -820,7 +1089,13 @@ class ParentView extends GetView<ParentController> {
               Expanded(
                 child: Text(
                   submission.studentName ?? '',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: isDark
+                        ? AppTheme.darkForeground
+                        : AppTheme.foreground,
+                  ),
                 ),
               ),
               Container(
@@ -830,8 +1105,12 @@ class ParentView extends GetView<ParentController> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Assigned Exercise',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: isDark ? const Color(0xFF93C5FD) : Colors.blue[700]),
+                  'Assigned Exercise'.tr,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? const Color(0xFF93C5FD) : Colors.blue[700],
+                  ),
                 ),
               ),
             ],
@@ -839,64 +1118,112 @@ class ParentView extends GetView<ParentController> {
           const SizedBox(height: 4),
           Text(
             'Exercise: ${submission.exerciseTitle}',
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             'Submitted: ${_formatDateTime(submission.submittedAt)}',
-            style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               if (submission.grade != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0x3016A34A) : Colors.green[50],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Grade: ${submission.grade!.toStringAsFixed(submission.grade! == submission.grade!.truncateToDouble() ? 0 : 1)}/20',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF4ADE80) : Colors.green[700]),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? const Color(0xFF4ADE80)
+                          : Colors.green[700],
+                    ),
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0x33A1A1AA) : Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Not graded yet'.tr,
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? const Color(0xFFA1A1AA) : Colors.grey[500]),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark
+                          ? const Color(0xFFA1A1AA)
+                          : Colors.grey[500],
+                    ),
                   ),
                 ),
               const Spacer(),
-              if (submission.submissionFileUrl != null && submission.submissionFileUrl!.isNotEmpty)
+              if (submission.submissionFileUrl != null &&
+                  submission.submissionFileUrl!.isNotEmpty)
                 GestureDetector(
                   onTap: () async {
                     final url = submission.submissionFileUrl!;
                     final uri = Uri.tryParse(url);
                     if (uri != null) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.download, size: 14, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                        Icon(
+                          Icons.download,
+                          size: 14,
+                          color: isDark
+                              ? AppTheme.darkMutedForeground
+                              : AppTheme.mutedForeground,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Download'.tr,
-                          style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark
+                                ? AppTheme.darkMutedForeground
+                                : AppTheme.mutedForeground,
+                          ),
                         ),
                       ],
                     ),
@@ -911,11 +1238,24 @@ class ParentView extends GetView<ParentController> {
                 Container(
                   padding: const EdgeInsets.only(left: 8),
                   decoration: BoxDecoration(
-                    border: Border(left: BorderSide(color: isDark ? const Color(0xFF52525B) : Colors.grey[400]!, width: 2)),
+                    border: Border(
+                      left: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF52525B)
+                            : Colors.grey[400]!,
+                        width: 2,
+                      ),
+                    ),
                   ),
                   child: Text(
                     '"${submission.feedback}"',
-                    style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: isDark ? const Color(0xFFD4D4D8) : Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                      color: isDark
+                          ? const Color(0xFFD4D4D8)
+                          : Colors.grey[600],
+                    ),
                   ),
                 ),
               ],
@@ -925,122 +1265,141 @@ class ParentView extends GetView<ParentController> {
       ),
     );
   }
+
   Widget _buildStatsCards() {
     final isDark = Get.find<ThemeService>().isDarkMode;
     return Obx(
       () => SizedBox(
-        height: 125,
+        height: 120,
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
-          SizedBox(
-            width: 200,
-            child: _buildStatCard(
-              'My Children'.tr,
-              '${controller.children.length}',
-              'Enrolled students'.tr,
-              Icons.people,
-              isDark,
+            SizedBox(
+              width: 200,
+              child: _buildStatCard(
+                'My Children'.tr,
+                '${controller.children.length}',
+                'Enrolled students'.tr,
+                Icons.people,
+                isDark,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 200,
-            child: _buildStatCard(
-              'Average Progress'.tr,
-              controller.children.isNotEmpty ? 'Good' : 'N/A',
-              'Overall status'.tr,
-              Icons.trending_up,
-              isDark,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 200,
+              child: _buildStatCard(
+                'Average Progress'.tr,
+                controller.children.isNotEmpty ? 'Good'.tr : 'N/A'.tr,
+                'Overall status'.tr,
+                Icons.trending_up,
+                isDark,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 200,
-            child: _buildStatCard(
-              'Enrolled Classes'.tr,
-              controller.children.isNotEmpty ? 'Active' : 'N/A',
-              'Class status'.tr,
-              Icons.book,
-              isDark,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 200,
+              child: _buildStatCard(
+                'Enrolled Classes'.tr,
+                controller.children.isNotEmpty ? 'Active'.tr : 'N/A'.tr,
+                'Class status'.tr,
+                Icons.book,
+                isDark,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 200,
-            child: _buildStatCard(
-              'Notifications'.tr,
-              '${controller.children.isNotEmpty ? controller.children.length : 0}',
-              'Children linked'.tr,
-              Icons.notifications,
-              isDark,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 200,
+              child: _buildStatCard(
+                'Notifications'.tr,
+                '${controller.children.isNotEmpty ? controller.children.length : 0}',
+                'Children linked'.tr,
+                Icons.notifications,
+                isDark,
+              ),
             ),
-          ),
           ],
         ),
       ),
     );
   }
 
-Widget _buildStatCard(
-  String title,
-  String value,
-  String subtitle,
-  IconData icon,
-  bool isDark,
-) {
-  return Container(
-    width: 200,
-    constraints: const BoxConstraints(minHeight: 100),
-    padding: const EdgeInsets.all(10),
-    decoration: BoxDecoration(
-      color: isDark ? AppTheme.darkCard : AppTheme.card,
-      border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                title.tr,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+  Widget _buildStatCard(
+    String title,
+    String value,
+    String subtitle,
+    IconData icon,
+    bool isDark,
+  ) {
+    return Container(
+      width: 200,
+      constraints: const BoxConstraints(minHeight: 100),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkCard : AppTheme.card,
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title.tr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark
+                        ? AppTheme.darkMutedForeground
+                        : AppTheme.mutedForeground,
+                  ),
+                ),
+              ),
+              Icon(
+                icon,
+                size: 16,
+                color: isDark
+                    ? AppTheme.darkMutedForeground
+                    : AppTheme.mutedForeground,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Flexible(
+            child: Text(
+              subtitle.tr,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark
+                    ? AppTheme.darkMutedForeground
+                    : AppTheme.mutedForeground,
               ),
             ),
-            Icon(icon, size: 16, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
           ),
-        ),
-        const SizedBox(height: 4),
-        Flexible(
-          child: Text(
-            subtitle.tr,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildAnnouncementsCard() {
     final isDark = Get.find<ThemeService>().isDarkMode;
@@ -1048,187 +1407,240 @@ Widget _buildStatCard(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Announcements'.tr,
-              style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 16,
-                color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-              ),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Announcements'.tr,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Announcements for your children'.tr,
-              style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Announcements for your children'.tr,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
             ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.children.isEmpty) return const SizedBox.shrink();
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border)),
+          ),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.children.isEmpty) return const SizedBox.shrink();
+            return Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                  ),
                 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildFilterTab(
-                        'All',
-                        controller.selectedChildForAnnouncements.value.isEmpty,
-                        () => controller.selectChildForAnnouncements(''),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildFilterTab(
+                      'All'.tr,
+                      controller.selectedChildForAnnouncements.value.isEmpty,
+                      () => controller.selectChildForAnnouncements(''),
+                      isDark,
+                    ),
+                    ...controller.children.map(
+                      (child) => _buildFilterTab(
+                        child.fullName,
+                        controller.selectedChildForAnnouncements.value ==
+                            child.fullName,
+                        () => controller.selectChildForAnnouncements(
+                          child.fullName,
+                        ),
                         isDark,
                       ),
-                      ...controller.children.map(
-                        (child) => _buildFilterTab(
-                          child.fullName,
-                          controller.selectedChildForAnnouncements.value ==
-                              child.fullName,
-                          () => controller.selectChildForAnnouncements(
-                            child.fullName,
-                          ),
-                          isDark,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            }),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.filteredAnnouncements.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text(
-                      'No announcements'.tr,
-                      style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+              ),
+            );
+          }),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.filteredAnnouncements.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    'No announcements'.tr,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppTheme.darkMutedForeground
+                          : AppTheme.mutedForeground,
                     ),
                   ),
-                );
-              }
-
-              // Group by child name, then by teacher name (matching web)
-              final announcements = controller.filteredAnnouncements;
-              final groupedByChild = <String, Map<String, List<ChildAnnouncement>>>{};
-              for (final ca in announcements) {
-                final childName = ca.childName;
-                final teacherName = ca.announcement.teacherName ?? 'Teacher';
-                groupedByChild.putIfAbsent(childName, () => {});
-                groupedByChild[childName]!.putIfAbsent(teacherName, () => []);
-                groupedByChild[childName]![teacherName]!.add(ca);
-              }
-
-              return ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 500),
-                child: ListView(
-                  shrinkWrap: true,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: groupedByChild.entries.map((childEntry) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
-                        borderRadius: BorderRadius.circular(8),
-                        color: isDark ? AppTheme.darkCard : AppTheme.card,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            childEntry.key,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ...childEntry.value.entries.map((teacherEntry) {
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: isDark ? AppTheme.darkBackground : AppTheme.muted,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'From: ${teacherEntry.key}'.tr,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                      color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  ...teacherEntry.value.map((ca) {
-                                    final ann = ca.announcement;
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 6),
-                                      padding: const EdgeInsets.only(left: 8),
-                                      decoration: BoxDecoration(
-                                        border: Border(left: BorderSide(color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue[300]!, width: 2)),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            ann.title,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13,
-                                              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-                                            ),
-                                          ),
-                                          Text(
-                                            ann.content,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              if (ann.className != null)
-                                                Text(
-                                                  'Class: ${ann.className}  |  ',
-                                                  style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                                ),
-                                              Text(
-                                                _formatDateTime(ann.createdAt),
-                                                style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    );
-                  }).toList(),
                 ),
               );
-            }),
-          ],
-        ),
-      );
+            }
+
+            // Group by child name, then by teacher name (matching web)
+            final announcements = controller.filteredAnnouncements;
+            final groupedByChild =
+                <String, Map<String, List<ChildAnnouncement>>>{};
+            for (final ca in announcements) {
+              final childName = ca.childName;
+              final teacherName = ca.announcement.teacherName ?? 'Teacher'.tr;
+              groupedByChild.putIfAbsent(childName, () => {});
+              groupedByChild[childName]!.putIfAbsent(teacherName, () => []);
+              groupedByChild[childName]![teacherName]!.add(ca);
+            }
+
+            return ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 500),
+              child: ListView(
+                shrinkWrap: true,
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: groupedByChild.entries.map((childEntry) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      color: isDark ? AppTheme.darkCard : AppTheme.card,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          childEntry.key,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: isDark
+                                ? AppTheme.darkForeground
+                                : AppTheme.foreground,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...childEntry.value.entries.map((teacherEntry) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTheme.darkBackground
+                                  : AppTheme.muted,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'From: ${teacherEntry.key}'.tr,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? AppTheme.darkMutedForeground
+                                        : AppTheme.mutedForeground,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                ...teacherEntry.value.map((ca) {
+                                  final ann = ca.announcement;
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 6),
+                                    padding: const EdgeInsets.only(left: 8),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        left: BorderSide(
+                                          color: isDark
+                                              ? AppTheme.darkBadgeBlueText
+                                              : Colors.blue[300]!,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          ann.title,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                            color: isDark
+                                                ? AppTheme.darkForeground
+                                                : AppTheme.foreground,
+                                          ),
+                                        ),
+                                        Text(
+                                          ann.content,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isDark
+                                                ? AppTheme.darkMutedForeground
+                                                : AppTheme.mutedForeground,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            if (ann.className != null)
+                                              Text(
+                                                'Class: ${ann.className}  |  ',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: isDark
+                                                      ? AppTheme
+                                                            .darkMutedForeground
+                                                      : AppTheme
+                                                            .mutedForeground,
+                                                ),
+                                              ),
+                                            Text(
+                                              _formatDateTime(ann.createdAt),
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: isDark
+                                                    ? AppTheme
+                                                          .darkMutedForeground
+                                                    : AppTheme.mutedForeground,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 
   Widget _buildAttendanceCard() {
@@ -1237,198 +1649,276 @@ Widget _buildStatCard(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-            Obx(() {
-              if (controller.children.isEmpty) return const SizedBox.shrink();
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border)),
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildFilterTab(
-                        'All',
-                        controller.selectedChildForAttendance.value.isEmpty,
-                        () => controller.selectChildForAttendance(''),
-                        isDark,
-                      ),
-                      ...controller.children.map(
-                        (child) => _buildFilterTab(
-                          child.fullName,
-                          controller.selectedChildForAttendance.value ==
-                              child.fullName,
-                          () => controller.selectChildForAttendance(
-                            child.fullName,
-                          ),
-                          isDark,
-                        ),
-                      ),
-                    ],
+          Obx(() {
+            if (controller.children.isEmpty) return const SizedBox.shrink();
+            return Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: isDark ? AppTheme.darkBorder : AppTheme.border,
                   ),
                 ),
-              );
-            }),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.filteredAttendance.isEmpty) {
-                return const Text('No attendance records');
-              }
-              return Column(
-                children: controller.filteredAttendance.map((childAtt) {
-                  final presentCount = childAtt.attendance
-                      .where((a) => a.status == 'PRESENT')
-                      .length;
-                  final absentCount = childAtt.attendance
-                      .where((a) => a.status == 'ABSENT')
-                      .length;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  childAtt.childName,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isDark ? AppTheme.darkBadgeGreenBg : Colors.green[100],
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.check_circle, size: 14, color: isDark ? AppTheme.darkBadgeGreenText : Colors.green[800]),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '$presentCount Present',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkBadgeGreenText : Colors.green[800]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isDark ? AppTheme.darkBadgeRedBg : Colors.red[100],
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.cancel, size: 14, color: isDark ? AppTheme.darkBadgeRedText : Colors.red[800]),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '$absentCount Absent',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkBadgeRedText : Colors.red[800]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                        if (childAtt.attendance.isNotEmpty)
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: childAtt.attendance.length > 10
-                                  ? 10
-                                  : childAtt.attendance.length,
-                              itemBuilder: (context, index) {
-                                final record = childAtt.attendance[index];
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 6),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? AppTheme.darkBackground : AppTheme.muted,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              record.className ?? 'Class',
-                                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              '${_formatDate(record.date)}${record.teacherName != null ? " - Teacher: ${record.teacherName}" : ""}',
-                                              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: record.status == 'PRESENT'
-                                              ? (isDark ? AppTheme.darkBadgeGreenBg : Colors.green[100])
-                                              : (isDark ? AppTheme.darkBadgeRedBg : Colors.red[100]),
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              record.status == 'PRESENT' ? Icons.check_circle : Icons.cancel,
-                                              size: 14,
-                                              color: record.status == 'PRESENT'
-                                                  ? (isDark ? AppTheme.darkBadgeGreenText : Colors.green[800])
-                                                  : (isDark ? AppTheme.darkBadgeRedText : Colors.red[800]),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              record.status,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                                color: record.status == 'PRESENT'
-                                                    ? (isDark ? AppTheme.darkBadgeGreenText : Colors.green[800])
-                                                    : (isDark ? AppTheme.darkBadgeRedText : Colors.red[800]),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                        const Divider(),
-                      ],
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildFilterTab(
+                      'All'.tr,
+                      controller.selectedChildForAttendance.value.isEmpty,
+                      () => controller.selectChildForAttendance(''),
+                      isDark,
                     ),
-                  );
-                }).toList(),
-              );
-            }),
-          ],
-        ),
+                    ...controller.children.map(
+                      (child) => _buildFilterTab(
+                        child.fullName,
+                        controller.selectedChildForAttendance.value ==
+                            child.fullName,
+                        () =>
+                            controller.selectChildForAttendance(child.fullName),
+                        isDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (controller.filteredAttendance.isEmpty) {
+              return Text('No attendance records'.tr);
+            }
+            return Column(
+              children: controller.filteredAttendance.map((childAtt) {
+                final presentCount = childAtt.attendance
+                    .where((a) => a.status == 'PRESENT')
+                    .length;
+                final absentCount = childAtt.attendance
+                    .where((a) => a.status == 'ABSENT')
+                    .length;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              childAtt.childName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: isDark
+                                    ? AppTheme.darkForeground
+                                    : AppTheme.foreground,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTheme.darkBadgeGreenBg
+                                  : Colors.green[100],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 14,
+                                  color: isDark
+                                      ? AppTheme.darkBadgeGreenText
+                                      : Colors.green[800],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$presentCount ${'Present'.tr}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? AppTheme.darkBadgeGreenText
+                                        : Colors.green[800],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTheme.darkBadgeRedBg
+                                  : Colors.red[100],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.cancel,
+                                  size: 14,
+                                  color: isDark
+                                      ? AppTheme.darkBadgeRedText
+                                      : Colors.red[800],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$absentCount ${'Absent'.tr}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? AppTheme.darkBadgeRedText
+                                        : Colors.red[800],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (childAtt.attendance.isNotEmpty)
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: childAtt.attendance.length > 10
+                              ? 10
+                              : childAtt.attendance.length,
+                          itemBuilder: (context, index) {
+                            final record = childAtt.attendance[index];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppTheme.darkBackground
+                                    : AppTheme.muted,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          record.className ?? 'Class'.tr,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark
+                                                ? AppTheme.darkForeground
+                                                : AppTheme.foreground,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${_formatDate(record.date)}${record.teacherName != null ? " - Teacher: ${record.teacherName}" : ""}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? AppTheme.darkMutedForeground
+                                                : AppTheme.mutedForeground,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: record.status == 'PRESENT'
+                                          ? (isDark
+                                                ? AppTheme.darkBadgeGreenBg
+                                                : Colors.green[100])
+                                          : (isDark
+                                                ? AppTheme.darkBadgeRedBg
+                                                : Colors.red[100]),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          record.status == 'PRESENT'
+                                              ? Icons.check_circle
+                                              : Icons.cancel,
+                                          size: 14,
+                                          color: record.status == 'PRESENT'
+                                              ? (isDark
+                                                    ? AppTheme
+                                                          .darkBadgeGreenText
+                                                    : Colors.green[800])
+                                              : (isDark
+                                                    ? AppTheme.darkBadgeRedText
+                                                    : Colors.red[800]),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          record.status,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: record.status == 'PRESENT'
+                                                ? (isDark
+                                                      ? AppTheme
+                                                            .darkBadgeGreenText
+                                                      : Colors.green[800])
+                                                : (isDark
+                                                      ? AppTheme
+                                                            .darkBadgeRedText
+                                                      : Colors.red[800]),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      const Divider(),
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -1438,7 +1928,9 @@ Widget _buildStatCard(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -1447,17 +1939,33 @@ Widget _buildStatCard(
         children: [
           Text(
             'My Children'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Overview of your children\'s information'.tr,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 12),
           Obx(() {
             if (controller.children.isEmpty) {
-              return Text('No children linked'.tr, style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground));
+              return Text(
+                'No children linked'.tr,
+                style: TextStyle(
+                  color: isDark
+                      ? AppTheme.darkMutedForeground
+                      : AppTheme.mutedForeground,
+                ),
+              );
             }
             return ListView.builder(
               shrinkWrap: true,
@@ -1469,7 +1977,9 @@ Widget _buildStatCard(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                    border: Border.all(
+                      color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                     color: isDark ? AppTheme.darkBackground : AppTheme.muted,
                   ),
@@ -1487,7 +1997,9 @@ Widget _buildStatCard(
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
-                                color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                                color: isDark
+                                    ? AppTheme.darkForeground
+                                    : AppTheme.foreground,
                               ),
                             ),
                           ),
@@ -1498,12 +2010,19 @@ Widget _buildStatCard(
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: isDark ? AppTheme.darkBadgeGreenBg : Colors.green[100],
+                              color: isDark
+                                  ? AppTheme.darkBadgeGreenBg
+                                  : Colors.green[100],
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               'Active'.tr,
-                              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkBadgeGreenText : Colors.green[800]),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? AppTheme.darkBadgeGreenText
+                                    : Colors.green[800],
+                              ),
                             ),
                           ),
                         ],
@@ -1511,9 +2030,14 @@ Widget _buildStatCard(
                       if (child.enrollmentDate != null) ...[
                         const SizedBox(height: 4),
                         Text(
-                          'Enrolled: ${_formatDate(child.enrollmentDate!)}',
+                          '${'Enrolled'.tr}: ${_formatDate(child.enrollmentDate!)}',
                           softWrap: true,
-                          style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.foreground),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? AppTheme.darkMutedForeground
+                                : AppTheme.foreground,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 8),
@@ -1522,9 +2046,17 @@ Widget _buildStatCard(
                         runSpacing: 8,
                         children: [
                           if (child.phoneNumber != null)
-                            _buildInfoChip('Phone', child.phoneNumber!, isDark),
+                            _buildInfoChip(
+                              'Phone'.tr,
+                              child.phoneNumber!,
+                              isDark,
+                            ),
                           if (child.address != null)
-                            _buildInfoChip('Address', child.address!, isDark),
+                            _buildInfoChip(
+                              'Address'.tr,
+                              child.address!,
+                              isDark,
+                            ),
                           if (child.dateOfBirth != null)
                             _buildInfoChip(
                               'Date of Birth',
@@ -1555,13 +2087,25 @@ Widget _buildStatCard(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label.tr, style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
+        Text(
+          label.tr,
+          style: TextStyle(
+            fontSize: 10,
+            color: isDark
+                ? AppTheme.darkMutedForeground
+                : AppTheme.mutedForeground,
+          ),
+        ),
         SizedBox(
           width: 140,
           child: Text(
             value,
             softWrap: true,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
         ),
       ],
@@ -1574,7 +2118,9 @@ Widget _buildStatCard(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -1583,19 +2129,33 @@ Widget _buildStatCard(
         children: [
           Text(
             'Important Information'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'Details about your linked children'.tr,
-            style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
           ),
           const SizedBox(height: 12),
           Obx(() {
             if (controller.children.isEmpty) {
               return Text(
-                'Contact the school administration to link your children to your account.'.tr,
-                style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                'Contact the school administration to link your children to your account.'
+                    .tr,
+                style: TextStyle(
+                  color: isDark
+                      ? AppTheme.darkMutedForeground
+                      : AppTheme.mutedForeground,
+                ),
               );
             }
             return ListView.builder(
@@ -1608,7 +2168,9 @@ Widget _buildStatCard(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                    border: Border.all(
+                      color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                     color: isDark ? AppTheme.darkBackground : AppTheme.muted,
                   ),
@@ -1623,7 +2185,9 @@ Widget _buildStatCard(
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
-                          color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                          color: isDark
+                              ? AppTheme.darkForeground
+                              : AppTheme.foreground,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1637,7 +2201,7 @@ Widget _buildStatCard(
                         _buildInfoRow(
                           Icons.notifications,
                           Colors.green,
-                          'Contact number: ${child.phoneNumber}',
+                          '${'Contact number'.tr}: ${child.phoneNumber}',
                           isDark,
                         ),
                       _buildInfoRow(
@@ -1669,7 +2233,12 @@ Widget _buildStatCard(
             child: Text(
               text,
               softWrap: true,
-              style: TextStyle(fontSize: 11, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark
+                    ? AppTheme.darkMutedForeground
+                    : AppTheme.mutedForeground,
+              ),
             ),
           ),
         ],
@@ -1677,7 +2246,12 @@ Widget _buildStatCard(
     );
   }
 
-  Widget _buildFilterTab(String label, bool isSelected, VoidCallback onTap, bool isDark) {
+  Widget _buildFilterTab(
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1699,7 +2273,9 @@ Widget _buildStatCard(
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             color: isSelected
                 ? (isDark ? AppTheme.darkPrimary : AppTheme.primary)
-                : (isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                : (isDark
+                      ? AppTheme.darkMutedForeground
+                      : AppTheme.mutedForeground),
           ),
         ),
       ),
@@ -1736,7 +2312,7 @@ Widget _buildStatCard(
     try {
       final date = DateTime.parse(dateStr).toLocal();
       final hour = date.hour;
-      final amPm = hour >= 12 ? 'PM' : 'AM';
+      final amPm = hour >= 12 ? 'PM'.tr : 'AM'.tr;
       final hour12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
       return '${date.month}/${date.day}/${date.year}, $hour12:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')} $amPm';
     } catch (e) {
@@ -1751,13 +2327,13 @@ Widget _buildStatCard(
       final difference = now.difference(date);
 
       if (difference.inSeconds < 60) {
-        return '${difference.inSeconds}s ago';
+        return 'Just now'.tr;
       } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes}m ago';
+        return '${difference.inMinutes}${"m".tr}${" ago".tr}';
       } else if (difference.inHours < 24) {
-        return '${difference.inHours}h ago';
+        return '${difference.inHours}${"h".tr}${" ago".tr}';
       } else if (difference.inDays < 7) {
-        return '${difference.inDays}d ago';
+        return '${difference.inDays}${"d".tr}${" ago".tr}';
       } else {
         return '${date.day}/${date.month}/${date.year}';
       }
@@ -1771,19 +2347,19 @@ Widget _buildStatCard(
       final unreadCount = controller.unreadMessageCount.value;
       return Stack(
         children: [
-              controller.showChat.value
-                  ? TextButton.icon(
-                      icon: const Icon(Icons.close, size: 18),
-                      label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
-                      onPressed: () {
-                        Get.delete<ChatController>();
-                        controller.toggleChat();
-                        controller.updateUnreadMessageCount(0);
-                      },
-                    )
-                  : TextButton.icon(
-                      icon: const Icon(Icons.chat, size: 18),
-                      label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
+          controller.showChat.value
+              ? TextButton.icon(
+                  icon: const Icon(Icons.close, size: 18),
+                  label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
+                  onPressed: () {
+                    Get.delete<ChatController>();
+                    controller.toggleChat();
+                    controller.updateUnreadMessageCount(0);
+                  },
+                )
+              : TextButton.icon(
+                  icon: const Icon(Icons.chat, size: 18),
+                  label: Text('Chat'.tr, style: const TextStyle(fontSize: 12)),
                   onPressed: () {
                     Get.put(ChatController());
                     controller.toggleChat();
@@ -1818,21 +2394,23 @@ Widget _buildStatCard(
   }
 
   Widget _buildLanguageToggle() {
-    return Obx(() => InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () => controller.toggleLanguage(),
-      child: SizedBox(
-        width: 44,
-        height: 44,
-        child: Center(
-          child: Text(
-            controller.currentLanguage == 'en' ? 'ع' : 'EN',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+    return Obx(
+      () => InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => controller.toggleLanguage(),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(
+            child: Text(
+              controller.currentLanguage == 'en' ? 'ع' : 'EN',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildNotificationBell() {
@@ -1895,7 +2473,10 @@ Widget _buildStatCard(
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.darkCard : Colors.white,
                   border: Border(
-                    bottom: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.border, width: 1),
+                    bottom: BorderSide(
+                      color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                      width: 1,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -1906,7 +2487,9 @@ Widget _buildStatCard(
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+                        color: isDark
+                            ? AppTheme.darkForeground
+                            : AppTheme.foreground,
                       ),
                     ),
                     IconButton(
@@ -1924,7 +2507,11 @@ Widget _buildStatCard(
                     return Center(
                       child: Text(
                         'No notifications'.tr,
-                        style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppTheme.darkMutedForeground
+                              : AppTheme.mutedForeground,
+                        ),
                       ),
                     );
                   }
@@ -1935,14 +2522,21 @@ Widget _buildStatCard(
                       final notification = controller.notifications[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
-                        color: notification.isRead ? null : (isDark ? AppTheme.darkBadgeBlueBg : Colors.blue[50]),
+                        color: notification.isRead
+                            ? null
+                            : (isDark
+                                  ? AppTheme.darkBadgeBlueBg
+                                  : Colors.blue[50]),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(right: 12, top: 2),
+                                padding: const EdgeInsets.only(
+                                  right: 12,
+                                  top: 2,
+                                ),
                                 child: _getNotificationIcon(notification.type),
                               ),
                               Expanded(
@@ -1969,7 +2563,9 @@ Widget _buildStatCard(
                                       _getTimeAgo(notification.createdAt),
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
+                                        color: isDark
+                                            ? AppTheme.darkMutedForeground
+                                            : AppTheme.mutedForeground,
                                       ),
                                     ),
                                   ],
@@ -1977,11 +2573,17 @@ Widget _buildStatCard(
                               ),
                               if (!notification.isRead)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 8, top: 4),
+                                  padding: const EdgeInsets.only(
+                                    left: 8,
+                                    top: 4,
+                                  ),
                                   child: Container(
-                                    width: 8, height: 8,
+                                    width: 8,
+                                    height: 8,
                                     decoration: BoxDecoration(
-                                      color: isDark ? AppTheme.darkBadgeBlueText : Colors.blue,
+                                      color: isDark
+                                          ? AppTheme.darkBadgeBlueText
+                                          : Colors.blue,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -2007,13 +2609,29 @@ Widget _buildStatCard(
       case 'EXERCISE':
         return const Icon(Icons.book_outlined, color: Colors.blue, size: 20);
       case 'ABSENCE':
-        return const Icon(Icons.person_remove_outlined, color: Colors.red, size: 20);
+        return const Icon(
+          Icons.person_remove_outlined,
+          color: Colors.red,
+          size: 20,
+        );
       case 'ANNOUNCEMENT':
-        return const Icon(Icons.campaign_outlined, color: Colors.purple, size: 20);
+        return const Icon(
+          Icons.campaign_outlined,
+          color: Colors.purple,
+          size: 20,
+        );
       case 'GRADE':
-        return const Icon(Icons.emoji_events_outlined, color: Colors.green, size: 20);
+        return const Icon(
+          Icons.emoji_events_outlined,
+          color: Colors.green,
+          size: 20,
+        );
       default:
-        return const Icon(Icons.notifications_outlined, color: Colors.grey, size: 20);
+        return const Icon(
+          Icons.notifications_outlined,
+          color: Colors.grey,
+          size: 20,
+        );
     }
   }
 
@@ -2037,124 +2655,188 @@ Widget _buildStatCard(
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.border),
+                border: Border.all(
+                  color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                ),
                 borderRadius: BorderRadius.circular(8),
                 color: isDark ? AppTheme.darkCard : AppTheme.card,
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Expanded(
+                        child: Text(
+                          child.fullName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: isDark
+                                ? AppTheme.darkForeground
+                                : AppTheme.foreground,
+                          ),
+                        ),
+                      ),
+                      if (prediction == null)
+                        OutlinedButton(
+                          onPressed: isPredicting
+                              ? null
+                              : () => controller.predictStudent(child.id),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            minimumSize: const Size(0, 36),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            isPredicting ? 'Predicting...'.tr : 'Predict'.tr,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (prediction != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: prediction.prediction == 'Dropout'
+                            ? (isDark
+                                  ? AppTheme.darkBadgeRedBg
+                                  : Colors.red[50])
+                            : (isDark
+                                  ? AppTheme.darkBadgeGreenBg
+                                  : Colors.green[50]),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              child.fullName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-                              ),
-                            ),
-                          ),
-                          if (prediction == null)
-                            OutlinedButton(
-                              onPressed: isPredicting
-                                  ? null
-                                  : () => controller.predictStudent(child.id),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                minimumSize: const Size(0, 36),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Prediction'.tr,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? AppTheme.darkMutedForeground
+                                        : AppTheme.mutedForeground,
+                                  ),
                                 ),
-                              ),
-                              child: Text(
-                                isPredicting ? 'Predicting...' : 'Predict'.tr,
-                                style: const TextStyle(fontSize: 12),
-                              ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  prediction.prediction,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: prediction.prediction == 'Dropout'
+                                        ? (isDark
+                                              ? AppTheme.darkBadgeRedText
+                                              : Colors.red[600])
+                                        : (isDark
+                                              ? AppTheme.darkBadgeGreenText
+                                              : Colors.green[600]),
+                                  ),
+                                ),
+                              ],
                             ),
-                        ],
-                      ),
-                      if (prediction != null) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: prediction.prediction == 'Dropout'
-                                ? (isDark ? AppTheme.darkBadgeRedBg : Colors.red[50])
-                                : (isDark ? AppTheme.darkBadgeGreenBg : Colors.green[50]),
-                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Row(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Prediction'.tr,
-                                      style: TextStyle(fontSize: 13, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      prediction.prediction,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: prediction.prediction == 'Dropout'
-                                            ? (isDark ? AppTheme.darkBadgeRedText : Colors.red[600])
-                                            : (isDark ? AppTheme.darkBadgeGreenText : Colors.green[600]),
-                                      ),
-                                    ),
-                                  ],
+                              Text(
+                                'Confidence'.tr,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'Confidence'.tr,
-                                    style: TextStyle(fontSize: 13, color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${(prediction.confidence * 100).toStringAsFixed(1)}%',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 2),
+                              Text(
+                                '${(prediction.confidence * 100).toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? AppTheme.darkForeground
+                                      : AppTheme.foreground,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Features Used'.tr,
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildFeatureRow('Total Absences'.tr, '${prediction.featuresUsed['total_absences'] ?? 0}', isDark),
-                        _buildFeatureRow('Absence Rate'.tr, '${((prediction.featuresUsed['absence_rate'] ?? 0.0) * 100).toStringAsFixed(1)}%', isDark),
-                        _buildFeatureRow('Exercises Completed'.tr, '${prediction.featuresUsed['exercises_completed'] ?? 0}', isDark),
-                        _buildFeatureRow('Exercise Completion'.tr, '${((prediction.featuresUsed['exercise_completion_rate'] ?? 0.0) * 100).toStringAsFixed(1)}%', isDark),
-                        if (prediction.featuresUsed.containsKey('critical_skill_completion_rate') || prediction.featuresUsed.containsKey('critical_skills_completion'))
-                          _buildFeatureRow('Critical Skill Completion'.tr, '${((prediction.featuresUsed['critical_skill_completion_rate'] ?? prediction.featuresUsed['critical_skills_completion'] ?? 0.0) * 100).toStringAsFixed(1)}%', isDark),
-                        if (prediction.featuresUsed.containsKey('total_critical_skills_missed') || prediction.featuresUsed.containsKey('critical_skills_missed'))
-                          _buildFeatureRow('Critical Skills Missed'.tr, '${prediction.featuresUsed['total_critical_skills_missed'] ?? prediction.featuresUsed['critical_skills_missed'] ?? 0}', isDark),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-          }).toList(),
-        );
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Features Used'.tr,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? AppTheme.darkForeground
+                            : AppTheme.foreground,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildFeatureRow(
+                      'Total Absences'.tr,
+                      '${prediction.featuresUsed['total_absences'] ?? 0}',
+                      isDark,
+                    ),
+                    _buildFeatureRow(
+                      'Absence Rate'.tr,
+                      '${((prediction.featuresUsed['absence_rate'] ?? 0.0) * 100).toStringAsFixed(1)}%',
+                      isDark,
+                    ),
+                    _buildFeatureRow(
+                      'Exercises Completed'.tr,
+                      '${prediction.featuresUsed['exercises_completed'] ?? 0}',
+                      isDark,
+                    ),
+                    _buildFeatureRow(
+                      'Exercise Completion'.tr,
+                      '${((prediction.featuresUsed['exercise_completion_rate'] ?? 0.0) * 100).toStringAsFixed(1)}%',
+                      isDark,
+                    ),
+                    if (prediction.featuresUsed.containsKey(
+                          'critical_skill_completion_rate',
+                        ) ||
+                        prediction.featuresUsed.containsKey(
+                          'critical_skills_completion',
+                        ))
+                      _buildFeatureRow(
+                        'Critical Skill Completion'.tr,
+                        '${((prediction.featuresUsed['critical_skill_completion_rate'] ?? prediction.featuresUsed['critical_skills_completion'] ?? 0.0) * 100).toStringAsFixed(1)}%',
+                        isDark,
+                      ),
+                    if (prediction.featuresUsed.containsKey(
+                          'total_critical_skills_missed',
+                        ) ||
+                        prediction.featuresUsed.containsKey(
+                          'critical_skills_missed',
+                        ))
+                      _buildFeatureRow(
+                        'Critical Skills Missed'.tr,
+                        '${prediction.featuresUsed['total_critical_skills_missed'] ?? prediction.featuresUsed['critical_skills_missed'] ?? 0}',
+                        isDark,
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      );
     });
   }
 
@@ -2164,10 +2846,22 @@ Widget _buildStatCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground, fontSize: 12)),
+          Text(
+            label,
+            style: TextStyle(
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+              fontSize: 12,
+            ),
+          ),
           Text(
             value,
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: isDark ? AppTheme.darkForeground : AppTheme.foreground),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
           ),
         ],
       ),
@@ -2179,11 +2873,13 @@ Widget _buildStatCard(
     return Obx(
       () => PopupMenuButton<String>(
         offset: const Offset(0, 48),
+        constraints: const BoxConstraints(minWidth: 220),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: AppTheme.border),
@@ -2193,7 +2889,10 @@ Widget _buildStatCard(
                 controller.userName.isNotEmpty
                     ? controller.userName[0].toUpperCase()
                     : 'U',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
             ),
           ),
@@ -2218,71 +2917,91 @@ Widget _buildStatCard(
                   size: 18,
                 ),
                 const SizedBox(width: 8),
-                Text(controller.isDarkMode ? 'Light Mode' : 'Dark Mode'),
+                Text(controller.isDarkMode ? 'Light Mode'.tr : 'Dark Mode'.tr),
               ],
             ),
           ),
           if (auth.hasMultipleRoles) ...[
             const PopupMenuDivider(),
-            const PopupMenuItem(
+            PopupMenuItem(
               enabled: false,
-              child: Text('Switch Role', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              child: Text(
+                'Switch Role'.tr,
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
             ),
-            ...auth.roles.where((r) {
-              if (auth.role == 'PARENT' && r == 'STUDENT') return false;
-              if (auth.role == 'TEACHER' && r == 'STUDENT') return false;
-              return true;
-            }).map((role) {
-              IconData icon;
-              Color iconColor;
-              String label;
-              switch (role) {
-                case 'ADMIN':
-                  icon = Icons.shield;
-                  iconColor = controller.isDarkMode ? AppTheme.darkDestructive : Colors.red;
-                  label = 'Administrator';
-                  break;
-                case 'TEACHER':
-                  icon = Icons.school;
-                  iconColor = controller.isDarkMode ? AppTheme.darkPrimary : Colors.blue;
-                  label = 'Teacher';
-                  break;
-                case 'STUDENT':
-                  icon = Icons.people;
-                  iconColor = controller.isDarkMode ? AppTheme.darkBadgeGreenText : Colors.green;
-                  label = 'Student';
-                  break;
-                case 'PARENT':
-                  icon = Icons.child_care;
-                  iconColor = controller.isDarkMode ? AppTheme.darkMutedForeground : Colors.purple;
-                  label = 'Parent';
-                  break;
-                default:
-                  icon = Icons.person;
-                  iconColor = controller.isDarkMode ? AppTheme.darkMutedForeground : AppTheme.mutedForeground;
-                  label = role;
-              }
-              final isActive = role == auth.role;
-              return PopupMenuItem(
-                value: 'switch_$role',
-                enabled: !isActive,
-                child: Row(
-                  children: [
-                    Icon(icon, size: 18, color: iconColor),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(label)),
-                    if (isActive)
-                      Text('ACTIVE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1, color: controller.isDarkMode ? AppTheme.darkMutedForeground : AppTheme.mutedForeground)),
-                  ],
-                ),
-              );
-            }),
+            ...auth.roles
+                .where((r) {
+                  if (auth.role == 'PARENT' && r == 'STUDENT') return false;
+                  if (auth.role == 'TEACHER' && r == 'STUDENT') return false;
+                  return true;
+                })
+                .map((role) {
+                  IconData icon;
+                  Color iconColor;
+                  String label;
+                  switch (role) {
+                    case 'ADMIN':
+                      icon = Icons.shield;
+                      iconColor = Colors.red;
+                      label = 'Administrator'.tr;
+                      break;
+                    case 'TEACHER':
+                      icon = Icons.school;
+                      iconColor = Colors.blue;
+                      label = 'Teacher'.tr;
+                      break;
+                    case 'STUDENT':
+                      icon = Icons.people;
+                      iconColor = Colors.green;
+                      label = 'Student'.tr;
+                      break;
+                    case 'PARENT':
+                      icon = Icons.child_care;
+                      iconColor = Colors.purple;
+                      label = 'Parent'.tr;
+                      break;
+                    default:
+                      icon = Icons.person;
+                      iconColor = controller.isDarkMode
+                          ? AppTheme.darkMutedForeground
+                          : AppTheme.mutedForeground;
+                      label = role;
+                  }
+                  final isActive = role == auth.role;
+                  return PopupMenuItem(
+                    value: 'switch_$role',
+                    enabled: !isActive,
+                    child: Row(
+                      children: [
+                        Icon(icon, size: 18, color: iconColor),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(label)),
+                        if (isActive)
+                          Text(
+                            'ACTIVE'.tr,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: controller.isDarkMode
+                                  ? AppTheme.darkMutedForeground
+                                  : AppTheme.mutedForeground,
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }),
           ],
           if (controller.children.isNotEmpty) ...[
             const PopupMenuDivider(),
-            const PopupMenuItem(
+            PopupMenuItem(
               enabled: false,
-              child: Text('Select Child', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              child: Text(
+                'Select Child'.tr,
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
             ),
             ...controller.children.map(
               (child) => PopupMenuItem(
@@ -2302,9 +3021,22 @@ Widget _buildStatCard(
             value: 'logout',
             child: Row(
               children: [
-                Icon(Icons.logout, size: 18, color: controller.isDarkMode ? AppTheme.darkDestructive : Colors.red),
+                Icon(
+                  Icons.logout,
+                  size: 18,
+                  color: controller.isDarkMode
+                      ? AppTheme.darkDestructive
+                      : Colors.red,
+                ),
                 const SizedBox(width: 8),
-                Text('Logout', style: TextStyle(color: controller.isDarkMode ? AppTheme.darkDestructive : Colors.red)),
+                Text(
+                  'Logout'.tr,
+                  style: TextStyle(
+                    color: controller.isDarkMode
+                        ? AppTheme.darkDestructive
+                        : Colors.red,
+                  ),
+                ),
               ],
             ),
           ),

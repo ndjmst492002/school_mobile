@@ -248,7 +248,7 @@ class SignupView extends GetView<SignupController> {
             GestureDetector(
               onTap: () => Get.offAllNamed(AppRoutes.login),
               child: Text(
-                'Already have an account? Login',
+                'Already have an account? Login'.tr,
                 style: TextStyle(
                   color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
                   fontSize: 14,
@@ -286,7 +286,7 @@ class SignupView extends GetView<SignupController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Phone Verification',
+              'Phone Verification'.tr,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -298,8 +298,8 @@ class SignupView extends GetView<SignupController> {
             Obx(
               () => Text(
                 controller.otpSent.value
-                    ? 'Enter the code sent to your phone'
-                    : 'Enter your phone number',
+                    ? 'Enter the code sent to your phone'.tr
+                    : 'Enter your phone number'.tr,
                 style: TextStyle(
                   color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                   fontSize: 14,
@@ -362,15 +362,15 @@ class SignupView extends GetView<SignupController> {
                             const SizedBox(width: 12),
                             Text(
                               controller.otpSent.value
-                                  ? 'Verifying...'
-                                  : 'Sending...',
+                                  ? 'Verifying...'.tr
+                                  : 'Sending...'.tr,
                             ),
                           ],
                         )
                       : Text(
                           controller.otpSent.value
-                              ? 'Verify & Continue'
-                              : 'Send Code',
+                              ? 'Verify & Continue'.tr
+                              : 'Send Code'.tr,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -825,7 +825,7 @@ class SignupView extends GetView<SignupController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Child ${index + 1}',
+                    'Child @n'.trParams({'n': '${index + 1}'}),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -853,7 +853,7 @@ class SignupView extends GetView<SignupController> {
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'First Name *',
+                        hintText: 'First Name *'.tr,
                         hintStyle: TextStyle(
                           color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
@@ -886,7 +886,7 @@ class SignupView extends GetView<SignupController> {
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Last Name *',
+                        hintText: 'Last Name *'.tr,
                         hintStyle: TextStyle(
                           color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
@@ -937,7 +937,7 @@ class SignupView extends GetView<SignupController> {
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Enrollment Date *',
+                        hintText: 'Enrollment Date *'.tr,
                         hintStyle: TextStyle(
                           color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
@@ -986,7 +986,7 @@ class SignupView extends GetView<SignupController> {
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Date of Birth',
+                        hintText: 'Date of Birth'.tr,
                         hintStyle: TextStyle(
                           color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
@@ -1074,7 +1074,7 @@ class SignupView extends GetView<SignupController> {
         labelStyle: TextStyle(
           color: isDark ? AppTheme.border : AppTheme.mutedForeground,
         ),
-        hintText: hint,
+        hintText: hint.tr,
         hintStyle: TextStyle(
           color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
         ),

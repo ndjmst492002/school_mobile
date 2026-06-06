@@ -186,15 +186,15 @@ class TeacherController extends GetxController {
       debugPrint('Profile not found: ${e.message}');
       profileNotFound.value = true;
       Get.snackbar(
-        'Profile Required',
-        e.message,
+        'Profile Required'.tr,
+        e.message.tr,
         duration: const Duration(seconds: 5),
       );
     } catch (e) {
       debugPrint('Error loading data: $e');
       Get.snackbar(
-        'Error',
-        'Failed to load data: $e',
+        'Error'.tr,
+        '${'Failed to load data'.tr}: $e',
         duration: const Duration(seconds: 5),
       );
     } finally {
@@ -207,10 +207,10 @@ class TeacherController extends GetxController {
     try {
       await _teacherApi.respondToEnrollment(enrollmentId, action);
       loadData();
-      Get.snackbar('Success', 'Enrollment ${action}ed successfully');
+      Get.snackbar('Success'.tr, 'Enrollment ${action}ed successfully'.tr);
     } catch (e) {
       debugPrint('Error responding to enrollment: $e');
-      Get.snackbar('Error', 'Failed to respond to enrollment');
+      Get.snackbar('Error'.tr, 'Failed to respond to enrollment'.tr);
     } finally {
       respondingEnrollment.value = null;
     }
@@ -224,6 +224,7 @@ class TeacherController extends GetxController {
       uploadDueDateController.clear();
       uploadClassId.value = '';
       selectedFile.value = null;
+      selectedSkills.clear();
     }
   }
 
@@ -326,7 +327,7 @@ class TeacherController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error loading attendance: $e');
-      Get.snackbar('Error', 'Failed to load attendance. Please try again.');
+      Get.snackbar('Error'.tr, 'Failed to load attendance. Please try again.'.tr);
     } finally {
       isLoadingAttendance.value = false;
     }
@@ -350,10 +351,10 @@ class TeacherController extends GetxController {
 
       await _teacherApi.markAttendance(records);
       await loadAttendance();
-      Get.snackbar('Success', 'Attendance saved successfully');
+      Get.snackbar('Success'.tr, 'Attendance saved successfully'.tr);
     } catch (e) {
       debugPrint('Error saving attendance: $e');
-      Get.snackbar('Error', 'Failed to save attendance');
+      Get.snackbar('Error'.tr, 'Failed to save attendance'.tr);
     } finally {
       isSavingAttendance.value = false;
     }
@@ -376,7 +377,7 @@ class TeacherController extends GetxController {
 
   Future<void> uploadExercise() async {
     if (selectedFile.value == null || uploadClassId.value.isEmpty) {
-      Get.snackbar('Error', 'Please select a file and class');
+      Get.snackbar('Error'.tr, 'Please select a file and class'.tr);
       return;
     }
 
@@ -412,10 +413,10 @@ class TeacherController extends GetxController {
       );
       toggleUploadForm();
       loadData();
-      Get.snackbar('Success', 'Exercise uploaded successfully');
+      Get.snackbar('Success'.tr, 'Exercise uploaded successfully'.tr);
     } catch (e) {
       debugPrint('Error uploading exercise: $e');
-      Get.snackbar('Error', 'Failed to upload exercise: $e');
+      Get.snackbar('Error'.tr, '${'Failed to upload exercise'.tr}: $e');
     } finally {
       isUploading.value = false;
     }
@@ -444,7 +445,7 @@ class TeacherController extends GetxController {
 
     final grade = double.tryParse(gradeController.text);
     if (grade == null || grade < 0 || grade > 20) {
-      Get.snackbar('Error', 'Grade must be between 0 and 20');
+      Get.snackbar('Error'.tr, 'Grade must be between 0 and 20'.tr);
       return;
     }
 
@@ -457,10 +458,10 @@ class TeacherController extends GetxController {
       );
       closeGradingDialog();
       loadData();
-      Get.snackbar('Success', 'Grade saved successfully');
+      Get.snackbar('Success'.tr, 'Grade saved successfully'.tr);
     } catch (e) {
       debugPrint('Error grading submission: $e');
-      Get.snackbar('Error', 'Failed to grade submission: $e');
+      Get.snackbar('Error'.tr, '${'Failed to grade submission'.tr}: $e');
     } finally {
       isGrading.value = false;
     }
@@ -485,7 +486,7 @@ class TeacherController extends GetxController {
   Future<void> createAnnouncement() async {
     if (announcementTitleController.text.isEmpty ||
         announcementContentController.text.isEmpty) {
-      Get.snackbar('Error', 'Please fill in both title and content');
+      Get.snackbar('Error'.tr, 'Please fill in both title and content'.tr);
       return;
     }
 
@@ -504,10 +505,10 @@ class TeacherController extends GetxController {
       );
       toggleAnnouncementForm();
       loadData();
-      Get.snackbar('Success', 'Announcement posted successfully');
+      Get.snackbar('Success'.tr, 'Announcement posted successfully'.tr);
     } catch (e) {
       debugPrint('Error creating announcement: $e');
-      Get.snackbar('Error', 'Failed to create announcement: $e');
+      Get.snackbar('Error'.tr, '${'Failed to create announcement'.tr}: $e');
     } finally {
       isPosting.value = false;
     }
@@ -525,12 +526,12 @@ class TeacherController extends GetxController {
       (s) => s.id == submissionId,
     );
     if (submission == null) {
-      Get.snackbar('Error', 'Submission not found');
+      Get.snackbar('Error'.tr, 'Submission not found'.tr);
       return;
     }
 
     if (submission.submissionFileUrl == null) {
-      Get.snackbar('Error', 'No file attached to this submission');
+      Get.snackbar('Error'.tr, 'No file attached to this submission'.tr);
       return;
     }
 
@@ -538,7 +539,7 @@ class TeacherController extends GetxController {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Get.snackbar('Error', 'Cannot open download link');
+      Get.snackbar('Error'.tr, 'Cannot open download link'.tr);
     }
   }
 
@@ -552,12 +553,12 @@ class TeacherController extends GetxController {
 
     final exercise = exercises.firstWhereOrNull((e) => e.id == exerciseId);
     if (exercise == null) {
-      Get.snackbar('Error', 'Exercise not found');
+      Get.snackbar('Error'.tr, 'Exercise not found'.tr);
       return;
     }
 
     if (exercise.fileUrl == null) {
-      Get.snackbar('Error', 'No file attached to this exercise');
+      Get.snackbar('Error'.tr, 'No file attached to this exercise'.tr);
       return;
     }
 
@@ -565,7 +566,7 @@ class TeacherController extends GetxController {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Get.snackbar('Error', 'Cannot open download link');
+      Get.snackbar('Error'.tr, 'Cannot open download link'.tr);
     }
   }
 

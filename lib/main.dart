@@ -97,9 +97,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _checkAuth() {
+  void _checkAuth() async {
     try {
       final auth = Get.find<AuthService>();
+
+      // Restore auth state from storage (survives activity kill)
+      if (!auth.isAuthenticated) {
+        await auth.restoreFromStorage();
+      }
 
       if (!auth.isAuthenticated) {
         Get.offAllNamed(AppRoutes.login);

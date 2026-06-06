@@ -260,20 +260,27 @@ class LoginView extends GetView<LoginController> {
                 ),
               ),
             ),
-            Positioned(
-              top: 40,
-              right: 16,
-              child: Row(
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 40, right: 16),
+                child: Row(
+                  textDirection: TextDirection.ltr,
+                  mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildIconButton(
                     icon: Obx(() {
                       final theme = Get.find<ThemeService>();
-                      return Text(
-                        theme.locale.languageCode == 'en' ? '\u0639' : 'EN',
-                        style: TextStyle(
+                      return SizedBox(
+                        width: 30,
+                        child: Text(
+                          theme.locale.languageCode == 'en' ? '\u0639' : 'EN',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : Colors.black87,
+                        ),
                         ),
                       );
                     }),
@@ -305,12 +312,13 @@ class LoginView extends GetView<LoginController> {
                     onPressed: () => _showContactDialog(context, isDark),
                   ),
                 ],
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      });
   }
 
   void _showContactDialog(BuildContext context, bool isDark) {

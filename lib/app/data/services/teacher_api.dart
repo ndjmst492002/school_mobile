@@ -211,7 +211,7 @@ class TeacherApi {
 
   Future<int> getUnreadMessageCount() async {
     final response = await _api.get('/users/chat/unread-count/');
-    return response.data['count'] ?? 0;
+    return response.data['total_unread'] ?? 0;
   }
 
   Future<List<AppNotification>> getNotifications() async {
@@ -245,7 +245,16 @@ class TeacherApi {
       return [];
     }
     final List<dynamic> data = response.data;
-    return data.map((json) => EnrollmentRequest.fromJson(json)).toList();
+    if (data.isNotEmpty) {
+      debugPrint('First enrollment raw: ${data.first}');
+      final first = data.first as Map<String, dynamic>;
+      debugPrint(
+        '  student_name present: ${first.containsKey('student_name')}, value: ${first['student_name']}',
+      );
+    }
+    return data
+        .map((json) => EnrollmentRequest.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> respondToEnrollment(int enrollmentId, String action) async {

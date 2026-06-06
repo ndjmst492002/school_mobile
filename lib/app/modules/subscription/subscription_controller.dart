@@ -7,7 +7,7 @@ import '../../data/services/auth_api.dart';
 import '../../data/services/websocket_service.dart';
 import '../../data/providers/api_provider.dart';
 import '../../routes/app_routes.dart';
-import '../../../main.dart';
+import 'subscription_webview.dart';
 
 class SubscriptionController extends GetxController {
   final AuthApi _authApi = AuthApi();
@@ -98,16 +98,36 @@ class SubscriptionController extends GetxController {
 
       if (response.containsKey('checkout_url') && response['checkout_url'] != null && response['checkout_url'].isNotEmpty) {
         debugPrint('Received checkout URL: ${response['checkout_url']}');
-        final uri = Uri.parse(response['checkout_url']);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          Get.snackbar(
-            'Payment',
-            'Complete payment in your browser, then wait a moment to be redirected back',
-            duration: const Duration(seconds: 4),
-          );
+
+        if (kIsWeb) {
+          final uri = Uri.parse(response['checkout_url']);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+            Get.snackbar(
+              'Payment',
+              'Complete payment in your browser, then wait a moment to be redirected back',
+              duration: const Duration(seconds: 4),
+            );
+          } else {
+            error.value = 'Could not open payment page';
+          }
         } else {
-          error.value = 'Could not open payment page';
+          isLoading.value = false;
+          await Get.to(
+            () => SubscriptionWebView(
+              url: response['checkout_url'],
+              onComplete: () {
+                Get.close(1);
+                Get.snackbar(
+                  'Payment',
+                  'Payment completed. Checking subscription status...',
+                  duration: const Duration(seconds: 3),
+                );
+              },
+            ),
+            fullscreenDialog: true,
+          );
+          return;
         }
       } else {
         error.value = 'Failed to create checkout';

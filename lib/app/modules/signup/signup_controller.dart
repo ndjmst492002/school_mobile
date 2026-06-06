@@ -259,7 +259,7 @@ class SignupController extends GetxController {
       } else {
         Get.snackbar(
           'Registration Complete!',
-          'Please login again with Google to access your dashboard.',
+          'Please login with Google to access your dashboard.',
           duration: const Duration(seconds: 5),
         );
         Get.offAllNamed(AppRoutes.login);

@@ -54,16 +54,23 @@ class ParentController extends GetxController {
 
   // Levels for parent exercise filter
   static const List<Map<String, dynamic>> _allLevelsData = [
-    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
-    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
-    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
-    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
-    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
-    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
+    {'id': 1, 'name': '1AP'},
+    {'id': 2, 'name': '2AP'},
+    {'id': 3, 'name': '3AP'},
+    {'id': 4, 'name': '4AP'},
+    {'id': 5, 'name': '5AP'},
+    {'id': 6, 'name': '1AM'},
+    {'id': 7, 'name': '2AM'},
+    {'id': 8, 'name': '3AM'},
+    {'id': 9, 'name': '4AM'},
+    {'id': 10, 'name': '1AS'},
+    {'id': 11, 'name': '2AS'},
+    {'id': 12, 'name': '3AS'},
   ];
 
-  List<Level> get levels =>
-      _allLevelsData.map((e) => Level(id: e['id'] as int, name: e['name'] as String)).toList();
+  List<Level> get levels => _allLevelsData
+      .map((e) => Level(id: e['id'] as int, name: e['name'] as String))
+      .toList();
 
   List<ChildAnnouncement> get filteredAnnouncements {
     if (selectedChildForAnnouncements.value.isEmpty) {
@@ -174,8 +181,8 @@ class ParentController extends GetxController {
         if (e is ProfileNotFoundException) {
           profileNotFound.value = true;
           Get.snackbar(
-            'Profile Required',
-            e.message,
+            'Profile Required'.tr,
+            e.message.tr,
             duration: const Duration(seconds: 5),
           );
           return <StudentChild>[];
@@ -324,10 +331,13 @@ class ParentController extends GetxController {
       debugPrint('Prediction features: ${result.featuresUsed}');
       setPrediction(studentId, result);
       debugPrint('Predictions map now: $predictions');
-      Get.snackbar('Success', 'Prediction completed for ${result.studentName}');
+      Get.snackbar(
+        'Success'.tr,
+        'Prediction completed for ${result.studentName}'.tr,
+      );
     } catch (e) {
       debugPrint('Error predicting student: $e');
-      Get.snackbar('Error', 'Failed to get prediction: $e');
+      Get.snackbar('Error'.tr, 'Failed to get prediction: $e'.tr);
     } finally {
       predicting.value = null;
     }
@@ -379,8 +389,12 @@ class ParentController extends GetxController {
       final results = await _parentApi.searchExercises(
         studentId: childId,
         level: exerciseLevelFilter.value,
-        className: exerciseClassFilter.value.isNotEmpty ? exerciseClassFilter.value : null,
-        skillIds: exerciseSkillFilter.isNotEmpty ? exerciseSkillFilter.join(',') : null,
+        className: exerciseClassFilter.value.isNotEmpty
+            ? exerciseClassFilter.value
+            : null,
+        skillIds: exerciseSkillFilter.isNotEmpty
+            ? exerciseSkillFilter.join(',')
+            : null,
       );
       searchedExercises.value = results;
       assignedExerciseIds.value = results
@@ -509,7 +523,9 @@ class ParentController extends GetxController {
       if (childId != null) {
         final child = children.firstWhereOrNull((c) => c.id == childId);
         _auth.switchRole('STUDENT');
-        debugPrint('About to navigate to student dashboard with childId: $childId');
+        debugPrint(
+          'About to navigate to student dashboard with childId: $childId',
+        );
         Get.offAllNamed(
           AppRoutes.student,
           arguments: {'childId': childId, 'childName': child?.fullName},

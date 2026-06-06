@@ -305,14 +305,14 @@ class AttendanceRecord {
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
     return AttendanceRecord(
       id: json['id'] ?? 0,
-      student: json['student'] ?? 0,
+      student: json['student'] ?? json['student_id'] ?? 0,
       studentName: json['student_name'],
       relatedClass: json['related_class'] ?? 0,
       className: json['class_name'],
       date: json['date'] ?? '',
       status: json['status'] ?? 'PRESENT',
       markedBy: json['marked_by'] ?? 0,
-      teacherName: json['teacher_name'],
+      teacherName: json['teacher_name'] ?? json['marked_by_name'],
       markedAt: json['marked_at'] ?? '',
     );
   }

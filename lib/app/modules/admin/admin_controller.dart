@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../data/providers/api_provider.dart';
@@ -57,16 +58,23 @@ class AdminController extends GetxController {
   int get unreadMessageCount => 0;
 
   static const List<Map<String, dynamic>> _allLevelsData = [
-    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
-    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
-    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
-    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
-    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
-    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
+    {'id': 1, 'name': '1AP'},
+    {'id': 2, 'name': '2AP'},
+    {'id': 3, 'name': '3AP'},
+    {'id': 4, 'name': '4AP'},
+    {'id': 5, 'name': '5AP'},
+    {'id': 6, 'name': '1AM'},
+    {'id': 7, 'name': '2AM'},
+    {'id': 8, 'name': '3AM'},
+    {'id': 9, 'name': '4AM'},
+    {'id': 10, 'name': '1AS'},
+    {'id': 11, 'name': '2AS'},
+    {'id': 12, 'name': '3AS'},
   ];
 
-  List<Level> get levels =>
-      _allLevelsData.map((e) => Level(id: e['id'] as int, name: e['name'] as String)).toList();
+  List<Level> get levels => _allLevelsData
+      .map((e) => Level(id: e['id'] as int, name: e['name'] as String))
+      .toList();
 
   @override
   void onInit() {
@@ -124,7 +132,7 @@ class AdminController extends GetxController {
 
   Future<void> _loadLevelClasses(int levelId) async {
     try {
-      final result = await StudentApi().getAllClassesPublic(levelId: levelId);
+      final result = await StudentApi().getAllClasses(levelId: levelId);
       levelClasses.value = result;
     } catch (e) {
       debugPrint('Error loading level classes: $e');
@@ -140,9 +148,7 @@ class AdminController extends GetxController {
   }
 
   Future<void> pickUploadFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.any,
-    );
+    final result = await FilePicker.platform.pickFiles(type: FileType.any);
     if (result != null && result.files.isNotEmpty) {
       selectedFile.value = result.files.first;
     }
@@ -151,6 +157,10 @@ class AdminController extends GetxController {
   Future<void> uploadExercise() async {
     if (uploadTitle.value.isEmpty || uploadDescription.value.isEmpty) {
       Get.snackbar('Error'.tr, 'Title and description are required'.tr);
+      return;
+    }
+    if (selectedFile.value == null) {
+      Get.snackbar('Error'.tr, 'Please select a file to upload'.tr);
       return;
     }
 
@@ -162,9 +172,11 @@ class AdminController extends GetxController {
         dueDate: uploadDueDate.value.isNotEmpty ? uploadDueDate.value : null,
         fileBytes: selectedFile.value?.bytes,
         fileName: selectedFile.value?.name,
-        filePath: selectedFile.value?.path,
+        filePath: kIsWeb ? null : selectedFile.value?.path,
         levelId: selectedLevelId.value,
-        classIds: selectedClassId.value != null ? [selectedClassId.value!] : null,
+        classIds: selectedClassId.value != null
+            ? [selectedClassId.value!]
+            : null,
         skillIds: selectedSkills.isNotEmpty ? selectedSkills.toList() : null,
       );
       Get.snackbar('Success'.tr, 'Exercise uploaded successfully'.tr);
@@ -172,7 +184,9 @@ class AdminController extends GetxController {
       uploadDescription.value = '';
       uploadDueDate.value = '';
       selectedLevelId.value = null;
+      selectedClassId.value = null;
       selectedFile.value = null;
+      selectedSkills.clear();
       await loadData();
     } catch (e) {
       debugPrint('Upload error: $e');
@@ -222,15 +236,17 @@ class AdminController extends GetxController {
         await StudentApi().markNotificationAsRead(notification.id);
       }
       notifications.value = notifications
-          .map((n) => AppNotification(
-                id: n.id,
-                recipient: n.recipient,
-                type: n.type,
-                title: n.title,
-                message: n.message,
-                isRead: true,
-                createdAt: n.createdAt,
-              ))
+          .map(
+            (n) => AppNotification(
+              id: n.id,
+              recipient: n.recipient,
+              type: n.type,
+              title: n.title,
+              message: n.message,
+              isRead: true,
+              createdAt: n.createdAt,
+            ),
+          )
           .toList();
       unreadNotificationCount.value = 0;
     } catch (e) {

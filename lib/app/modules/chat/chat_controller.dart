@@ -56,7 +56,30 @@ class ChatController extends GetxController {
     try {
       final data = await _chatApi.getContacts();
       debugPrint('Loaded ${data.length} contacts');
-      contacts.value = data;
+      final seen = <int>{};
+      final unique = <Contact>[];
+      for (final c in data) {
+        if (seen.add(c.userId)) unique.add(c);
+      }
+      debugPrint('After dedup: ${unique.length} contacts');
+      contacts.value = unique;
+
+      final unread = await _chatApi.getUnreadCounts();
+      debugPrint(
+        'Loaded unread counts: total=${unread.totalUnread}, perContact=${unread.contactCounts}',
+      );
+      contacts.value = unique
+          .map(
+            (c) => Contact(
+              id: c.id,
+              userId: c.userId,
+              fullName: c.fullName,
+              role: c.role,
+              unreadCount: unread.contactCounts[c.userId] ?? 0,
+            ),
+          )
+          .toList();
+
       _notifyParentController();
     } catch (e) {
       debugPrint('Error loading contacts: $e');
@@ -77,7 +100,18 @@ class ChatController extends GetxController {
   }
 
   void selectContact(Contact contact) {
-    selectedContact.value = contact;
+    final index = contacts.indexWhere((c) => c.userId == contact.userId);
+    if (index != -1 && (contacts[index].unreadCount ?? 0) > 0) {
+      contacts[index] = Contact(
+        id: contacts[index].id,
+        userId: contacts[index].userId,
+        fullName: contacts[index].fullName,
+        role: contacts[index].role,
+        unreadCount: 0,
+      );
+      _notifyParentController();
+    }
+    selectedContact.value = contacts[index != -1 ? index : 0];
     loadMessages(contact.userId);
     connectWebSocket();
   }
@@ -321,14 +355,26 @@ class ChatController extends GetxController {
       final messageDate = DateTime(date.year, date.month, date.day);
 
       if (messageDate == today) {
-        return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+        final hour = date.hour;
+        final amPm = hour >= 12 ? 'PM'.tr : 'AM'.tr;
+        final hour12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+        return '$hour12:${date.minute.toString().padLeft(2, '0')} $amPm';
       } else if (messageDate == today.subtract(const Duration(days: 1))) {
-        return 'Yesterday';
+        return 'Yesterday'.tr;
       } else {
-        return '${date.day}/${date.month}/${date.year}';
+        return _formatDate(dateStr);
       }
     } catch (e) {
       return '';
+    }
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateStr;
     }
   }
 }
