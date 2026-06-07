@@ -8,15 +8,15 @@ Three roles: **Teacher**, **Parent**, **Student** (plus Admin), with chat, atten
 ## 1. Install These First
 
 | Program | Version | Why |
-|---|---|---|
+|---|---|---|---|
 | **Python** | 3.12 | Backend runtime (the language Django is written in) |
 | **Git** | latest | Clones the project from the repository |
-| **PostgreSQL + pgAdmin 4** | 14+ | The database — stores all users, classes, exercises, messages |
-| **Flutter (stable)** | 3.41.9 | Builds the mobile/web app — install from [flutter.dev](https://flutter.dev) |
-| **Android Studio** | latest | Brings JDK 17 + Android SDK + a built-in terminal |
-| **Google Chrome** | latest | The browser we use to test the web version |
-| **Visual Studio (Code or Community)** | latest | For editing the backend code + has its own terminal |
-| **ngrok** | latest | Gives the backend a public HTTPS URL — Chargily needs it to redirect after payment (download from [ngrok.com](https://ngrok.com/download)) |
+| **PostgreSQL + pgAdmin 4** | 12+ (latest recommended) | The database — stores all users, classes, exercises, messages |
+| **Flutter (stable)** | 3.41.9 (latest recommended) | Builds the mobile/web app — install from [flutter.dev](https://flutter.dev) |
+| **Android Studio** | latest recommended | Brings JDK 17 + Android SDK + a built-in terminal |
+| **Google Chrome** | latest recommended | The browser we use to test the web version |
+| **Visual Studio (Code or Community)** | latest recommended | For editing the backend code + has its own terminal |
+| **ngrok** | latest recommended | Gives the backend a public HTTPS URL — Chargily needs it to redirect after payment (download from [ngrok.com](https://ngrok.com/download)) |
 
 After installing Flutter, open a terminal and run `flutter doctor` — fix any red ✗ items before continuing.
 
@@ -27,8 +27,8 @@ After installing Flutter, open a terminal and run `flutter doctor` — fix any r
 Open a terminal in the folder where you want the project (e.g. Desktop):
 
 ```bash
-git clone <your-backend-repo-url> school_backend
-git clone <your-mobile-repo-url>   school_mobile
+git clone -b added-level-table --single-branch https://github.com/ZA3MA3/school_backend.git school_backend
+git clone -b mobile-frontend --single-branch https://github.com/ndjmst492002/school_mobile.git school_mobile
 ```
 
 You should now have `school_backend/` and `school_mobile/` side by side.
@@ -76,52 +76,13 @@ With the database file `school_db_4` follow these steps:
 
 Quick check that the file loaded correctly:
 
-1. In the left panel, expand `school_db_4` → **Schemas** → **Tables** — you should see a long list (e.g. `auth_user`, `users_user`, `users_studentprofile`, `users_teacherprofile`, `users_class`, `users_attendance`, `users_exercise`, etc.)
-2. Click the **Query Tool** icon (top toolbar, or **Tools → Query Tool**)
-3. Paste and run:
-   ```sql
-   SELECT COUNT(*) FROM users_user;
-   ```
-4. The number in the bottom panel should be **greater than 0** (it's `4` with the seed data — 3 test accounts + 1 admin)
+1. In the left panel, expand `school_db_4` → **Schemas** → **Tables**
+2. Look for the **users** table — right-click it → **View/Edit Data** → **All Rows**
+3. You should see a list of users (the 5 test accounts + admin)
 
-If the table list is empty or the count is `0`, the restore didn't pick up the data — re-do step 2 above and double-check the file path.
+If the table list is empty or no rows appear, the restore didn't pick up the data — re-do the restore step and double-check the file path.
 
-### 3.3. Create the `.env` file
-
-> **What is a `.env` file?** It's a hidden text file that holds secret config (DB password, API keys) outside of the code. The backend reads it on startup. Without it, the server won't know how to connect to the database or to Twilio/Chargily.
-
-In **File Explorer**, open the inner backend folder (the one with `manage.py`). Create a new file named **`.env`** (no extension — just `.env`) and paste this content:
-
-```env
-SECRET_KEY=django-insecure-$04g64d*+d3eddyw^z$@zl9!zwq1sjpq9ncbe5a%^7s(gu*l4)
-DEBUG=True
-DB_NAME=school_db_4
-DB_USER=postgres
-DB_PASSWORD=admin123
-TWILIO_USE_TEST=True
-TEST_TWILIO_ACCOUNT_SID=AC33afdfcba52049d912fe178628b30379
-TEST_TWILIO_AUTH_TOKEN=5461c9d099a686ad3065bbd01368b578
-TEST_TWILIO_PHONE_NUMBER=+15005550006
-GOOGLE_OAUTH_CLIENT_ID=719247317672-32jg242u60iic2hjkvg2selclsb4ebrb.apps.googleusercontent.com
-TEST_CHARGILY_PUBLIC=your_chargily_test_public_key_here
-TEST_CHARGILY_PRIVATE=your_chargily_test_private_key_here
-CHARGILY_WEBHOOK_SECRET=your_chargily_test_private_key_here
-FRONTEND_URL=https://your-ngrok-url.ngrok-free.app
-```
-
-| Line | What it does |
-|---|---|
-| `SECRET_KEY` | Internal Django signing key (dev value, fine for local use) |
-| `DEBUG=True` | Shows detailed error pages (turn off in production) |
-| `DB_NAME / USER / PASSWORD` | How the backend connects to the postgres database you just created |
-| `TWILIO_*` | SMS phone-verification service. `TEST_*` = fake mode, OTP codes are printed in the terminal instead of sent by SMS |
-| `GOOGLE_OAUTH_CLIENT_ID` | Lets you sign in with Google |
-| `TEST_CHARGILY_*` | Chargily payment gateway in **test mode** (fake card `4242 4242 4242 4242` works) |
-| `FRONTEND_URL` | The public HTTPS URL of the backend — used by Chargily to redirect after payment. See the **ngrok** steps below to get yours. |
-
-The first 10 lines use dev defaults. The last 4 need your own values — see the **ngrok** and **Chargily** steps below.
-
-#### Get a public URL with ngrok
+### 3.3. Get a public URL with ngrok
 
 > **Why ngrok?** Chargily sends the user back to `FRONTEND_URL` after a payment. Your Django backend is running on `http://localhost:8000` — that's only reachable from your own PC. Chargily's servers can't see it, so the payment redirect would fail. ngrok gives the backend a **public HTTPS URL** that anyone (including Chargily) can reach.
 
@@ -143,9 +104,9 @@ The first 10 lines use dev defaults. The last 4 need your own values — see the
 6. Copy the **`https://....ngrok-free.app`** URL and paste it into `FRONTEND_URL=` in your `.env` file
 7. **Also add the ngrok URL to Django's allowed hosts** — open `school_backend/school_backend/settings.py` and find the `ALLOWED_HOSTS` list (line 49). Add the ngrok URL as a string inside the list, for example:
    ```python
-   ALLOWED_HOSTS = ['localhost', '127.0.0.1','rendering-rebate-headcount.ngrok-free.dev', '192.168.1.3', 'xxxx-xxx-xxx-xxx-xxx.ngrok-free.app.ngrok-free.app']
+   ALLOWED_HOSTS = ['localhost', '127.0.0.1','rendering-rebate-headcount.ngrok-free.dev', '192.168.1.3', 'c5c3-154-252-33-236.ngrok-free.app']
    ```
-   (Use the exact URL ngrok gave you — the part before `ngrok-free.app` is different every time.)
+   (The part before `ngrok-free.app` is different every time you restart ngrok — use your actual URL.)
 8. Save both the `.env` and `settings.py` files
 
 > **Important:** every time you restart `ngrok http 8000`, the URL changes. So:
@@ -154,7 +115,7 @@ The first 10 lines use dev defaults. The last 4 need your own values — see the
 
 > **Leave the ngrok terminal open** — closing it stops the public URL.
 
-#### Get your Chargily test keys (2 minutes)
+### 3.4. Get your Chargily test keys (2 minutes)
 
 1. Go to **[pay.chargily.net/test](https://pay.chargily.com/dashboard/login)** → sign up / log in
 2. Dashboard → **Settings** → **API Keys** → turn **Test mode** ON
@@ -162,7 +123,7 @@ The first 10 lines use dev defaults. The last 4 need your own values — see the
 4. Copy the **Secret key** (starts with `test_sk_…`) → paste into both `TEST_CHARGILY_PRIVATE` **and** `CHARGILY_WEBHOOK_SECRET`
 5. Save the `.env` file
 
-### 3.4. Install + run the backend
+### 3.5. Install + run the backend
 
 Open the `school_backend` folder in **Visual Studio** (or VS Code). Open its terminal (**View → Terminal** in VS, or the integrated terminal in VS Code with **Ctrl+`**) and run these commands one by one:
 
@@ -219,7 +180,7 @@ The phone and your PC must be on the **same Wi-Fi** network.
 
 ```dart
 //static const String baseUrl = 'http://localhost:8000/api';
-static const String baseUrl = 'http://192.168.1.3:8000/api';   // <-- your IP
+static const String baseUrl = 'http://192.168.1.3:8000/api';   // <-- your IP adress (from ipconfig command)
 ```
 
 3. If your IP is **not** `192.168.1.3`, also open `school_backend/school_backend/settings.py` line 49, add your IP inside `ALLOWED_HOSTS` (e.g. `'192.168.1.10'`), save, and **restart the backend**.
