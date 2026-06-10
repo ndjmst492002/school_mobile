@@ -285,7 +285,7 @@ class StudentController extends GetxController {
     try {
       await _studentApi.enrollInClass(classTeacherId, studentId: childId);
       await loadData();
-      Get.snackbar('Success'.tr, 'Enrolled in class successfully'.tr);
+      Get.snackbar('Success'.tr, 'Enrollment request sent'.tr);
     } catch (e) {
       debugPrint('Enroll error: $e');
       Get.snackbar('Error'.tr, 'Failed to enroll. Please try again.'.tr);

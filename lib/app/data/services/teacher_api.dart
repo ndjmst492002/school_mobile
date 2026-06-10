@@ -73,6 +73,7 @@ class TeacherApi {
     String? fileName,
     String? dueDate,
     List<int>? skillIds,
+    int? levelId,
   }) async {
     dio_pkg.MultipartFile file;
 
@@ -91,6 +92,7 @@ class TeacherApi {
       'title': title,
       'description': description,
       'related_class': classId,
+      if (levelId != null) 'level_id': levelId,
       'file_path': file,
       if (dueDate != null && dueDate.isNotEmpty) 'due_date': dueDate,
     });

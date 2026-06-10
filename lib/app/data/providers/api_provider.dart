@@ -10,7 +10,7 @@ class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
   String? _webToken;
 
-  static const String baseUrl = 'http://192.168.1.3:8000/api';
+  static const String baseUrl = 'http://10.77.206.225:8000/api';
   //static const String baseUrl = 'http://localhost:8000/api';
   Future<ApiProvider> init() async {
     _dio = dio_pkg.Dio(
@@ -27,6 +27,8 @@ class ApiProvider extends GetxService {
       var cookieJar = CookieJar();
       _dio.interceptors.add(CookieManager(cookieJar));
     } else {
+      // On web, enable sending cookies cross-origin (needed for HttpOnly cookie auth)
+      _dio.options.extra['withCredentials'] = true;
       // On web, load token from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       _webToken = prefs.getString('web_token');

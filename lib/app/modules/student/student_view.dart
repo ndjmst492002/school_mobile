@@ -151,24 +151,28 @@ class StudentView extends GetView<StudentController> {
             ),
           ),
         ),
-        body: RefreshIndicator(
-          onRefresh: controller.loadData,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                _buildStatsCards(isDark),
-                const SizedBox(height: 16),
-                _buildTabs(isDark),
-                const SizedBox(height: 12),
-                _buildTabContent(isDark),
-                const SizedBox(height: 16),
-                _buildSubmitDialog(),
-              ],
+        body: Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: controller.loadData,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    _buildStatsCards(isDark),
+                    const SizedBox(height: 16),
+                    _buildTabs(isDark),
+                    const SizedBox(height: 12),
+                    _buildTabContent(isDark),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
             ),
-          ),
+            _buildSubmitDialog(),
+          ],
         ),
       );
     });
@@ -1614,7 +1618,8 @@ class StudentView extends GetView<StudentController> {
     return Obx(() {
       if (controller.selectedExercise.value == null)
         return const SizedBox.shrink();
-      return Container(
+      return Positioned.fill(
+        child: Container(
         color: Colors.black54,
         child: Center(
           child: Card(
@@ -1696,7 +1701,7 @@ class StudentView extends GetView<StudentController> {
             ),
           ),
         ),
-      );
+      ));
     });
   }
 

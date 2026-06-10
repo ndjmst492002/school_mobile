@@ -410,6 +410,7 @@ class TeacherController extends GetxController {
             ? uploadDueDateController.text
             : null,
         skillIds: selectedSkills.isNotEmpty ? selectedSkills.toList() : null,
+        levelId: uploadLevelId.value,
       );
       toggleUploadForm();
       loadData();

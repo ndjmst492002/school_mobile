@@ -115,15 +115,27 @@ If the table list is empty or no rows appear, the restore didn't pick up the dat
 
 > **Leave the ngrok terminal open** — closing it stops the public URL.
 
-### 3.4. Get your Chargily test keys (2 minutes)
+### 3.4. Get your Chargily test keys
 
 1. Go to **[pay.chargily.net/test](https://pay.chargily.com/dashboard/login)** → sign up / log in
-2. Dashboard → **Settings** → **API Keys** → turn **Test mode** ON
+2. Then to the **Dashboard** → **Developers Corner** → **Test Mode Keys**
 3. Copy the **Public key** (starts with `test_pk_…`) → paste into `TEST_CHARGILY_PUBLIC`
 4. Copy the **Secret key** (starts with `test_sk_…`) → paste into both `TEST_CHARGILY_PRIVATE` **and** `CHARGILY_WEBHOOK_SECRET`
-5. Save the `.env` file
 
-### 3.5. Install + run the backend
+### 3.5. Set up the Chargily webhook (2 minutes)
+
+> **Why a webhook?** When a user pays on Chargily's site, Chargily needs to notify your backend so it can activate the subscription. That notification is sent to a **webhook URL** — an endpoint on your backend that Chargily calls automatically. Without this, paid subscriptions stay inactive forever.
+
+1. Go to **Dashboard** → **Developers corner** → **Webhook endpoint**
+2. In the **URL** field, paste your ngrok URL followed by `/api/users/payments/webhook/`. For example:
+   ```
+   https://xxxx-xxx-xxx-xxx-xxx.ngrok-free.app/api/users/payments/webhook/
+   ```
+3. Click **Save**
+
+> Make sure the ngrok URL here matches the `FRONTEND_URL` you set in `.env` — both should be the same `https://....ngrok-free.app` address.
+
+### 3.6. Install + run the backend
 
 Open the `school_backend` folder in **Visual Studio** (or VS Code). Open its terminal (**View → Terminal** in VS, or the integrated terminal in VS Code with **Ctrl+`**) and run these commands one by one:
 
