@@ -34,7 +34,6 @@ cd school_backend
 git pull
 cd ..
 ```
-
 ### Mobile App
 
 ```bash
