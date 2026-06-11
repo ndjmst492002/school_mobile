@@ -26,9 +26,22 @@ After installing Flutter, open a terminal and run `flutter doctor` — fix any r
 
 Open a terminal in the folder where you want the project (e.g. Desktop):
 
+### Backend
+
 ```bash
-git clone -b added-level-table --single-branch https://github.com/ZA3MA3/school_backend.git school_backend
+git clone -b added-level-table --single-branch https://github.com/ZA3MA3/school_backend.git
+cd school_backend
+git pull
+cd ..
+```
+
+### Mobile App
+
+```bash
 git clone -b mobile-frontend --single-branch https://github.com/ndjmst492002/school_mobile.git school_mobile
+cd school_mobile
+git pull
+cd ..
 ```
 
 You should now have `school_backend/` and `school_mobile/` side by side.

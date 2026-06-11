@@ -10,7 +10,7 @@ class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
   String? _webToken;
 
-  static const String baseUrl = 'http://10.77.206.225:8000/api';
+  static const String baseUrl = 'http://192.168.1.4:8000/api';
   //static const String baseUrl = 'http://localhost:8000/api';
   Future<ApiProvider> init() async {
     _dio = dio_pkg.Dio(

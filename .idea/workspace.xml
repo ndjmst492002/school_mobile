@@ -6,11 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="5a3a1f1c-366a-4de0-956b-000d29ce0209" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/app/data/providers/api_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/providers/api_provider.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/data/services/teacher_api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/data/services/teacher_api.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/student/student_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/student/student_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/parent/parent_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/parent/parent_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/modules/teacher/teacher_view.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

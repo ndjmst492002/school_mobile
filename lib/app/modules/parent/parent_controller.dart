@@ -397,10 +397,9 @@ class ParentController extends GetxController {
             : null,
       );
       searchedExercises.value = results;
-      assignedExerciseIds.value = results
+      assignedExerciseIds.assignAll(results
           .where((e) => e.isAssigned)
-          .map((e) => e.id)
-          .toSet();
+          .map((e) => e.id));
     } catch (e) {
       exerciseSearchError.value = 'Failed to load exercises: $e';
       debugPrint('Error searching exercises: $e');

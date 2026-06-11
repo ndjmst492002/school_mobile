@@ -1903,7 +1903,7 @@ class TeacherView extends GetView<TeacherController> {
                                     child: Column(
                                       children: [
                                         Text(
-                                          '${controller.attendance.value.where((s) => s.status == 'PRESENT').length}',
+                                          '${controller.attendance.where((s) => s.status == 'PRESENT').length}',
                                           style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -1938,7 +1938,7 @@ class TeacherView extends GetView<TeacherController> {
                                     child: Column(
                                       children: [
                                         Text(
-                                          '${controller.attendance.value.where((s) => s.status == 'ABSENT').length}',
+                                          '${controller.attendance.where((s) => s.status == 'ABSENT').length}',
                                           style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
