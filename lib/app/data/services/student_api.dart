@@ -27,11 +27,6 @@ class StudentApi {
     if (studentId != null) params['student_id'] = studentId;
     if (levelId != null) params['level_id'] = levelId;
     final response = await _api.get('/users/classes/', queryParameters: params);
-    debugPrint('getAllClasses status: ${response.statusCode}, data type: ${response.data.runtimeType}');
-    if (response.statusCode != 200) {
-      debugPrint('getAllClasses error response: ${response.data}');
-      return [];
-    }
     if (response.data is! List) {
       debugPrint('getAllClasses response is not a list: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
@@ -113,10 +108,12 @@ class StudentApi {
     Uint8List? fileBytes,
     String? fileName,
     int? studentId,
+    String? submissionText,
   }) async {
     final formData = dio_pkg.FormData.fromMap({
       'exercise': exerciseId,
       if (studentId != null) 'student_id': studentId,
+      if (submissionText != null && submissionText.isNotEmpty) 'submission_text': submissionText,
     });
 
     if (filePath != null || (kIsWeb && fileBytes != null)) {
@@ -144,11 +141,11 @@ class StudentApi {
   }
 
   String downloadExerciseUrl(int exerciseId) {
-    return '${ApiProvider.baseUrl}/users/exercises/$exerciseId/download/';
+    return '/users/exercises/$exerciseId/download/';
   }
 
   String downloadSubmissionUrl(int submissionId) {
-    return '${ApiProvider.baseUrl}/users/submissions/$submissionId/download/';
+    return '/users/submissions/$submissionId/download/';
   }
 
   Future<List<Announcement>> getAnnouncements({int? studentId}) async {

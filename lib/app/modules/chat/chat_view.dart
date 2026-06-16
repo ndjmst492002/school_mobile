@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../data/models/chat_models.dart';
 import '../../theme/app_theme.dart';
 import 'chat_controller.dart';
 
@@ -354,11 +355,44 @@ class ChatView extends GetView<ChatController> {
                               : Colors.white,
                           child: Obx(
                             () => ListView.builder(
-                              reverse: true,
+                              controller: controller.scrollController,
                               padding: const EdgeInsets.all(16),
-                              itemCount: controller.messages.length,
+                              itemCount: controller.displayItems.length,
                               itemBuilder: (context, index) {
-                                final msg = controller.messages[index];
+                                final item = controller.displayItems[index];
+                                if (item is String) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    child: Center(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF3F3F46)
+                                              : Colors.grey[200],
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          controller.formatDateGroup(item),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark
+                                                ? Colors.white70
+                                                : Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final msg = item as ChatMessage;
                                 final isOwn = controller.isOwnMessage(msg);
                                 return Align(
                                   alignment: isOwn

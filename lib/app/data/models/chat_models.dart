@@ -14,12 +14,11 @@ class Contact {
   });
 
   factory Contact.fromJson(Map<String, dynamic> json) {
-    final user = json['user'] as Map<String, dynamic>?;
     return Contact(
       id: json['id'] ?? 0,
-      userId: user?['id'] ?? json['id'] ?? 0,
-      fullName: json['full_name'] ?? user?['full_name'] ?? '',
-      role: json['role'] ?? user?['role'] ?? '',
+      userId: json['id'] ?? 0,
+      fullName: json['full_name'] ?? '',
+      role: json['role'] ?? '',
       unreadCount: json['unread_count'] ?? 0,
     );
   }

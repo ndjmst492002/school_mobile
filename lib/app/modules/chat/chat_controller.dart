@@ -13,6 +13,7 @@ class ChatController extends GetxController {
   final ChatApi _chatApi = ChatApi();
 
   final TextEditingController messageController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
 
   final contacts = <Contact>[].obs;
   final selectedContact = Rxn<Contact>();
@@ -89,11 +90,24 @@ class ChatController extends GetxController {
     }
   }
 
+  void scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   Future<void> loadMessages(int contactId) async {
     try {
       final data = await _chatApi.getMessages(contactId);
       messages.value = data.reversed.toList();
       debugPrint('Loaded ${data.length} messages for contact $contactId');
+      scrollToBottom();
     } catch (e) {
       debugPrint('Error loading messages: $e');
     }
@@ -220,7 +234,7 @@ class ChatController extends GetxController {
           final exists = messages.any((m) => m.id == msg.id);
           if (!exists) {
             messages.add(msg);
-            debugPrint('Added message: ${msg.content}');
+            scrollToBottom();
           }
         }
       }
@@ -345,6 +359,47 @@ class ChatController extends GetxController {
 
   bool isOwnMessage(ChatMessage msg) {
     return msg.sender == currentUserId;
+  }
+
+  String formatDateGroup(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr).toLocal();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final msgDate = DateTime(date.year, date.month, date.day);
+      if (msgDate == today) return 'Today'.tr;
+      if (msgDate == today.subtract(const Duration(days: 1))) {
+        return 'Yesterday'.tr;
+      }
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  List<dynamic> get displayItems {
+    if (messages.isEmpty) return [];
+    final items = <dynamic>[];
+    String? lastKey;
+    for (int i = messages.length - 1; i >= 0; i--) {
+      final msg = messages[i];
+      final key = _dateKey(msg.createdAt);
+      if (key != lastKey) {
+        items.add(msg.createdAt);
+        lastKey = key;
+      }
+      items.add(msg);
+    }
+    return items;
+  }
+
+  String _dateKey(String dateStr) {
+    try {
+      final d = DateTime.parse(dateStr).toLocal();
+      return '${d.year}-${d.month}-${d.day}';
+    } catch (_) {
+      return '';
+    }
   }
 
   String formatTime(String dateStr) {

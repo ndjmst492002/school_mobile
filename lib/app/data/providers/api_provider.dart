@@ -10,8 +10,8 @@ class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
   String? _webToken;
 
-  static const String baseUrl = 'http://192.168.1.4:8000/api';
   //static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'https://school-backend-9j8f.onrender.com/api';
   Future<ApiProvider> init() async {
     _dio = dio_pkg.Dio(
       dio_pkg.BaseOptions(
@@ -29,22 +29,41 @@ class ApiProvider extends GetxService {
     } else {
       // On web, enable sending cookies cross-origin (needed for HttpOnly cookie auth)
       _dio.options.extra['withCredentials'] = true;
-      // On web, load token from SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      _webToken = prefs.getString('web_token');
     }
+    // Load JWT token from SharedPreferences (for both web and mobile)
+    final prefs = await SharedPreferences.getInstance();
+    _webToken = prefs.getString('web_token');
+    bool _refreshing = false;
     _dio.interceptors.add(
       dio_pkg.InterceptorsWrapper(
         onRequest: (options, handler) {
-          // For web, add JWT token from storage
-          if (kIsWeb && _webToken != null) {
+          // Add JWT token if available (both web and mobile)
+          if (_webToken != null) {
             options.headers['Authorization'] = 'Bearer $_webToken';
           }
           return handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            Get.find<AuthService>().logout();
+          if (error.response?.statusCode == 401 && !_refreshing) {
+            _refreshing = true;
+            try {
+              await _dio.post('/users/token/refresh/');
+              final retryOpts = error.requestOptions;
+              final retryResponse = await _dio.request(
+                retryOpts.path,
+                data: retryOpts.data,
+                queryParameters: retryOpts.queryParameters,
+                options: dio_pkg.Options(
+                  method: retryOpts.method,
+                  headers: retryOpts.headers,
+                ),
+              );
+              _refreshing = false;
+              return handler.resolve(retryResponse);
+            } catch (_) {
+              _refreshing = false;
+              Get.find<AuthService>().logout();
+            }
           }
           return handler.next(error);
         },
@@ -106,18 +125,14 @@ class ApiProvider extends GetxService {
 
   Future<void> setWebToken(String token) async {
     _webToken = token;
-    if (kIsWeb) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('web_token', token);
-    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('web_token', token);
   }
 
   Future<void> clearWebToken() async {
     _webToken = null;
-    if (kIsWeb) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('web_token');
-    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('web_token');
   }
 }
 
@@ -219,11 +234,9 @@ class AuthService extends GetxService {
     _user.value = null;
     _isAuthenticated.value = false;
     _clearStorage();
-    // Clear web token
-    if (kIsWeb) {
-      final apiProvider = Get.find<ApiProvider>();
-      apiProvider.clearWebToken();
-    }
+    // Clear JWT token
+    final apiProvider = Get.find<ApiProvider>();
+    apiProvider.clearWebToken();
   }
 
   Future<void> _clearStorage() async {

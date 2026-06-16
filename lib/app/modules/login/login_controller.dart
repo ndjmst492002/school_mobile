@@ -106,25 +106,7 @@ class LoginController extends GetxController {
 
       if (userData != null && role != null) {
         _auth.setUser(userData, role: role, roles: roles);
-
-        switch (role.toUpperCase()) {
-          case 'TEACHER':
-            Get.offAllNamed(AppRoutes.teacher);
-            break;
-          case 'PARENT':
-            Get.offAllNamed(AppRoutes.parent);
-            break;
-          case 'STUDENT':
-            Get.offAllNamed(AppRoutes.student);
-            break;
-          case 'ADMIN':
-            Get.offAllNamed(AppRoutes.admin);
-            break;
-          default:
-            Get.offAllNamed(AppRoutes.login);
-        }
-
-        _connectWebSocket();
+        await _checkSubscriptionAndNavigate(role.toUpperCase());
       } else {
         error.value =
             'No roles assigned to this account. Please complete registration first.';
@@ -269,11 +251,12 @@ class LoginController extends GetxController {
 
       // If we found user data and role, proceed
       if (userData != null && role != null && role.isNotEmpty) {
-        // Save token for web if present in response
-        if (kIsWeb && response.containsKey('access')) {
+        // Save JWT token if present in response
+        debugPrint('Login response contains access: ${response.containsKey('access')}');
+        if (response.containsKey('access')) {
           final apiProvider = Get.find<ApiProvider>();
           await apiProvider.setWebToken(response['access']);
-          debugPrint('Saved access token for web');
+          debugPrint('Saved access token');
         }
 
         _auth.setUser(userData, role: role, roles: roles);
@@ -395,8 +378,8 @@ class LoginController extends GetxController {
       if (userData != null && role != null && role.isNotEmpty) {
         _auth.setUser(userData, role: role, roles: roles);
 
-        // Save token for web
-        if (kIsWeb && response.containsKey('access')) {
+        // Save JWT token if present in response
+        if (response.containsKey('access')) {
           final apiProvider = Get.find<ApiProvider>();
           await apiProvider.setWebToken(response['access']);
         }

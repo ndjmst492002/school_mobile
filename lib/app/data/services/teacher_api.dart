@@ -51,8 +51,16 @@ class TeacherApi {
 
   Future<List<Submission>> getSubmissions() async {
     final response = await _api.get('/users/teacher/submissions/');
-    if (response.data is! List) {
-      debugPrint('getSubmissions response is not a list: ${response.data}');
+
+    List<dynamic>? data;
+    if (response.data is List) {
+      data = response.data as List<dynamic>;
+    } else if (response.data is Map && (response.data as Map)['submissions'] is List) {
+      data = (response.data as Map)['submissions'] as List<dynamic>;
+    }
+
+    if (data == null) {
+      debugPrint('getSubmissions response is not a list or {submissions:[...]}: ${response.data}');
       if (_isProfileNotFoundError(response.data)) {
         throw ProfileNotFoundException(
           'Teacher profile not found. Please complete your profile.',
@@ -60,7 +68,6 @@ class TeacherApi {
       }
       return [];
     }
-    final List<dynamic> data = response.data;
     return data.map((json) => Submission.fromJson(json)).toList();
   }
 
@@ -116,11 +123,11 @@ class TeacherApi {
   }
 
   String downloadSubmissionUrl(int submissionId) {
-    return '${ApiProvider.baseUrl}/users/submissions/$submissionId/download/';
+    return '/users/submissions/$submissionId/download/';
   }
 
   String downloadExerciseUrl(int exerciseId) {
-    return '${ApiProvider.baseUrl}/users/exercises/$exerciseId/download/';
+    return '/users/exercises/$exerciseId/download/';
   }
 
   Future<Submission> gradeSubmission(

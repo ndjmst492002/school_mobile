@@ -3,11 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/teacher_api.dart';
 import '../../data/services/websocket_service.dart';
+import '../../data/services/download_service.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../../main.dart';
@@ -113,28 +113,6 @@ class TeacherController extends GetxController {
     } else {
       selectedSkills.add(skillId);
     }
-  }
-
-  static const List<Map<String, dynamic>> _allLevelsData = [
-    {'id': 1, 'name': '1AP'}, {'id': 2, 'name': '2AP'},
-    {'id': 3, 'name': '3AP'}, {'id': 4, 'name': '4AP'},
-    {'id': 5, 'name': '5AP'}, {'id': 6, 'name': '1AM'},
-    {'id': 7, 'name': '2AM'}, {'id': 8, 'name': '3AM'},
-    {'id': 9, 'name': '4AM'}, {'id': 10, 'name': '1AS'},
-    {'id': 11, 'name': '2AS'}, {'id': 12, 'name': '3AS'},
-  ];
-
-  List<Level> get uploadLevels =>
-      _allLevelsData.map((e) => Level(id: e['id'] as int, name: e['name'] as String)).toList();
-
-  List<ClassModel> get filteredClasses {
-    if (uploadLevelId.value == null) return classes;
-    return classes.where((c) => c.levelName != null && c.levelName == uploadLevels.firstWhere((l) => l.id == uploadLevelId.value).name).toList();
-  }
-
-  void onUploadLevelChanged(int? levelId) {
-    uploadLevelId.value = levelId;
-    uploadClassId.value = '';
   }
 
   void addSkill(int skillId) {
@@ -285,7 +263,6 @@ class TeacherController extends GetxController {
             id: n.id,
             recipient: n.recipient,
             type: n.type,
-            title: n.title,
             message: n.message,
             createdAt: n.createdAt,
             isRead: true,
@@ -317,14 +294,7 @@ class TeacherController extends GetxController {
         attendanceRecords[record.student] = record.status;
       }
 
-      final cls = classes.firstWhereOrNull((c) => c.id == classId);
-      if (cls != null) {
-        for (var student in cls.students ?? []) {
-          if (!attendanceRecords.containsKey(student.id)) {
-            attendanceRecords[student.id] = 'PRESENT';
-          }
-        }
-      }
+
     } catch (e) {
       debugPrint('Error loading attendance: $e');
       Get.snackbar('Error'.tr, 'Failed to load attendance. Please try again.'.tr);
@@ -339,6 +309,7 @@ class TeacherController extends GetxController {
     isSavingAttendance.value = true;
     try {
       final records = attendanceRecords.entries
+          .where((entry) => entry.value.isNotEmpty)
           .map(
             (entry) => {
               'student_id': entry.key,
@@ -348,6 +319,11 @@ class TeacherController extends GetxController {
             },
           )
           .toList();
+      if (records.isEmpty) {
+        Get.snackbar('Info'.tr, 'No students marked as present or absent'.tr);
+        isSavingAttendance.value = false;
+        return;
+      }
 
       await _teacherApi.markAttendance(records);
       await loadAttendance();
@@ -361,7 +337,11 @@ class TeacherController extends GetxController {
   }
 
   void setStudentAttendance(int studentId, String status) {
-    attendanceRecords[studentId] = status;
+    if (attendanceRecords[studentId] == status) {
+      attendanceRecords[studentId] = '';
+    } else {
+      attendanceRecords[studentId] = status;
+    }
   }
 
   Future<void> pickFile() async {
@@ -468,20 +448,21 @@ class TeacherController extends GetxController {
     }
   }
 
-  void updateUploadClassId(String value) => uploadClassId.value = value;
+  void updateUploadClassId(String value) {
+    uploadClassId.value = value;
+    final cls = classes.firstWhereOrNull((c) => c.id.toString() == value);
+    if (cls?.teachers != null && cls!.teachers!.isNotEmpty) {
+      final levelId = cls.teachers!.firstWhereOrNull((t) => t.levelId != null)?.levelId;
+      uploadLevelId.value = levelId;
+    } else {
+      uploadLevelId.value = null;
+    }
+  }
   void updateAnnouncementClassId(String value) =>
       announcementClassId.value = value;
   void updateAttendanceClassId(String value) {
     attendanceClassId.value = value;
     attendanceRecords.clear();
-    if (value.isNotEmpty) {
-      final cls = classes.firstWhereOrNull((c) => c.id.toString() == value);
-      if (cls?.students != null) {
-        for (var student in cls!.students!) {
-          attendanceRecords[student.id] = 'PRESENT';
-        }
-      }
-    }
   }
 
   Future<void> createAnnouncement() async {
@@ -521,7 +502,6 @@ class TeacherController extends GetxController {
 
   Future<void> downloadSubmission(int submissionId) async {
     final url = downloadSubmissionUrl(submissionId);
-    debugPrint('Download URL: $url');
 
     final submission = submissions.firstWhereOrNull(
       (s) => s.id == submissionId,
@@ -536,11 +516,18 @@ class TeacherController extends GetxController {
       return;
     }
 
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Error'.tr, 'Cannot open download link'.tr);
+    try {
+      final dio = Get.find<ApiProvider>().dio;
+      final name = submission.submissionFileUrl!.split('/').last;
+      await DownloadService.downloadFile(
+        dio: dio,
+        url: url,
+        filename: name,
+        fileUrl: submission.submissionFileUrl,
+      );
+    } catch (e) {
+      debugPrint('Download error: $e');
+      Get.snackbar('Error'.tr, 'Download failed: $e');
     }
   }
 
@@ -550,7 +537,6 @@ class TeacherController extends GetxController {
 
   Future<void> downloadExercise(int exerciseId) async {
     final url = downloadExerciseUrl(exerciseId);
-    debugPrint('Download Exercise URL: $url');
 
     final exercise = exercises.firstWhereOrNull((e) => e.id == exerciseId);
     if (exercise == null) {
@@ -563,11 +549,18 @@ class TeacherController extends GetxController {
       return;
     }
 
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Error'.tr, 'Cannot open download link'.tr);
+    try {
+      final dio = Get.find<ApiProvider>().dio;
+      final name = exercise.fileUrl!.split('/').last;
+      await DownloadService.downloadFile(
+        dio: dio,
+        url: url,
+        filename: name,
+        fileUrl: exercise.fileUrl,
+      );
+    } catch (e) {
+      debugPrint('Download error: $e');
+      Get.snackbar('Error'.tr, 'Download failed');
     }
   }
 

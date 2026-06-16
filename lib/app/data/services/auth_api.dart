@@ -189,4 +189,26 @@ class AuthApi {
     }
     return {'is_active_subscription': false};
   }
+
+  Future<Map<String, dynamic>> refreshToken() async {
+    final response = await _api.post('/users/token/refresh/');
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {};
+  }
+
+  Future<Map<String, dynamic>> createCheckout({
+    required int amount,
+    required String description,
+  }) async {
+    final response = await _api.post(
+      '/users/payments/checkout/',
+      data: {'amount': amount, 'description': description},
+    );
+    if (response.data is Map) {
+      return Map<String, dynamic>.from(response.data);
+    }
+    return {'checkout_url': ''};
+  }
 }

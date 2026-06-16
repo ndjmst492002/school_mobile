@@ -405,11 +405,11 @@ class SignupController extends GetxController {
       try {
         final response = await _authApi.googleAuth(token);
         debugPrint('Backend auth response: $response');
-        // Save token for web
-        if (kIsWeb && response.containsKey('access')) {
+        // Save JWT token if present in response
+        if (response.containsKey('access')) {
           final apiProvider = Get.find<ApiProvider>();
           await apiProvider.setWebToken(response['access'].toString());
-          debugPrint('Web token saved');
+          debugPrint('JWT token saved');
         }
       } catch (e) {
         debugPrint('Backend auth failed: $e');

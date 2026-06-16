@@ -937,8 +937,8 @@ class SignupView extends GetView<SignupController> {
                         fontSize: 13,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Enrollment Date *'.tr,
-                        hintStyle: TextStyle(
+                        labelText: 'Enrollment Date *'.tr,
+                        labelStyle: TextStyle(
                           color: isDark ? AppTheme.darkMutedForeground : AppTheme.mutedForeground,
                           fontSize: 13,
                         ),

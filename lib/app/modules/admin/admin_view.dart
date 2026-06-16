@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../theme/app_theme.dart';
 import '../../data/providers/api_provider.dart';
+import '../../data/services/download_service.dart';
 import '../../data/models/models.dart';
 import '../../../main.dart';
 import 'admin_controller.dart';
@@ -223,16 +223,28 @@ class AdminView extends GetView<AdminController> {
                             : AppTheme.foreground,
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: isDark
-                            ? AppTheme.darkForeground
-                            : AppTheme.foreground,
-                      ),
-                      onPressed: () => Get.back(),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Obx(() => controller.notifications.any((n) => !n.isRead)
+                            ? TextButton(
+                                onPressed: () =>
+                                    controller.markAllNotificationsAsRead(),
+                                child: Text('Mark all as read'.tr),
+                              )
+                            : const SizedBox.shrink()),
+                        IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            color: isDark
+                                ? AppTheme.darkForeground
+                                : AppTheme.foreground,
+                          ),
+                          onPressed: () => Get.back(),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -279,23 +291,12 @@ class AdminView extends GetView<AdminController> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (notification.title.isNotEmpty) ...[
-                                      Text(
-                                        notification.title,
-                                        style: TextStyle(
-                                          fontWeight: notification.isRead
-                                              ? FontWeight.normal
-                                              : FontWeight.bold,
-                                          color: isDark
-                                              ? AppTheme.darkForeground
-                                              : AppTheme.foreground,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
                                     Text(
                                       notification.message,
                                       style: TextStyle(
+                                        fontWeight: notification.isRead
+                                            ? FontWeight.normal
+                                            : FontWeight.bold,
                                         fontSize: 13,
                                         color: isDark
                                             ? AppTheme.darkForeground
@@ -1023,28 +1024,33 @@ class AdminView extends GetView<AdminController> {
               ],
               onChanged: controller.setSelectedLevelId,
             ),
-            if (selectedLevelId != null) ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                value: selectedClassId,
-                decoration: InputDecoration(
-                  labelText: 'Select Class'.tr,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                isExpanded: true,
-                hint: Text('Select a class'.tr),
-                items: levelClasses
-                    .map(
-                      (c) => DropdownMenuItem<int>(
-                        value: c.id,
-                        child: Text('${c.name} (${c.studentCount} students)'),
-                      ),
+            const SizedBox(height: 12),
+            Obx(
+              () => levelClasses.isEmpty
+                  ? Text(
+                      'No classes available'.tr,
+                      style: TextStyle(color: mutedColor, fontSize: 13),
                     )
-                    .toList(),
-                onChanged: (v) => controller.selectedClassId.value = v,
-              ),
-            ],
+                  : DropdownButtonFormField<int>(
+                      value: selectedClassId,
+                      decoration: InputDecoration(
+                        labelText: 'Select Class'.tr,
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      isExpanded: true,
+                      hint: Text('Select a class'.tr),
+                      items: levelClasses
+                          .map(
+                            (c) => DropdownMenuItem<int>(
+                              value: c.id,
+                              child: Text('${c.name} (${c.studentCount} students)'),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) => controller.selectedClassId.value = v,
+                    ),
+            ),
             if (skills.isNotEmpty) ...[
               const SizedBox(height: 12),
               Column(
@@ -1327,17 +1333,26 @@ class AdminView extends GetView<AdminController> {
                         ),
                         if (ex.fileUrl != null && ex.fileUrl!.isNotEmpty) ...[
                           const SizedBox(width: 8),
-                          TextButton.icon(
-                            onPressed: () => launchUrl(
-                              Uri.parse(
-                                '${ApiProvider.baseUrl}/users/exercises/${ex.id}/download/',
-                              ),
-                              mode: LaunchMode.externalApplication,
-                            ),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              final url = '${ApiProvider.baseUrl}/users/exercises/${ex.id}/download/';
+                              final dio = Get.find<ApiProvider>().dio;
+                              await DownloadService.downloadFile(
+                                dio: dio,
+                                url: url,
+                                fileUrl: ex.fileUrl,
+                              );
+                            },
                             icon: const Icon(Icons.download, size: 16),
                             label: Text(
                               'Download'.tr,
                               style: const TextStyle(fontSize: 12),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                           ),
                         ],

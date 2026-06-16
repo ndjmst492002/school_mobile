@@ -482,11 +482,9 @@ class TeacherView extends GetView<TeacherController> {
                         ),
                       ),
                     );
-                  return ListView.builder(
+                  return ListView(
                     padding: const EdgeInsets.all(12),
-                    itemCount: controller.notifications.length,
-                    itemBuilder: (ctx, i) {
-                      final n = controller.notifications[i];
+                    children: controller.notifications.map<Widget>((n) {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         color: n.isRead
@@ -510,24 +508,13 @@ class TeacherView extends GetView<TeacherController> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (n.title.isNotEmpty) ...[
-                                      Text(
-                                        n.title,
-                                        style: TextStyle(
-                                          fontWeight: n.isRead
-                                              ? FontWeight.normal
-                                              : FontWeight.bold,
-                                          color: controller.isDarkMode
-                                              ? AppTheme.darkForeground
-                                              : AppTheme.foreground,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
                                     Text(
                                       n.message,
                                       style: TextStyle(
                                         fontSize: 13,
+                                        fontWeight: n.isRead
+                                            ? FontWeight.normal
+                                            : FontWeight.bold,
                                         color: controller.isDarkMode
                                             ? AppTheme.darkForeground
                                             : AppTheme.foreground,
@@ -563,13 +550,13 @@ class TeacherView extends GetView<TeacherController> {
                                     ),
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }),
+                      ],
+                    ),
+                  ),
+                );
+                }).toList(),
+            );
+            }),
               ),
             ],
           ),
@@ -726,28 +713,119 @@ class TeacherView extends GetView<TeacherController> {
   }
 
   Widget _buildMyClassesContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'My Classes'.tr,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Classes you teach'.tr,
-            style: TextStyle(
-              fontSize: 12,
-              color: controller.isDarkMode
-                  ? AppTheme.darkMutedForeground
-                  : AppTheme.mutedForeground,
+    final isDark = controller.isDarkMode;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'My Classes'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildClassesCard(),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              'Classes you teach'.tr,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark
+                    ? AppTheme.darkMutedForeground
+                    : AppTheme.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Obx(() {
+              if (controller.classes.isEmpty) {
+                return Text(
+                  'No classes assigned yet'.tr,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark
+                        ? AppTheme.darkMutedForeground
+                        : AppTheme.mutedForeground,
+                  ),
+                );
+              }
+              return Column(
+                children: controller.classes.map((cls) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                cls.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            if (cls.levelName != null) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E3A5F)
+                                      : Colors.blue[50],
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  cls.levelName!,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: isDark
+                                        ? const Color(0xFF93C5FD)
+                                        : Colors.blue[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          cls.description,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark
+                                ? AppTheme.darkMutedForeground
+                                : AppTheme.mutedForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${cls.studentCount} students enrolled'.tr,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark
+                                ? AppTheme.darkMutedForeground
+                                : AppTheme.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -762,30 +840,42 @@ class TeacherView extends GetView<TeacherController> {
             'Enrollment Requests'.tr,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           Text(
             'Students requesting to join your classes'.tr,
             style: TextStyle(
+              fontSize: 12,
               color: controller.isDarkMode
                   ? AppTheme.darkMutedForeground
                   : AppTheme.mutedForeground,
-              fontSize: 12,
             ),
           ),
           const SizedBox(height: 16),
-          Obx(() {
-            if (controller.enrollments.isEmpty) {
-              return Text('No pending enrollment requests'.tr);
-            }
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.enrollments.length,
-              itemBuilder: (ctx, i) {
-                final enrollment = controller.enrollments[i];
-                final isDark = controller.isDarkMode;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+          _buildEnrollmentsCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnrollmentsCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Obx(() {
+          if (controller.enrollments.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text('No pending enrollment requests'.tr, textAlign: TextAlign.center),
+              ),
+            );
+          }
+          return Column(
+            children: controller.enrollments.map((enrollment) {
+              final isDark = controller.isDarkMode;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -796,47 +886,35 @@ class TeacherView extends GetView<TeacherController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  enrollment.studentName.isNotEmpty
-                                      ? enrollment.studentName
-                                      : 'Student #${enrollment.student}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Wants to join: ${enrollment.className}'.tr,
-                                  style: TextStyle(
-                                    color: controller.isDarkMode
-                                        ? AppTheme.darkMutedForeground
-                                        : AppTheme.mutedForeground,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Requested: ${_formatDateTime(enrollment.requestedAt)}'
-                                      .tr,
-                                  style: TextStyle(
-                                    color: controller.isDarkMode
-                                        ? AppTheme.darkMutedForeground
-                                        : AppTheme.mutedForeground,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      Text(
+                        enrollment.studentName.isNotEmpty
+                            ? enrollment.studentName
+                            : 'Student #${enrollment.student}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Wants to join: ${enrollment.className}'.tr,
+                        style: TextStyle(
+                          color: controller.isDarkMode
+                              ? AppTheme.darkMutedForeground
+                              : AppTheme.mutedForeground,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Requested: ${_formatDateTime(enrollment.requestedAt)}'
+                            .tr,
+                        style: TextStyle(
+                          color: controller.isDarkMode
+                              ? AppTheme.darkMutedForeground
+                              : AppTheme.mutedForeground,
+                          fontSize: 11,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -910,11 +988,11 @@ class TeacherView extends GetView<TeacherController> {
                       ),
                     ],
                   ),
-                );
-              },
-            );
-          }),
-        ],
+                ),
+              );
+            }).toList(),
+          );
+        }),
       ),
     );
   }
@@ -931,10 +1009,7 @@ class TeacherView extends GetView<TeacherController> {
   String _formatDateTime(String dateStr) {
     try {
       final date = DateTime.parse(dateStr).toLocal();
-      final hour = date.hour;
-      final amPm = hour >= 12 ? 'PM'.tr : 'AM'.tr;
-      final hour12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-      return '${date.month}/${date.day}/${date.year}, $hour12:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')} $amPm';
+      return '${date.month}/${date.day}/${date.year}, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateStr;
     }
@@ -982,23 +1057,13 @@ class TeacherView extends GetView<TeacherController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Announcements'.tr,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              _buildAnnouncementButton(),
-            ],
-          ),
+          _buildAnnouncementButton(),
           if (controller.showAnnouncementForm.value) ...[
             const SizedBox(height: 12),
             _buildAnnouncementForm(),
           ],
           const SizedBox(height: 16),
-          _buildAnnouncementsCard(),
+          SizedBox(width: double.infinity, child: _buildAnnouncementsCard()),
         ],
       ),
     );
@@ -1010,17 +1075,7 @@ class TeacherView extends GetView<TeacherController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Exercises'.tr,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              _buildUploadButton(),
-            ],
-          ),
+          _buildUploadButton(),
           if (controller.showUploadForm.value) ...[
             const SizedBox(height: 12),
             _buildUploadForm(),
@@ -1549,11 +1604,6 @@ class TeacherView extends GetView<TeacherController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Create Announcement'.tr,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 2),
-            Text(
               'Post an announcement for your students and their parents'.tr,
               style: TextStyle(
                 fontSize: 11,
@@ -1698,9 +1748,9 @@ class TeacherView extends GetView<TeacherController> {
                             ? 'Loading...'.tr
                             : 'Load Students'.tr,
                       ),
-                    ],
-                  ),
-                );
+                      ],
+                    ),
+                  );
               }
               return const SizedBox.shrink();
             }),
@@ -1841,10 +1891,10 @@ class TeacherView extends GetView<TeacherController> {
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                      ],
+                      ),
+                    );
+                }).toList(),
                       const SizedBox(height: 12),
                       Obx(
                         () => ElevatedButton(
@@ -1977,6 +2027,7 @@ class TeacherView extends GetView<TeacherController> {
   }
 
   Widget _buildAnnouncementsCard() {
+    final isDark = controller.isDarkMode;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1985,14 +2036,14 @@ class TeacherView extends GetView<TeacherController> {
           children: [
             Text(
               'My Announcements'.tr,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 2),
             Text(
               "Announcements you've posted".tr,
               style: TextStyle(
                 fontSize: 11,
-                color: controller.isDarkMode
+                color: isDark
                     ? AppTheme.darkMutedForeground
                     : AppTheme.mutedForeground,
               ),
@@ -2000,48 +2051,59 @@ class TeacherView extends GetView<TeacherController> {
             const SizedBox(height: 12),
             Obx(() {
               if (controller.announcements.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text('No announcements yet'.tr),
+                return Text(
+                  'No announcements yet'.tr,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark
+                        ? AppTheme.darkMutedForeground
+                        : AppTheme.mutedForeground,
                   ),
                 );
               }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.announcements.length,
-                itemBuilder: (context, index) {
-                  final ann = controller.announcements[index];
-                  return ListTile(
-                    title: Text(
-                      ann.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+
+              return Column(
+                children: controller.announcements.map((ann) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    subtitle: Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          ann.content,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13),
+                          ann.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
+                        Text(
+                          ann.content,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark
+                                ? AppTheme.darkMutedForeground
+                                : AppTheme.mutedForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
                           children: [
-                            if (ann.className != null)
+                            if (ann.className != null) ...[
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 6,
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: controller.isDarkMode
+                                  color: isDark
                                       ? AppTheme.darkBadgeBlueBg
                                       : Colors.blue[50],
                                   borderRadius: BorderRadius.circular(4),
@@ -2050,155 +2112,33 @@ class TeacherView extends GetView<TeacherController> {
                                   'Class: ${ann.className}'.tr,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: controller.isDarkMode
+                                    color: isDark
                                         ? AppTheme.darkBadgeBlueText
                                         : Colors.blue[700],
                                   ),
                                 ),
                               ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: controller.isDarkMode
-                                    ? AppTheme.darkSurface
-                                    : AppTheme.muted,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                _formatDateTime(ann.createdAt),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: controller.isDarkMode
-                                      ? AppTheme.darkMutedForeground
-                                      : AppTheme.mutedForeground,
-                                ),
+                              const SizedBox(width: 8),
+                            ],
+                            Text(
+                              _formatDateTime(ann.createdAt),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? AppTheme.darkMutedForeground
+                                    : AppTheme.mutedForeground,
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 0,
-                      vertical: 8,
-                    ),
                   );
-                },
+                }).toList(),
               );
             }),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildClassesCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Obx(() {
-          if (controller.classes.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text('No classes assigned yet'.tr),
-              ),
-            );
-          }
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.classes.length,
-            itemBuilder: (context, index) {
-              final cls = controller.classes[index];
-              final isDark = controller.isDarkMode;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isDark ? AppTheme.darkBorder : AppTheme.border,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            cls.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        if (cls.levelName != null) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppTheme.darkBadgeBlueBg
-                                  : Colors.blue[50],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              cls.levelName!,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: isDark
-                                    ? AppTheme.darkBadgeBlueText
-                                    : Colors.blue[700],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (cls.description.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          cls.description,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? AppTheme.darkMutedForeground
-                                : AppTheme.mutedForeground,
-                          ),
-                        ),
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        '${cls.studentCount} students enrolled'.tr,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark
-                              ? AppTheme.darkMutedForeground
-                              : AppTheme.mutedForeground,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        }),
       ),
     );
   }
@@ -2234,16 +2174,20 @@ class TeacherView extends GetView<TeacherController> {
                   ),
                 );
               }
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.exercises.length,
-                itemBuilder: (context, index) {
-                  final ex = controller.exercises[index];
+              return Column(
+                children: controller.exercises.map((ex) {
                   final isDark = controller.isDarkMode;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Column(
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -2406,11 +2350,11 @@ class TeacherView extends GetView<TeacherController> {
                               ),
                             ),
                           ),
-                        const Divider(height: 16),
                       ],
                     ),
-                  );
-                },
+                  ),
+                );
+                }).toList(),
               );
             }),
           ],
@@ -2446,8 +2390,8 @@ class TeacherView extends GetView<TeacherController> {
                   final sub = controller.submissions[index];
                   final isDark = controller.isDarkMode;
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: isDark ? AppTheme.darkBorder : AppTheme.border,
@@ -2469,21 +2413,24 @@ class TeacherView extends GetView<TeacherController> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      'Exercise: ${sub.exerciseTitle} | Submitted: ${_formatDateTime(sub.submittedAt)}'
-                                          .tr,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: isDark
-                                            ? AppTheme.darkMutedForeground
-                                            : AppTheme.mutedForeground,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                'Exercise: ${sub.exerciseTitle}'.tr,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
+                                ),
+                              ),
+                              Text(
+                                'Submitted: ${_formatDateTime(sub.submittedAt)}'
+                                    .tr,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppTheme.darkMutedForeground
+                                      : AppTheme.mutedForeground,
+                                ),
                               ),
                               if (sub.grade != null)
                                 Padding(
@@ -2500,59 +2447,50 @@ class TeacherView extends GetView<TeacherController> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        if (sub.submissionFileUrl != null)
-                          SizedBox(
-                            height: 36,
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  controller.downloadSubmission(sub.id),
-                              icon: const Icon(Icons.download, size: 14),
-                              label: Text(
-                                'Download'.tr,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? AppTheme.darkMutedForeground
-                                      : AppTheme.mutedForeground,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                side: BorderSide(
-                                  color: isDark
-                                      ? AppTheme.darkBorder
-                                      : AppTheme.border,
-                                ),
-                                foregroundColor: isDark
-                                    ? AppTheme.darkMutedForeground
-                                    : AppTheme.mutedForeground,
-                              ),
-                            ),
-                          ),
                         const SizedBox(width: 8),
-                        SizedBox(
-                          height: 36,
-                          child: ElevatedButton(
-                            onPressed: () => controller.openGradingDialog(sub),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (sub.submissionFileUrl != null)
+                              OutlinedButton.icon(
+                                onPressed: () =>
+                                    controller.downloadSubmission(sub.id),
+                                icon: const Icon(Icons.download, size: 16),
+                                label: Text(
+                                  'Download'.tr,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                ),
                               ),
-                              backgroundColor: isDark
-                                  ? AppTheme.darkPrimary
-                                  : AppTheme.primary,
-                              foregroundColor: isDark
-                                  ? AppTheme.darkPrimaryForeground
-                                  : AppTheme.primaryForeground,
+                            if (sub.submissionFileUrl != null)
+                              const SizedBox(height: 12),
+                            SizedBox(
+                              height: 36,
+                              child: ElevatedButton(
+                                onPressed: () => controller.openGradingDialog(sub),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  backgroundColor: isDark
+                                      ? AppTheme.darkPrimary
+                                      : AppTheme.primary,
+                                  foregroundColor: isDark
+                                      ? AppTheme.darkPrimaryForeground
+                                      : AppTheme.primaryForeground,
+                                ),
+                                child: Text(
+                                  sub.grade == null ? 'Grade'.tr : 'Re-grade'.tr,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
                             ),
-                            child: Text(
-                              sub.grade == null ? 'Grade'.tr : 'Re-grade'.tr,
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
@@ -2575,26 +2513,27 @@ class TeacherView extends GetView<TeacherController> {
         child: Center(
           child: Card(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Grade Submission'.tr,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Provide a grade and feedback for the student'.tr,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: controller.isDarkMode
-                          ? AppTheme.darkMutedForeground
-                          : AppTheme.mutedForeground,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Grade Submission'.tr,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Provide a grade and feedback for the student'.tr,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: controller.isDarkMode
+                            ? AppTheme.darkMutedForeground
+                            : AppTheme.mutedForeground,
+                      ),
+                    ),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       SizedBox(
@@ -2650,13 +2589,13 @@ class TeacherView extends GetView<TeacherController> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   TextField(
                     controller: controller.feedbackController,
                     decoration: InputDecoration(labelText: 'Feedback'.tr),
                     maxLines: 2,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
@@ -2685,12 +2624,12 @@ class TeacherView extends GetView<TeacherController> {
                       ),
                     ],
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
     });
   }
 }

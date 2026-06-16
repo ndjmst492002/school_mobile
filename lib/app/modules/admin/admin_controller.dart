@@ -102,12 +102,13 @@ class AdminController extends GetxController {
       isLoading.value = false;
     }
 
-    // Load class count separately (non-blocking)
+    // Load classes for the upload form dropdown
     try {
-      final classes = await StudentApi().getAllClassesPublic();
+      final classes = await StudentApi().getAllClasses();
+      levelClasses.value = classes;
       classCount.value = classes.length;
     } catch (e) {
-      debugPrint('Error loading class count: $e');
+      debugPrint('Error loading classes: $e');
     }
   }
 
@@ -134,8 +135,10 @@ class AdminController extends GetxController {
     try {
       final result = await StudentApi().getAllClasses(levelId: levelId);
       levelClasses.value = result;
+      debugPrint('Loaded ${result.length} classes for level $levelId');
     } catch (e) {
       debugPrint('Error loading level classes: $e');
+      levelClasses.value = [];
     }
   }
 
@@ -241,7 +244,6 @@ class AdminController extends GetxController {
               id: n.id,
               recipient: n.recipient,
               type: n.type,
-              title: n.title,
               message: n.message,
               isRead: true,
               createdAt: n.createdAt,

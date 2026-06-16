@@ -5,7 +5,6 @@ class StudentChild {
   final String fullName;
   final String? phoneNumber;
   final String? address;
-  final String? parentOccupation;
   final String? dateOfBirth;
   final String? enrollmentDate;
   final String? parentName;
@@ -16,7 +15,6 @@ class StudentChild {
     required this.fullName,
     this.phoneNumber,
     this.address,
-    this.parentOccupation,
     this.dateOfBirth,
     this.enrollmentDate,
     this.parentName,
@@ -30,7 +28,6 @@ class StudentChild {
       fullName: json['full_name'] ?? '',
       phoneNumber: user?['phone_number'],
       address: user?['address'],
-      parentOccupation: json['parent_occupation'],
       dateOfBirth: json['date_of_birth'] ?? user?['date_of_birth'],
       enrollmentDate: json['enrollment_date'],
       parentName: json['parent_name'],

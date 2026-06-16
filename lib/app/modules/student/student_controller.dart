@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../data/providers/api_provider.dart';
 import '../../data/services/auth_api.dart';
 import '../../data/services/student_api.dart';
+import '../../data/services/download_service.dart';
 import '../../data/services/websocket_service.dart';
 import '../../data/models/models.dart';
 import '../../routes/app_routes.dart';
@@ -31,6 +31,7 @@ class StudentController extends GetxController {
   final profileNotFound = false.obs;
   final searchQuery = ''.obs;
   final searchTextController = TextEditingController();
+  final submissionTextController = TextEditingController();
   final enrollmentFilter = 'all'.obs; // 'all', 'enrolled', 'not_enrolled'
   final levelFilter = Rxn<int>();
 
@@ -57,18 +58,27 @@ class StudentController extends GetxController {
       if (cls.teachers == null || cls.teachers!.isEmpty) {
         return [cls];
       }
-      return cls.teachers!.map((t) => ClassModel(
-        id: cls.id,
-        name: cls.name,
-        description: cls.description,
-        teacher: cls.teacher,
-        teacherName: t.name,
-        students: cls.students,
-        studentCount: cls.studentCount,
-        enrollmentStatus: cls.enrollmentStatus,
-        teachers: [t],
-        levelName: t.levelName ?? cls.levelName,
-      ));
+      return cls.teachers!.map((t) {
+        // Only assign enrollmentStatus when the teacher's class_teacher_id matches
+        EnrollmentStatusInfo? perTeacherStatus;
+        if (cls.enrollmentStatus != null &&
+            cls.enrollmentStatus!.classTeacherId != null &&
+            cls.enrollmentStatus!.classTeacherId == t.classTeacherId) {
+          perTeacherStatus = cls.enrollmentStatus;
+        }
+        return ClassModel(
+          id: cls.id,
+          name: cls.name,
+          description: cls.description,
+          teacher: cls.teacher,
+          teacherName: t.name,
+          students: cls.students,
+          studentCount: cls.studentCount,
+          enrollmentStatus: perTeacherStatus,
+          teachers: [t],
+          levelName: t.levelName ?? cls.levelName,
+        );
+      });
     }).toList();
 
     // Apply level filter (match by level name, like the web)
@@ -97,9 +107,9 @@ class StudentController extends GetxController {
 
     // Apply enrollment filter
     if (enrollmentFilter.value == 'enrolled') {
-      result = result.where((cls) => isEnrolled(cls.id)).toList();
+      result = result.where((cls) => cls.enrollmentStatus?.status == 'APPROVED').toList();
     } else if (enrollmentFilter.value == 'not_enrolled') {
-      result = result.where((cls) => !isEnrolled(cls.id)).toList();
+      result = result.where((cls) => cls.enrollmentStatus == null || cls.enrollmentStatus!.status != 'APPROVED').toList();
     }
 
     return result;
@@ -131,11 +141,8 @@ class StudentController extends GetxController {
   int get enrolledCount {
     int count = 0;
     for (final cls in classes) {
-      if (!isEnrolled(cls.id)) continue;
-      if (cls.teachers == null || cls.teachers!.isEmpty) {
+      if (isEnrolled(cls.id)) {
         count++;
-      } else {
-        count += cls.teachers!.length;
       }
     }
     return count;
@@ -187,6 +194,7 @@ class StudentController extends GetxController {
   @override
   void onClose() {
     searchTextController.dispose();
+    submissionTextController.dispose();
     super.onClose();
   }
 
@@ -316,27 +324,33 @@ class StudentController extends GetxController {
     return _studentApi.downloadExerciseUrl(exerciseId);
   }
 
-  // FIXED: Now works on both web and mobile
   Future<void> downloadExercise(int exerciseId) async {
-    final url = downloadExerciseUrl(exerciseId);
-    debugPrint('Download URL: $url');
-
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Error'.tr, 'Cannot open download link'.tr);
+    try {
+      final url = downloadExerciseUrl(exerciseId);
+      final exercise = exercises.firstWhereOrNull((e) => e.id == exerciseId);
+      final dio = Get.find<ApiProvider>().dio;
+      final name = exercise?.fileUrl?.split('/').last;
+      await DownloadService.downloadFile(
+        dio: dio,
+        url: url,
+        filename: name,
+        fileUrl: exercise?.fileUrl,
+      );
+    } catch (e) {
+      Get.snackbar('Error'.tr, 'Download failed');
     }
   }
 
   void openSubmitDialog(Exercise exercise) {
     selectedExercise.value = exercise;
     selectedSubmitFile.value = null;
+    submissionTextController.clear();
   }
 
   void closeSubmitDialog() {
     selectedExercise.value = null;
     selectedSubmitFile.value = null;
+    submissionTextController.clear();
   }
 
   Future<void> pickSubmitFile() async {
@@ -375,6 +389,7 @@ class StudentController extends GetxController {
         fileBytes: fileBytes,
         fileName: fileName,
         studentId: childId,
+        submissionText: submissionTextController.text.isNotEmpty ? submissionTextController.text : null,
       );
       closeSubmitDialog();
       loadData();
@@ -392,6 +407,7 @@ class StudentController extends GetxController {
       await _studentApi.submitExercise(
         exerciseId: exerciseId,
         studentId: childId,
+        submissionText: 'Marked as done',
       );
       loadData();
       Get.snackbar('Success'.tr, 'Marked as done'.tr);
@@ -427,7 +443,6 @@ class StudentController extends GetxController {
           id: notifications[index].id,
           recipient: notifications[index].recipient,
           type: notifications[index].type,
-          title: notifications[index].title,
           message: notifications[index].message,
           isRead: true,
           createdAt: notifications[index].createdAt,
@@ -443,18 +458,17 @@ class StudentController extends GetxController {
       for (var notification in notifications.where((n) => !n.isRead)) {
         await _studentApi.markNotificationAsRead(notification.id);
       }
-      notifications.value = notifications
-          .map(
-            (n) => AppNotification(
-              id: n.id,
-              recipient: n.recipient,
-              type: n.type,
-              title: n.title,
-              message: n.message,
-              isRead: true,
-              createdAt: n.createdAt,
-            ),
-          )
+        notifications.value = notifications
+            .map(
+              (n) => AppNotification(
+                id: n.id,
+                recipient: n.recipient,
+                type: n.type,
+                message: n.message,
+                isRead: true,
+                createdAt: n.createdAt,
+              ),
+            )
           .toList();
     } catch (e) {
       debugPrint('Error marking all notifications as read: $e');

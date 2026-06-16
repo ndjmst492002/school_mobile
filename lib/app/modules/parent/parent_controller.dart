@@ -258,7 +258,6 @@ class ParentController extends GetxController {
           id: notifications[index].id,
           recipient: notifications[index].recipient,
           type: notifications[index].type,
-          title: notifications[index].title,
           message: notifications[index].message,
           isRead: true,
           createdAt: notifications[index].createdAt,
@@ -274,18 +273,17 @@ class ParentController extends GetxController {
       for (var notification in notifications.where((n) => !n.isRead)) {
         await _parentApi.markNotificationAsRead(notification.id);
       }
-      notifications.value = notifications
-          .map(
-            (n) => AppNotification(
-              id: n.id,
-              recipient: n.recipient,
-              type: n.type,
-              title: n.title,
-              message: n.message,
-              isRead: true,
-              createdAt: n.createdAt,
-            ),
-          )
+        notifications.value = notifications
+            .map(
+              (n) => AppNotification(
+                id: n.id,
+                recipient: n.recipient,
+                type: n.type,
+                message: n.message,
+                isRead: true,
+                createdAt: n.createdAt,
+              ),
+            )
           .toList();
     } catch (e) {
       debugPrint('Error marking all notifications as read: $e');

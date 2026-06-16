@@ -114,11 +114,13 @@ class EnrollmentStatusInfo {
   final String status;
   final String? requestedAt;
   final String? respondedAt;
+  final int? classTeacherId;
 
   EnrollmentStatusInfo({
     required this.status,
     this.requestedAt,
     this.respondedAt,
+    this.classTeacherId,
   });
 
   factory EnrollmentStatusInfo.fromJson(Map<String, dynamic> json) {
@@ -126,6 +128,7 @@ class EnrollmentStatusInfo {
       status: json['status'] ?? 'PENDING',
       requestedAt: json['requested_at'],
       respondedAt: json['responded_at'],
+      classTeacherId: json['class_teacher_id'],
     );
   }
 }
@@ -212,10 +215,13 @@ class Submission {
   final String? studentName;
   final int exercise;
   final String exerciseTitle;
+  final String? submissionFile;
   final String? submissionFileUrl;
+  final String submissionText;
   final String submittedAt;
   final double? grade;
   final String feedback;
+  final String? gradedAt;
 
   Submission({
     required this.id,
@@ -223,10 +229,13 @@ class Submission {
     this.studentName,
     required this.exercise,
     required this.exerciseTitle,
+    this.submissionFile,
     this.submissionFileUrl,
+    this.submissionText = '',
     required this.submittedAt,
     this.grade,
     this.feedback = '',
+    this.gradedAt,
   });
 
   factory Submission.fromJson(Map<String, dynamic> json) {
@@ -236,7 +245,9 @@ class Submission {
       studentName: json['student_name'],
       exercise: json['exercise'] ?? 0,
       exerciseTitle: json['exercise_title'] ?? '',
+      submissionFile: json['submission_file'],
       submissionFileUrl: json['submission_file_url'],
+      submissionText: json['submission_text'] ?? '',
       submittedAt: json['submitted_at'] ?? '',
       grade: json['grade'] != null
           ? (json['grade'] is String
@@ -244,6 +255,7 @@ class Submission {
                 : (json['grade'] as num).toDouble())
           : null,
       feedback: json['feedback'] ?? '',
+      gradedAt: json['graded_at'],
     );
   }
 }
@@ -310,7 +322,7 @@ class AttendanceRecord {
       relatedClass: json['related_class'] ?? 0,
       className: json['class_name'],
       date: json['date'] ?? '',
-      status: json['status'] ?? 'PRESENT',
+      status: json['status'] ?? '',
       markedBy: json['marked_by'] ?? 0,
       teacherName: json['teacher_name'] ?? json['marked_by_name'],
       markedAt: json['marked_at'] ?? '',
@@ -322,7 +334,6 @@ class AppNotification {
   final int id;
   final int recipient;
   final String type;
-  final String title;
   final String message;
   final bool isRead;
   final String createdAt;
@@ -331,7 +342,6 @@ class AppNotification {
     required this.id,
     required this.recipient,
     required this.type,
-    required this.title,
     required this.message,
     required this.isRead,
     required this.createdAt,
@@ -342,7 +352,6 @@ class AppNotification {
       id: json['id'] ?? 0,
       recipient: json['recipient'] ?? 0,
       type: json['type'] ?? '',
-      title: json['title'] ?? '',
       message: json['message'] ?? '',
       isRead: json['is_read'] ?? false,
       createdAt: json['created_at'] ?? '',
@@ -353,16 +362,16 @@ class AppNotification {
 class Skill {
   final int id;
   final String name;
-  final List<int>? levels;
+  final int? skillImportance;
 
-  Skill({required this.id, required this.name, this.levels});
+  Skill({required this.id, required this.name, this.skillImportance});
 
   factory Skill.fromJson(Map<String, dynamic> json) {
-    List<int>? levels;
-    if (json['levels'] is List) {
-      levels = (json['levels'] as List).map((e) => e is int ? e : int.tryParse(e.toString()) ?? 0).toList();
-    }
-    return Skill(id: json['id'] ?? 0, name: json['name'] ?? '', levels: levels);
+    return Skill(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      skillImportance: json['skill_importance'],
+    );
   }
 }
 

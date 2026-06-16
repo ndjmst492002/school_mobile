@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/models.dart';
 import '../../data/models/parent_models.dart';
 import '../../data/providers/api_provider.dart';
+import '../../data/services/download_service.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../../main.dart';
@@ -263,16 +263,41 @@ class ParentView extends GetView<ParentController> {
   }
 
   Widget _buildAnnouncementsTab() {
+    final isDark = Get.find<ThemeService>().isDarkMode;
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: _buildAnnouncementsCard(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Announcements'.tr,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Announcements for your children'.tr,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppTheme.darkMutedForeground
+                  : AppTheme.mutedForeground,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildAnnouncementsCard(),
+        ],
+      ),
     );
   }
 
   Widget _buildAttendanceTab() {
     final isDark = Get.find<ThemeService>().isDarkMode;
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -870,6 +895,7 @@ class ParentView extends GetView<ParentController> {
               ),
             ),
           ],
+          const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
             child: Obx(() {
@@ -950,13 +976,14 @@ class ParentView extends GetView<ParentController> {
               return const Center(child: CircularProgressIndicator());
             }
             if (controller.childSubmissions.isEmpty) {
-              return Center(
-                child: Text(
-                  'No submissions yet'.tr,
-                  style: TextStyle(
-                    color: isDark
-                        ? AppTheme.darkMutedForeground
-                        : AppTheme.mutedForeground,
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Text('No submissions yet'.tr),
+                    ),
                   ),
                 ),
               );
@@ -1005,13 +1032,14 @@ class ParentView extends GetView<ParentController> {
                             .toList()
                       : controller.childSubmissions.toList();
                   if (filtered.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No submissions for this child'.tr,
-                        style: TextStyle(
-                          color: isDark
-                              ? AppTheme.darkMutedForeground
-                              : AppTheme.mutedForeground,
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Text('No submissions for this child'.tr),
+                          ),
                         ),
                       ),
                     );
@@ -1183,49 +1211,22 @@ class ParentView extends GetView<ParentController> {
               const Spacer(),
               if (submission.submissionFileUrl != null &&
                   submission.submissionFileUrl!.isNotEmpty)
-                GestureDetector(
-                  onTap: () async {
-                    final url = submission.submissionFileUrl!;
-                    final uri = Uri.tryParse(url);
-                    if (uri != null) {
-                      await launchUrl(
-                        uri,
-                        mode: LaunchMode.externalApplication,
-                      );
-                    }
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final url = '${ApiProvider.baseUrl}/users/submissions/${submission.id}/download/';
+                    final dio = Get.find<ApiProvider>().dio;
+                    final name = submission.submissionFileUrl!.split('/').last;
+                    await DownloadService.downloadFile(dio: dio, url: url, filename: name, fileUrl: submission.submissionFileUrl);
                   },
-                  child: Container(
+                  icon: const Icon(Icons.download, size: 16),
+                  label: Text(
+                    'Download'.tr,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: isDark ? AppTheme.darkBorder : AppTheme.border,
-                      ),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.download,
-                          size: 14,
-                          color: isDark
-                              ? AppTheme.darkMutedForeground
-                              : AppTheme.mutedForeground,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Download'.tr,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark
-                                ? AppTheme.darkMutedForeground
-                                : AppTheme.mutedForeground,
-                          ),
-                        ),
-                      ],
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                   ),
                 ),
@@ -1403,39 +1404,14 @@ class ParentView extends GetView<ParentController> {
 
   Widget _buildAnnouncementsCard() {
     final isDark = Get.find<ThemeService>().isDarkMode;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(
-          color: isDark ? AppTheme.darkBorder : AppTheme.border,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Announcements'.tr,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: isDark ? AppTheme.darkForeground : AppTheme.foreground,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Announcements for your children'.tr,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark
-                  ? AppTheme.darkMutedForeground
-                  : AppTheme.mutedForeground,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Obx(() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Obx(() {
             if (controller.children.isEmpty) return const SizedBox.shrink();
             return Container(
               decoration: BoxDecoration(
@@ -1502,11 +1478,8 @@ class ParentView extends GetView<ParentController> {
               groupedByChild[childName]![teacherName]!.add(ca);
             }
 
-            return ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 500),
-              child: ListView(
-                shrinkWrap: true,
-                physics: const AlwaysScrollableScrollPhysics(),
+            return Column(
+                mainAxisSize: MainAxisSize.min,
                 children: groupedByChild.entries.map((childEntry) {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 16),
@@ -1635,72 +1608,71 @@ class ParentView extends GetView<ParentController> {
                     ),
                   );
                 }).toList(),
-              ),
             );
           }),
         ],
       ),
+    ),
     );
   }
 
   Widget _buildAttendanceCard() {
     final isDark = Get.find<ThemeService>().isDarkMode;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : AppTheme.card,
-        border: Border.all(
-          color: isDark ? AppTheme.darkBorder : AppTheme.border,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Obx(() {
-            if (controller.children.isEmpty) return const SizedBox.shrink();
-            return Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: isDark ? AppTheme.darkBorder : AppTheme.border,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Obx(() {
+              if (controller.children.isEmpty) return const SizedBox.shrink();
+              return Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                    ),
                   ),
                 ),
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildFilterTab(
-                      'All'.tr,
-                      controller.selectedChildForAttendance.value.isEmpty,
-                      () => controller.selectChildForAttendance(''),
-                      isDark,
-                    ),
-                    ...controller.children.map(
-                      (child) => _buildFilterTab(
-                        child.fullName,
-                        controller.selectedChildForAttendance.value ==
-                            child.fullName,
-                        () =>
-                            controller.selectChildForAttendance(child.fullName),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildFilterTab(
+                        'All'.tr,
+                        controller.selectedChildForAttendance.value.isEmpty,
+                        () => controller.selectChildForAttendance(''),
                         isDark,
                       ),
-                    ),
-                  ],
+                      ...controller.children.map(
+                        (child) => _buildFilterTab(
+                          child.fullName,
+                          controller.selectedChildForAttendance.value ==
+                              child.fullName,
+                          () =>
+                              controller.selectChildForAttendance(child.fullName),
+                          isDark,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
-          const SizedBox(height: 12),
-          Obx(() {
-            if (controller.filteredAttendance.isEmpty) {
-              return Text('No attendance records'.tr);
-            }
-            return Column(
-              children: controller.filteredAttendance.map((childAtt) {
+              );
+            }),
+            const SizedBox(height: 12),
+            Obx(() {
+              if (controller.filteredAttendance.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text('No attendance records'.tr),
+                  ),
+                );
+              }
+              return Column(
+                children: controller.filteredAttendance.map((childAtt) {
                 final presentCount = childAtt.attendance
                     .where((a) => a.status == 'PRESENT')
                     .length;
@@ -1719,7 +1691,7 @@ class ParentView extends GetView<ParentController> {
                               childAtt.childName,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 13.4,
                                 color: isDark
                                     ? AppTheme.darkForeground
                                     : AppTheme.foreground,
@@ -1802,53 +1774,69 @@ class ParentView extends GetView<ParentController> {
                       ),
                       const SizedBox(height: 12),
                       if (childAtt.attendance.isNotEmpty)
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: childAtt.attendance.length > 10
-                              ? 10
-                              : childAtt.attendance.length,
-                          itemBuilder: (context, index) {
-                            final record = childAtt.attendance[index];
+                        Column(
+                          children: childAtt.attendance.take(10).map((record) {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 6),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
-                                vertical: 10,
+                                vertical: 0,
                               ),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppTheme.darkBackground
-                                    : AppTheme.muted,
+                                border: Border.all(
+                                  color: isDark ? AppTheme.darkBorder : AppTheme.border,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
+                              constraints: const BoxConstraints(minHeight: 48),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          record.className ?? 'Class'.tr,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color: isDark
-                                                ? AppTheme.darkForeground
-                                                : AppTheme.foreground,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            record.className ?? 'Class'.tr,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: isDark
+                                                  ? AppTheme.darkForeground
+                                                  : AppTheme.foreground,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          '${_formatDate(record.date)}${record.teacherName != null ? " - Teacher: ${record.teacherName}" : ""}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: isDark
-                                                ? AppTheme.darkMutedForeground
-                                                : AppTheme.mutedForeground,
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            _formatDate(record.date),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: isDark
+                                                  ? AppTheme.darkMutedForeground
+                                                  : AppTheme.mutedForeground,
+                                            ),
                                           ),
-                                        ),
+                                          if (record.teacherName != null) ...[
+                                            const SizedBox(height: 1),
+                                            Text(
+                                              'Teacher: ${record.teacherName}',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isDark
+                                                    ? AppTheme.darkMutedForeground
+                                                    : AppTheme.mutedForeground,
+                                              ),
+                                            ),
+                                          ],
                                       ],
                                     ),
                                   ),
@@ -1908,9 +1896,8 @@ class ParentView extends GetView<ParentController> {
                                 ],
                               ),
                             );
-                          },
+                          }).toList(),
                         ),
-                      const Divider(),
                     ],
                   ),
                 );
@@ -1919,6 +1906,7 @@ class ParentView extends GetView<ParentController> {
           }),
         ],
       ),
+    ),
     );
   }
 
@@ -1967,12 +1955,8 @@ class ParentView extends GetView<ParentController> {
                 ),
               );
             }
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.children.length,
-              itemBuilder: (context, index) {
-                final child = controller.children[index];
+            return Column(
+              children: controller.children.map<Widget>((child) {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(10),
@@ -2074,7 +2058,7 @@ class ParentView extends GetView<ParentController> {
                     ],
                   ),
                 );
-              },
+              }).toList(),
             );
           }),
         ],
@@ -2158,12 +2142,8 @@ class ParentView extends GetView<ParentController> {
                 ),
               );
             }
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.children.length,
-              itemBuilder: (context, index) {
-                final child = controller.children[index];
+            return Column(
+              children: controller.children.map<Widget>((child) {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
@@ -2213,7 +2193,7 @@ class ParentView extends GetView<ParentController> {
                     ],
                   ),
                 );
-              },
+              }).toList(),
             );
           }),
         ],
@@ -2282,23 +2262,6 @@ class ParentView extends GetView<ParentController> {
     );
   }
 
-  Widget _buildChildFilterChip(
-    String label,
-    bool isSelected,
-    VoidCallback onTap,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label, style: TextStyle(fontSize: 12)),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        selectedColor: Colors.blue[100],
-        checkmarkColor: Colors.blue,
-      ),
-    );
-  }
-
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
@@ -2311,10 +2274,7 @@ class ParentView extends GetView<ParentController> {
   String _formatDateTime(String dateStr) {
     try {
       final date = DateTime.parse(dateStr).toLocal();
-      final hour = date.hour;
-      final amPm = hour >= 12 ? 'PM'.tr : 'AM'.tr;
-      final hour12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-      return '${date.month}/${date.day}/${date.year}, $hour12:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')} $amPm';
+      return '${date.month}/${date.day}/${date.year}, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateStr;
     }
@@ -2543,20 +2503,14 @@ class ParentView extends GetView<ParentController> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (notification.title.isNotEmpty) ...[
-                                      Text(
-                                        notification.title,
-                                        style: TextStyle(
-                                          fontWeight: notification.isRead
-                                              ? FontWeight.normal
-                                              : FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ],
                                     Text(
                                       notification.message,
-                                      style: const TextStyle(fontSize: 13),
+                                      style: TextStyle(
+                                        fontWeight: notification.isRead
+                                            ? FontWeight.normal
+                                            : FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
