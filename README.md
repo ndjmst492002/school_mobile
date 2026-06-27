@@ -68,7 +68,7 @@ After installing Flutter, run `flutter doctor` in a terminal and fix any red ✗
 1. Clone the project:
 
 ```bash
-git clone [REPO_URL]
+git clone -b mobile-frontend https://github.com/ndjmst492002/school_mobile.git
 ```
 
 2. Open the project in **Android Studio**
