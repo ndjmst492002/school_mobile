@@ -41,17 +41,19 @@ class LoginView extends GetView<LoginController> {
                         children: [
                           const SizedBox(height: 16),
                           Center(
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: Icon(
-                                Icons.school_outlined,
-                                size: 48,
-                                color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                'assets/images/login_logo.png',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                  Icons.school_outlined,
+                                  size: 48,
+                                  color: isDark ? AppTheme.darkPrimaryForeground : Colors.white,
+                                ),
                               ),
                             ),
                           ),

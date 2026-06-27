@@ -10,7 +10,6 @@ class ApiProvider extends GetxService {
   late final dio_pkg.Dio _dio;
   String? _webToken;
 
-  //static const String baseUrl = 'http://localhost:8000/api';
   static const String baseUrl = 'https://school-backend-9j8f.onrender.com/api';
   Future<ApiProvider> init() async {
     _dio = dio_pkg.Dio(

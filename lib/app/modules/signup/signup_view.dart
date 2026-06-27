@@ -144,13 +144,15 @@ class SignupView extends GetView<SignupController> {
           children: [
             const SizedBox(height: 8),
             Center(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                  borderRadius: BorderRadius.circular(50),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/login_logo.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.school_outlined, size: 40, color: isDark ? AppTheme.darkPrimaryForeground : Colors.white),
                 ),
-                child: Icon(Icons.school_outlined, size: 40, color: isDark ? AppTheme.darkPrimaryForeground : Colors.white),
               ),
             ),
             const SizedBox(height: 16),
@@ -275,13 +277,15 @@ class SignupView extends GetView<SignupController> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkPrimary : AppTheme.primary,
-                  borderRadius: BorderRadius.circular(50),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/login_logo.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.school_outlined, size: 40, color: isDark ? AppTheme.darkPrimaryForeground : Colors.white),
                 ),
-                child: Icon(Icons.school_outlined, size: 40, color: isDark ? AppTheme.darkPrimaryForeground : Colors.white),
               ),
             ),
             const SizedBox(height: 16),
